@@ -13,6 +13,7 @@
 | **02** | `02_Phase_Wise_Implementation_Plan.md` | Agentic autonomy ladder (L0–L4), Phases 0–5 with every module and feature, build sequence, 49-module master index, critical path and dependency graph | Build planning, sprint sequencing, what to build next |
 | **03** | `03_BRD_PRD.md` | Business context, objectives, scope, stakeholders, business rules, personas, user journeys, 13 functional requirement groups, non-functional requirements, constraints, risks, acceptance criteria | Handing to a developer/contractor, defining "done", scoping |
 | **04** | `04_Solution_Architecture.md` | 4-layer architecture (Experience / API / Agentic Middle / Data), control plane vs data plane, agent runtime and permissions, execution safety chain, audit ledger schema, tenancy, deployment evolution, 10 ADRs | Technical build, architecture decisions, future engineering hires |
+| **05** | `05_Technology_Stack_Analysis.md` | Vendor & framework selection resolving Doc 04's open "or"s (API language, orchestration), specific India-region hosting per layer, the LLM-residency finding that shapes the Model Gateway, docs/help-site choice | Vendor sign-up, infra provisioning, resolving "which specific tool" questions Doc 04 left open |
 | **—** | `DPDPA_Axiom_Minds_Strategic_Roadmap.md` | Market sizing (TAM/SAM/SOM), competitive landscape, right-to-win, pricing, cash-flow model, revenue projections, risk register, council deliberation log | Strategic context, investor conversation (if ever), market positioning |
 
 ---
