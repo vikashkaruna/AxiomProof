@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;600;700;800&family=Inter:wght@400;450;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --indigo:#1E2A4A; --indigo-700:#243356; --teal:#0FB5A5; --teal-dark:#0a8d80; --teal-tint:#e6f7f5;
+    --gold:#C9A227; --gold-tint:#f7f0d8; --ember:#D9534F; --ember-tint:#fbeceb;
+    --slate:#2F3542; --slate-2:#5b6270; --slate-3:#8a909b; --mist:#F4F6F8; --line:#e4e8ee; --line-2:#eef1f5;
+    --sans:'Inter',system-ui,sans-serif; --head:'Inter Tight',var(--sans); --mono:'JetBrains Mono',monospace;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;font-family:var(--sans);color:var(--slate);background:var(--mist);-webkit-font-smoothing:antialiased}
+</style>
+</helmet>
+
+<div style="display:flex;min-height:100vh">
+  <!-- side toc -->
+  <aside style="width:220px;flex:0 0 220px;background:var(--indigo);color:#c7cfe0;position:sticky;top:0;height:100vh;padding:24px 0;overflow-y:auto">
+    <div style="padding:0 22px 18px;display:flex;align-items:center;gap:10px;border-bottom:1px solid rgba(255,255,255,.08);margin-bottom:14px">
+      <div style="width:30px;height:30px;border-radius:8px;background:linear-gradient(150deg,var(--teal),var(--teal-dark));display:flex;align-items:center;justify-content:center"><div style="width:12px;height:12px;border:2.5px solid #fff;border-radius:50%"></div></div>
+      <div><div style="font-family:var(--head);font-weight:700;font-size:13px;color:#fff">AXIOM PROOF</div><div style="font-size:9.5px;color:var(--teal)">Design System v1</div></div>
+    </div>
+    <sc-for list="{{ toc }}" as="s" hint-placeholder-count="8">
+      <a href="{{ s.href }}" style="display:block;padding:8px 22px;font-size:12.5px;color:#c7cfe0;text-decoration:none">{{ s.label }}</a>
+    </sc-for>
+  </aside>
+
+  <main style="flex:1;min-width:0;padding:44px 52px 80px;max-width:1080px">
+    <div style="margin-bottom:44px">
+      <div style="font-size:12px;color:var(--teal-dark);letter-spacing:.06em;text-transform:uppercase;font-weight:600">Axiom Minds Private Limited</div>
+      <h1 style="font-family:var(--head);font-size:40px;font-weight:800;color:var(--indigo);margin:8px 0 0;letter-spacing:-.02em">Axiom Proof — Design System</h1>
+      <p style="font-size:15px;color:var(--slate-2);max-width:640px;margin:12px 0 0;line-height:1.6">The single source of truth for the Axiom Proof brand and product UI. Tokens, type, components and the agent identity system used across the app, public site, reports and evidence packs.</p>
+    </div>
+
+    <!-- BRAND -->
+    <section id="brand" style="margin-bottom:46px">
+      <div style="font-family:var(--head);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--slate-3);font-weight:600;margin-bottom:16px">01 · Brand</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+        <div style="background:#fff;border:1px solid var(--line);border-radius:14px;padding:26px">
+          <div style="display:flex;align-items:center;gap:12px"><div style="width:40px;height:40px;border-radius:10px;background:linear-gradient(150deg,var(--teal),var(--teal-dark));display:flex;align-items:center;justify-content:center;box-shadow:0 2px 10px rgba(15,181,165,.35)"><div style="width:18px;height:18px;border:3px solid #fff;border-radius:50%"></div></div><div><div style="font-family:var(--head);font-weight:700;font-size:20px;color:var(--indigo);letter-spacing:.02em">AXIOM PROOF</div><div style="font-size:11px;color:var(--teal-dark)">by Axiom Minds</div></div></div>
+          <div style="font-size:12.5px;color:var(--slate-2);margin-top:18px;line-height:1.55">Mark = a seal/checkmark formed from a chain link. Chain = the hash-chained ledger (traceability); seal = proof. Monochrome-first so it works on invoices, PDFs and report covers.</div>
+        </div>
+        <div style="background:var(--indigo);border-radius:14px;padding:26px;color:#fff;display:flex;flex-direction:column;justify-content:center">
+          <div style="font-size:11px;color:var(--gold);letter-spacing:.05em;text-transform:uppercase;font-weight:600">Tagline</div>
+          <div style="font-family:var(--head);font-size:22px;font-weight:600;margin-top:8px;line-height:1.3">Agents do the work. You approve. The proof is automatic.</div>
+          <div style="font-size:12px;color:#a9b3ce;margin-top:14px;border-top:1px solid rgba(255,255,255,.12);padding-top:12px">Brand promise · <b style="color:#fff">Agents propose. Humans approve. Agents execute. Everything is logged.</b></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- COLOR -->
+    <section id="color" style="margin-bottom:46px">
+      <div style="font-family:var(--head);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--slate-3);font-weight:600;margin-bottom:16px">02 · Colour</div>
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:14px">
+        <sc-for list="{{ colors }}" as="c" hint-placeholder-count="6">
+          <div style="background:#fff;border:1px solid var(--line);border-radius:12px;overflow:hidden">
+            <div style="height:88px;background:{{ c.hex }}"></div>
+            <div style="padding:14px 16px">
+              <div style="display:flex;align-items:center;justify-content:space-between"><span style="font-size:13px;font-weight:600;color:var(--slate)">{{ c.name }}</span><span style="font-family:var(--mono);font-size:11px;color:var(--slate-3)">{{ c.hex }}</span></div>
+              <div style="font-size:11.5px;color:var(--slate-3);margin-top:5px;line-height:1.45">{{ c.use }}</div>
+            </div>
+          </div>
+        </sc-for>
+      </div>
+      <div style="background:var(--gold-tint);border:1px solid #ecdca8;border-radius:12px;padding:14px 18px;margin-top:14px;font-size:12.5px;color:#7a5f10"><b>Gold rule:</b> Seal Gold is reserved <b>exclusively</b> for sealed evidence, verified/attested badges and proof seals. Never decorative — so that gold always means “this is proven.”</div>
+    </section>
+
+    <!-- TYPE -->
+    <section id="type" style="margin-bottom:46px">
+      <div style="font-family:var(--head);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--slate-3);font-weight:600;margin-bottom:16px">03 · Typography</div>
+      <div style="display:flex;flex-direction:column;gap:12px">
+        <div style="background:#fff;border:1px solid var(--line);border-radius:12px;padding:22px 24px"><div style="display:flex;justify-content:space-between;align-items:baseline"><span style="font-family:var(--head);font-size:34px;font-weight:700;color:var(--indigo)">Inter Tight</span><span style="font-size:11px;color:var(--slate-3)">Headings · geometric, authoritative</span></div><div style="font-family:var(--head);font-size:15px;color:var(--slate-2);margin-top:8px">Aa Bb Cc · 400 / 500 / 600 / 700 / 800 · The proof is automatic</div></div>
+        <div style="background:#fff;border:1px solid var(--line);border-radius:12px;padding:22px 24px"><div style="display:flex;justify-content:space-between;align-items:baseline"><span style="font-family:var(--sans);font-size:34px;font-weight:600;color:var(--indigo)">Inter</span><span style="font-size:11px;color:var(--slate-3)">Body · high legibility for dense content</span></div><div style="font-size:15px;color:var(--slate-2);margin-top:8px">Aa Bb Cc · 400 / 450 / 500 / 600 · Agents propose, humans approve.</div></div>
+        <div style="background:#fff;border:1px solid var(--line);border-radius:12px;padding:22px 24px"><div style="display:flex;justify-content:space-between;align-items:baseline"><span style="font-family:var(--mono);font-size:30px;font-weight:500;color:var(--indigo)">JetBrains Mono</span><span style="font-size:11px;color:var(--slate-3)">Logs · hashes · audit trails</span></div><div style="font-family:var(--mono);font-size:14px;color:var(--slate-2);margin-top:8px">sha256 a3f09c1b7d442e18 · tok-118a01 · #48102</div></div>
+      </div>
+    </section>
+
+    <!-- COMPONENTS -->
+    <section id="components" style="margin-bottom:46px">
+      <div style="font-family:var(--head);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--slate-3);font-weight:600;margin-bottom:16px">04 · Components</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+        <div style="background:#fff;border:1px solid var(--line);border-radius:12px;padding:20px 22px">
+          <div style="font-size:12px;font-weight:600;color:var(--slate-3);margin-bottom:14px;text-transform:uppercase;letter-spacing:.04em">Buttons</div>
+          <div style="display:flex;flex-wrap:wrap;gap:10px;align-items:center">
+            <span style="padding:10px 16px;background:var(--teal);color:#fff;border-radius:9px;font-size:12.5px;font-weight:700;box-shadow:0 2px 10px rgba(15,181,165,.35)">Approve → execute</span>
+            <span style="padding:10px 16px;background:var(--indigo);color:#fff;border-radius:9px;font-size:12.5px;font-weight:700">Primary</span>
+            <span style="padding:10px 16px;border:1px solid var(--line);color:var(--slate-2);border-radius:9px;font-size:12.5px;font-weight:600">Defer</span>
+            <span style="padding:10px 16px;border:1px solid var(--ember);color:var(--ember);border-radius:9px;font-size:12.5px;font-weight:600">Reject with reason</span>
+          </div>
+        </div>
+        <div style="background:#fff;border:1px solid var(--line);border-radius:12px;padding:20px 22px">
+          <div style="font-size:12px;font-weight:600;color:var(--slate-3);margin-bottom:14px;text-transform:uppercase;letter-spacing:.04em">Risk & status badges</div>
+          <div style="display:flex;flex-wrap:wrap;gap:8px">
+            <sc-for list="{{ badges }}" as="b" hint-placeholder-count="6"><span style="font-size:9.5px;font-weight:700;padding:3px 8px;border-radius:5px;color:{{ b.c }};background:{{ b.bg }}">{{ b.l }}</span></sc-for>
+          </div>
+        </div>
+        <div style="background:#fff;border:1px solid var(--line);border-radius:12px;padding:20px 22px">
+          <div style="font-size:12px;font-weight:600;color:var(--slate-3);margin-bottom:14px;text-transform:uppercase;letter-spacing:.04em">Phase tags</div>
+          <div style="display:flex;flex-wrap:wrap;gap:8px">
+            <sc-for list="{{ phases }}" as="p" hint-placeholder-count="6"><span style="font-size:9.5px;font-weight:600;padding:3px 8px;border-radius:5px;background:var(--indigo);color:#fff">{{ p.l }}</span></sc-for>
+          </div>
+          <div style="font-size:11px;color:var(--slate-3);margin-top:12px;line-height:1.45">Every module & screen carries its phase (0–5). Modules are sold standalone or bundled.</div>
+        </div>
+        <div style="background:#fff;border:1px solid var(--line);border-radius:12px;padding:20px 22px">
+          <div style="font-size:12px;font-weight:600;color:var(--slate-3);margin-bottom:14px;text-transform:uppercase;letter-spacing:.04em">Evidence seal</div>
+          <div style="display:flex;flex-direction:column;gap:10px">
+            <span style="display:inline-flex;align-items:center;gap:6px;font-size:11px;font-weight:600;color:#8a6d10;background:var(--gold-tint);padding:5px 11px;border-radius:20px;width:fit-content">● sealed · WORM</span>
+            <span style="display:inline-flex;align-items:center;gap:6px;font-size:11px;font-weight:600;color:#1a140a;background:var(--gold);padding:5px 11px;border-radius:20px;width:fit-content">✦ PROOF SEALED</span>
+            <span style="font-family:var(--mono);font-size:10.5px;color:var(--slate-3)">sha256 a3f0…9c1 · immutable</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- AGENTS -->
+    <section id="agents" style="margin-bottom:46px">
+      <div style="font-family:var(--head);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--slate-3);font-weight:600;margin-bottom:16px">05 · Agent identity system</div>
+      <p style="font-size:13px;color:var(--slate-2);margin:0 0 16px;max-width:640px">Indic sub-brands — the warmth of the product. Each agent has a mark, a colour, a function and an autonomy ceiling. Always referred to with its function on first mention (“Drishti, the discovery agent”).</p>
+      <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:12px">
+        <sc-for list="{{ agents }}" as="a" hint-placeholder-count="10">
+          <div style="background:#fff;border:1px solid var(--line);border-radius:12px;padding:16px 18px;display:flex;gap:14px;align-items:center">
+            <div style="width:46px;height:46px;flex:0 0 46px;border-radius:12px;background:{{ a.bg }};color:#fff;display:flex;align-items:center;justify-content:center;font-family:var(--head);font-weight:700;font-size:17px">{{ a.i }}</div>
+            <div style="flex:1;min-width:0">
+              <div style="display:flex;align-items:center;gap:8px"><span style="font-family:var(--head);font-size:16px;font-weight:600;color:var(--indigo)">{{ a.name }}</span><span style="font-size:9px;font-weight:600;padding:1.5px 6px;border-radius:4px;background:var(--mist);color:var(--slate-2)">{{ a.autonomy }}</span></div>
+              <div style="font-size:11.5px;color:var(--slate-3)">{{ a.role }} · {{ a.perms }}</div>
+              <div style="font-size:11.5px;color:var(--slate-2);font-style:italic;margin-top:4px">“{{ a.persona }}”</div>
+            </div>
+          </div>
+        </sc-for>
+      </div>
+    </section>
+
+    <!-- VOICE -->
+    <section id="voice" style="margin-bottom:20px">
+      <div style="font-family:var(--head);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--slate-3);font-weight:600;margin-bottom:16px">06 · Voice & tone</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+        <div style="background:var(--teal-tint);border:1px solid #bfe8e3;border-radius:12px;padding:20px 22px">
+          <div style="font-size:12px;font-weight:600;color:var(--teal-dark);margin-bottom:12px">Words we use</div>
+          <div style="display:flex;flex-wrap:wrap;gap:7px"><sc-for list="{{ wordsUse }}" as="w" hint-placeholder-count="7"><span style="font-size:12px;background:#fff;color:var(--teal-dark);padding:4px 10px;border-radius:20px;font-weight:500">{{ w }}</span></sc-for></div>
+        </div>
+        <div style="background:var(--ember-tint);border:1px solid #f0cbc9;border-radius:12px;padding:20px 22px">
+          <div style="font-size:12px;font-weight:600;color:var(--ember);margin-bottom:12px">Words we avoid</div>
+          <div style="display:flex;flex-wrap:wrap;gap:7px"><sc-for list="{{ wordsAvoid }}" as="w" hint-placeholder-count="6"><span style="font-size:12px;background:#fff;color:var(--ember);padding:4px 10px;border-radius:20px;font-weight:500;text-decoration:line-through">{{ w }}</span></sc-for></div>
+        </div>
+      </div>
+      <div style="background:var(--indigo);border-radius:12px;padding:18px 22px;margin-top:14px;color:#fff;font-size:13px;line-height:1.55"><b style="color:var(--teal)">Critical brand rule:</b> Never market autonomy without control. Every agentic claim pairs the capability with the approval gate — <i>“Agents execute — after you approve”</i> is the only correct construction.</div>
+    </section>
+  </main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+class Component extends DCLogic {
+  renderVals(){
+    return {
+      toc:[
+        {label:'01 · Brand',href:'#brand'},{label:'02 · Colour',href:'#color'},{label:'03 · Typography',href:'#type'},
+        {label:'04 · Components',href:'#components'},{label:'05 · Agent identity',href:'#agents'},{label:'06 · Voice & tone',href:'#voice'}
+      ],
+      colors:[
+        {name:'Deep Indigo',hex:'#1E2A4A',use:'Primary — headers, primary surfaces, logo. Institutional trust (BFSI/legal register).'},
+        {name:'Signal Teal',hex:'#0FB5A5',use:'Accent — CTAs, agent-active states, approvals. Signals active machine intelligence.'},
+        {name:'Seal Gold',hex:'#C9A227',use:'Proof — evidence seals, verified/attested badges only. Never decorative.'},
+        {name:'Ember',hex:'#D9534F',use:'Alert — gaps, risks, overdue actions, high-risk execution.'},
+        {name:'Slate',hex:'#2F3542',use:'Neutral dark — body text.'},
+        {name:'Mist',hex:'#F4F6F8',use:'Neutral light — app and section backgrounds.'}
+      ],
+      badges:[
+        {l:'HIGH RISK',c:'var(--ember)',bg:'var(--ember-tint)'},{l:'MED',c:'#8a6d10',bg:'var(--amber-tint)'},{l:'LOW',c:'var(--teal-dark)',bg:'var(--teal-tint)'},
+        {l:'✓ VERIFIED',c:'#04322d',bg:'var(--teal)'},{l:'EXECUTING…',c:'#8a6d10',bg:'var(--amber-tint)'},{l:'REJECTED',c:'var(--ember)',bg:'var(--ember-tint)'},
+        {l:'PASS',c:'var(--teal-dark)',bg:'var(--teal-tint)'},{l:'FAIL',c:'var(--ember)',bg:'var(--ember-tint)'},{l:'PARTIAL',c:'#8a6d10',bg:'var(--amber-tint)'}
+      ],
+      phases:[{l:'P0 Foundation'},{l:'P1 First cash'},{l:'P2 Repeatability'},{l:'P3 Execution'},{l:'P4 Scale'},{l:'P5 Maturity'}],
+      agents:[
+        {name:'Drishti',role:'Discovery',i:'द',bg:'#1E2A4A',autonomy:'L3',perms:'connectors: read-only',persona:'I find what you didn’t know you had.'},
+        {name:'Vibhaag',role:'Classification',i:'वि',bg:'#243356',autonomy:'L3',perms:'none (on discovery output)',persona:'I tell you what kind of data it is.'},
+        {name:'Parikshan',role:'Assessment',i:'प',bg:'#0a8d80',autonomy:'L3',perms:'control library read',persona:'I measure you against the law.'},
+        {name:'Saakshi',role:'Evidence',i:'सा',bg:'#C9A227',autonomy:'L3',perms:'evidence store write-once',persona:'I am your witness.'},
+        {name:'Sudhaar',role:'Remediation planning',i:'सु',bg:'#33456e',autonomy:'L2',perms:'read-only · never executes',persona:'I propose the fix. You decide.'},
+        {name:'Karya',role:'Execution',i:'क',bg:'#0FB5A5',autonomy:'L2',perms:'write · scoped · token-gated',persona:'I only act on your approval.'},
+        {name:'Lekha',role:'Audit & traceability',i:'ले',bg:'#2F3542',autonomy:'L3',perms:'ledger append-only',persona:'I remember everything, forever.'},
+        {name:'Nazar',role:'Regulatory watch',i:'न',bg:'#243356',autonomy:'L3',perms:'external sources read',persona:'I watch the law so you don’t have to.'},
+        {name:'Prativedan',role:'Reporting',i:'प्र',bg:'#1E2A4A',autonomy:'L3',perms:'read all · doc generation',persona:'I turn findings into documents.'},
+        {name:'Sanket',role:'Market signal (internal)',i:'सं',bg:'#8a909b',autonomy:'L3',perms:'external sources read',persona:'I find who’s about to buy.'}
+      ],
+      wordsUse:['proof','evidence','approve','traceable','rollback','prioritised','agents','dry-run'],
+      wordsAvoid:['guarantee','fully automatic','autonomous','risk-free','certified','100% compliant']
+    };
+  }
+}
+</script>
+</body>
+</html>

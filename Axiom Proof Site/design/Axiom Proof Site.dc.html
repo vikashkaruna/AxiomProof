@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;600;700;800&family=Inter:wght@400;450;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --indigo:#1E2A4A; --indigo-700:#243356; --teal:#0FB5A5; --teal-dark:#0a8d80; --teal-tint:#e6f7f5;
+    --gold:#C9A227; --gold-tint:#f7f0d8; --ember:#D9534F; --ember-tint:#fbeceb;
+    --slate:#2F3542; --slate-2:#5b6270; --slate-3:#8a909b; --mist:#F4F6F8; --line:#e4e8ee; --line-2:#eef1f5;
+    --sans:'Inter',system-ui,sans-serif; --head:'Inter Tight',var(--sans); --mono:'JetBrains Mono',monospace;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;font-family:var(--sans);color:var(--slate);background:#fff;-webkit-font-smoothing:antialiased}
+  a{color:var(--teal-dark);text-decoration:none}a:hover{color:var(--teal)}
+  @keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+  @keyframes fadeUp{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+  @keyframes barGrow{from{width:0}}
+</style>
+</helmet>
+
+<div style="min-height:100vh">
+  <!-- NAV -->
+  <nav style="position:sticky;top:0;z-index:50;background:rgba(255,255,255,.9);backdrop-filter:blur(10px);border-bottom:1px solid var(--line);height:64px;display:flex;align-items:center;padding:0 40px;gap:28px">
+    <div style="display:flex;align-items:center;gap:10px;flex:0 0 auto">
+      <div style="width:30px;height:30px;border-radius:8px;background:linear-gradient(150deg,var(--teal),var(--teal-dark));display:flex;align-items:center;justify-content:center"><div style="width:13px;height:13px;border:2.5px solid #fff;border-radius:50%"></div></div>
+      <span style="font-family:var(--head);font-weight:700;font-size:16px;color:var(--indigo);letter-spacing:.02em">AXIOM PROOF</span>
+    </div>
+    <div style="flex:1;display:flex;gap:24px;font-size:13.5px;color:var(--slate-2)">
+      <span style="cursor:pointer">How it works</span><span style="cursor:pointer">The agents</span><span style="cursor:pointer">Pricing</span><span style="cursor:pointer">Research</span>
+    </div>
+    <span style="font-size:13px;color:var(--slate-2);cursor:pointer">Sign in</span>
+    <div onClick="{{ startScan }}" style="background:var(--teal);color:#fff;font-size:13px;font-weight:600;padding:9px 16px;border-radius:9px;cursor:pointer;box-shadow:0 2px 10px rgba(15,181,165,.3)">Free gap-scan</div>
+  </nav>
+
+  <!-- HERO -->
+  <section style="padding:76px 40px 60px;max-width:1100px;margin:0 auto;text-align:center">
+    <div style="display:inline-flex;align-items:center;gap:8px;background:var(--gold-tint);color:#8a6d10;font-size:12px;font-weight:600;padding:6px 14px;border-radius:20px;margin-bottom:24px">◆ DPDPA enforcement · 13 May 2027 · ₹250 cr max penalty</div>
+    <h1 style="font-family:var(--head);font-size:56px;font-weight:800;color:var(--indigo);line-height:1.05;letter-spacing:-.02em;margin:0 auto;max-width:820px">Agents do the work. You approve. The proof is automatic.</h1>
+    <p style="font-size:18px;color:var(--slate-2);line-height:1.6;max-width:660px;margin:22px auto 0">Axiom Proof is an agentic DPDPA compliance platform. AI agents discover your personal data, assess your gaps, propose the fixes — and once you approve, execute them with a full audit trail and rollback plan for every action.</p>
+    <div style="display:flex;gap:14px;justify-content:center;margin-top:32px">
+      <div onClick="{{ startScan }}" style="background:var(--teal);color:#fff;font-size:15px;font-weight:600;padding:14px 26px;border-radius:11px;cursor:pointer;box-shadow:0 4px 16px rgba(15,181,165,.35)">Run a free gap-scan →</div>
+      <div onClick="{{ openApp }}" style="background:#fff;border:1px solid var(--line);color:var(--indigo);font-size:15px;font-weight:600;padding:14px 26px;border-radius:11px;cursor:pointer">See the platform</div>
+    </div>
+    <div style="font-size:12.5px;color:var(--slate-3);margin-top:16px">No connectors, no signup friction · a report a paying client would respect · by Axiom Minds Pvt Ltd</div>
+
+    <!-- loop -->
+    <div style="display:flex;align-items:center;justify-content:center;gap:0;margin-top:56px;flex-wrap:wrap">
+      <sc-for list="{{ loop }}" as="l" hint-placeholder-count="5">
+        <div style="display:flex;align-items:center;gap:0">
+          <div style="text-align:center;padding:0 6px">
+            <div style="width:54px;height:54px;border-radius:14px;background:{{ l.bg }};color:{{ l.fg }};display:flex;align-items:center;justify-content:center;font-family:var(--head);font-weight:700;font-size:19px;margin:0 auto">{{ l.n }}</div>
+            <div style="font-size:13px;font-weight:600;color:var(--indigo);margin-top:9px">{{ l.name }}</div>
+            <div style="font-size:11px;color:var(--slate-3)">{{ l.agent }}</div>
+          </div>
+          <sc-if value="{{ l.arrow }}" hint-placeholder-val="{{ true }}"><span style="color:var(--line);font-size:20px;margin:0 2px 34px">→</span></sc-if>
+        </div>
+      </sc-for>
+    </div>
+  </section>
+
+  <!-- SAFETY STRIP -->
+  <section style="background:var(--indigo);padding:52px 40px">
+    <div style="max-width:1100px;margin:0 auto">
+      <div style="text-align:center;margin-bottom:34px"><div style="font-size:12px;color:var(--teal);letter-spacing:.06em;text-transform:uppercase;font-weight:600">The non-negotiable safety model</div><h2 style="font-family:var(--head);font-size:30px;font-weight:700;color:#fff;margin:10px 0 0">Never autonomy without control</h2><p style="color:#a9b3ce;font-size:15px;max-width:600px;margin:12px auto 0">No agent action that changes your systems executes without a recorded human approval, a completed dry-run, and a generated rollback plan. Enforced architecturally — not by convention.</p></div>
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px">
+        <sc-for list="{{ safety }}" as="s" hint-placeholder-count="6">
+          <div style="background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.09);border-radius:14px;padding:20px"><div style="font-size:22px;margin-bottom:10px">{{ s.icon }}</div><div style="font-family:var(--head);font-size:15px;font-weight:600;color:#fff">{{ s.t }}</div><div style="font-size:12.5px;color:#a9b3ce;margin-top:6px;line-height:1.5">{{ s.d }}</div></div>
+        </sc-for>
+      </div>
+    </div>
+  </section>
+
+  <!-- AGENT ROSTER -->
+  <section style="padding:66px 40px;max-width:1100px;margin:0 auto">
+    <div style="text-align:center;margin-bottom:40px"><div style="font-size:12px;color:var(--teal-dark);letter-spacing:.06em;text-transform:uppercase;font-weight:600">Not a tool you bought — a team you hired</div><h2 style="font-family:var(--head);font-size:32px;font-weight:700;color:var(--indigo);margin:10px 0 0">The agent roster</h2></div>
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:14px">
+      <sc-for list="{{ agents }}" as="a" hint-placeholder-count="10">
+        <div style="background:#fff;border:1px solid var(--line);border-radius:14px;padding:18px">
+          <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px"><div style="width:38px;height:38px;border-radius:10px;background:{{ a.bg }};color:#fff;display:flex;align-items:center;justify-content:center;font-family:var(--head);font-weight:700;font-size:15px">{{ a.i }}</div><div><div style="font-family:var(--head);font-size:15px;font-weight:600;color:var(--indigo)">{{ a.name }}</div><div style="font-size:10.5px;color:var(--slate-3)">{{ a.role }}</div></div></div>
+          <div style="font-size:12px;color:var(--slate-2);line-height:1.5;font-style:italic">“{{ a.persona }}”</div>
+        </div>
+      </sc-for>
+    </div>
+  </section>
+
+  <!-- PRICING -->
+  <section style="background:var(--mist);padding:66px 40px">
+    <div style="max-width:1000px;margin:0 auto">
+      <div style="text-align:center;margin-bottom:40px"><h2 style="font-family:var(--head);font-size:32px;font-weight:700;color:var(--indigo);margin:0">Compliance done for you</h2><p style="color:var(--slate-2);font-size:15px;margin:10px 0 0">A fraction of a ₹25 lakh+ in-house DPO. A service with software leverage.</p></div>
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px">
+        <sc-for list="{{ pricing }}" as="p" hint-placeholder-count="3">
+          <div style="{{ p.cardStyle }}">
+            <div style="font-family:var(--head);font-size:16px;font-weight:600;color:{{ p.titleColor }}">{{ p.name }}</div>
+            <div style="font-family:var(--head);font-size:28px;font-weight:800;color:{{ p.priceColor }};margin:10px 0 2px">{{ p.price }}</div>
+            <div style="font-size:12px;color:{{ p.subColor }};margin-bottom:16px">{{ p.unit }}</div>
+            <sc-for list="{{ p.features }}" as="f" hint-placeholder-count="4"><div style="font-size:12.5px;color:{{ p.featColor }};padding:6px 0;border-top:1px solid {{ p.line }}">✓ {{ f }}</div></sc-for>
+            <div onClick="{{ p.cta }}" style="{{ p.btnStyle }}">{{ p.btn }}</div>
+          </div>
+        </sc-for>
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA -->
+  <section style="padding:66px 40px;text-align:center">
+    <h2 style="font-family:var(--head);font-size:34px;font-weight:700;color:var(--indigo);margin:0">See where you stand in 3 minutes</h2>
+    <p style="color:var(--slate-2);font-size:16px;margin:12px 0 26px">Answer a short questionnaire. Parikshan generates a prioritised gap report with your penalty-exposure estimate — free.</p>
+    <div onClick="{{ startScan }}" style="display:inline-block;background:var(--teal);color:#fff;font-size:16px;font-weight:600;padding:15px 30px;border-radius:12px;cursor:pointer;box-shadow:0 4px 16px rgba(15,181,165,.35)">Run my free gap-scan →</div>
+  </section>
+
+  <footer style="background:var(--indigo);color:#a9b3ce;padding:34px 40px;font-size:12.5px;text-align:center">Axiom Minds Private Limited · axiomminds.ai · Axiom Proof produces compliance artifacts, not legal opinions. · India data residency by default.</footer>
+
+  <!-- ================= GAP-SCAN MODAL ================= -->
+  <sc-if value="{{ scanOpen }}" hint-placeholder-val="{{ false }}">
+    <div style="position:fixed;inset:0;z-index:100;background:rgba(30,42,74,.55);backdrop-filter:blur(3px);display:flex;align-items:center;justify-content:center;padding:24px">
+      <div style="background:#fff;border-radius:18px;width:100%;max-width:620px;max-height:90vh;overflow:hidden;box-shadow:0 30px 80px rgba(0,0,0,.4);display:flex;flex-direction:column;animation:fadeUp .3s ease">
+        <!-- header -->
+        <div style="padding:18px 24px;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:12px">
+          <div style="width:30px;height:30px;border-radius:8px;background:linear-gradient(150deg,var(--teal),var(--teal-dark));display:flex;align-items:center;justify-content:center"><div style="width:12px;height:12px;border:2.5px solid #fff;border-radius:50%"></div></div>
+          <div style="flex:1"><div style="font-family:var(--head);font-size:15px;font-weight:600;color:var(--indigo)">Free DPDPA Gap-Scan</div><div style="font-size:11px;color:var(--slate-3)">Assessed by Parikshan · no data leaves this session</div></div>
+          <span onClick="{{ closeScan }}" style="font-size:20px;color:var(--slate-3);cursor:pointer">×</span>
+        </div>
+        <!-- progress -->
+        <div style="height:4px;background:var(--line-2)"><div style="height:100%;width:{{ scanPct }};background:var(--teal);transition:width .3s"></div></div>
+
+        <div style="padding:28px 26px;overflow-y:auto">
+          <!-- QUESTION -->
+          <sc-if value="{{ scanQuestion }}" hint-placeholder-val="{{ true }}">
+            <div style="font-size:12px;color:var(--slate-3);font-weight:600;letter-spacing:.04em;text-transform:uppercase;margin-bottom:8px">Question {{ qNum }} of {{ qTotal }}</div>
+            <div style="font-family:var(--head);font-size:22px;font-weight:600;color:var(--indigo);line-height:1.3;margin-bottom:20px">{{ q.prompt }}</div>
+            <div style="display:flex;flex-direction:column;gap:10px">
+              <sc-for list="{{ q.options }}" as="o" hint-placeholder-count="3">
+                <div onClick="{{ o.onPick }}" style="{{ o.style }}"><span style="{{ o.radioStyle }}">{{ o.radioMark }}</span><span style="flex:1;font-size:14px;color:var(--slate);font-weight:500">{{ o.label }}</span></div>
+              </sc-for>
+            </div>
+          </sc-if>
+
+          <!-- REPORT -->
+          <sc-if value="{{ scanReport }}" hint-placeholder-val="{{ false }}">
+            <div style="text-align:center;margin-bottom:22px">
+              <div style="font-size:12px;color:var(--slate-3);letter-spacing:.05em;text-transform:uppercase;font-weight:600">Your DPDPA readiness</div>
+              <div style="display:flex;align-items:baseline;justify-content:center;gap:4px;margin-top:6px"><span style="font-family:var(--head);font-size:52px;font-weight:800;color:{{ reportColor }}">{{ reportScore }}</span><span style="font-size:20px;color:var(--slate-3)">/100</span></div>
+              <div style="font-size:13.5px;color:var(--slate-2);margin-top:2px">{{ reportBand }}</div>
+            </div>
+            <div style="background:var(--ember-tint);border:1px solid #f0cbc9;border-radius:12px;padding:14px 16px;margin-bottom:18px;text-align:center"><span style="font-size:12px;color:var(--ember);font-weight:600;text-transform:uppercase;letter-spacing:.04em">Estimated penalty exposure</span><div style="font-family:var(--head);font-size:26px;font-weight:800;color:var(--ember);margin-top:4px">{{ reportExposure }}</div><div style="font-size:11px;color:#a03734">illustrative · max ₹250 cr / contravention · not legal advice</div></div>
+            <div style="font-size:12px;color:var(--slate-3);font-weight:600;letter-spacing:.04em;text-transform:uppercase;margin-bottom:10px">Prioritised gaps</div>
+            <sc-for list="{{ reportGaps }}" as="g" hint-placeholder-count="4">
+              <div style="display:flex;align-items:center;gap:12px;padding:11px 0;border-bottom:1px solid var(--line-2)">
+                <span style="font-size:9px;font-weight:700;padding:3px 7px;border-radius:5px;color:{{ g.c }};background:{{ g.bg }}">{{ g.sev }}</span>
+                <div style="flex:1"><div style="font-size:13px;color:var(--slate);font-weight:500">{{ g.name }}</div><div style="font-size:11px;color:var(--slate-3)">{{ g.cite }}</div></div>
+              </div>
+            </sc-for>
+            <div style="margin-top:22px;background:var(--indigo);border-radius:12px;padding:18px 20px;text-align:center">
+              <div style="color:#fff;font-family:var(--head);font-size:16px;font-weight:600">Want the full report + a walkthrough?</div>
+              <div style="color:#a9b3ce;font-size:12.5px;margin:6px 0 14px">Book a 30-min consultation. We’ll show you exactly what the agents would fix — and what it costs.</div>
+              <div style="display:inline-block;background:var(--teal);color:#fff;font-size:13.5px;font-weight:600;padding:11px 22px;border-radius:9px;cursor:pointer">Book consultation →</div>
+            </div>
+          </sc-if>
+        </div>
+
+        <!-- footer nav -->
+        <sc-if value="{{ scanQuestion }}" hint-placeholder-val="{{ true }}">
+          <div style="padding:14px 26px;border-top:1px solid var(--line);display:flex;align-items:center;gap:12px">
+            <span onClick="{{ scanBack }}" style="font-size:13px;color:var(--slate-3);cursor:pointer">{{ backLabel }}</span>
+            <span style="flex:1"></span>
+            <span style="font-size:11.5px;color:var(--slate-3)">Parikshan scores as you answer</span>
+          </div>
+        </sc-if>
+      </div>
+    </div>
+  </sc-if>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+class Component extends DCLogic {
+  state = { scanOpen:false, step:0, answers:{} };
+
+  questions = [
+    {id:'sector',prompt:'What sector are you in?',options:[{v:'fintech',l:'Fintech / BFSI'},{v:'health',l:'Healthcare'},{v:'saas',l:'B2B SaaS / tech'},{v:'other',l:'Other'}]},
+    {id:'size',prompt:'How many employees?',options:[{v:'s',l:'Under 200'},{v:'m',l:'200 – 1,000'},{v:'l',l:'Over 1,000'}]},
+    {id:'dpo',prompt:'Do you have a dedicated privacy / DPO function?',options:[{v:'yes',l:'Yes, a staffed privacy team'},{v:'part',l:'One person, part-time'},{v:'no',l:'No — nobody owns this'}]},
+    {id:'ropa',prompt:'Have you mapped where personal data lives (RoPA)?',options:[{v:'yes',l:'Yes, documented and current'},{v:'part',l:'Partially / out of date'},{v:'no',l:'No formal data map'}]},
+    {id:'consent',prompt:'How do you capture and manage consent today?',options:[{v:'purpose',l:'Purpose-based, with a consent ledger'},{v:'banner',l:'A cookie banner only'},{v:'none',l:'No structured consent mechanism'}]},
+    {id:'breach',prompt:'Could you file a 72-hour breach report to the DPB today?',options:[{v:'yes',l:'Yes, we have a tested playbook'},{v:'maybe',l:'Maybe, but it would be a scramble'},{v:'no',l:'No, we are not ready'}]}
+  ];
+
+  loopData = [
+    {n:'1',name:'Discover',agent:'Drishti',bg:'var(--teal-tint)',fg:'var(--teal-dark)'},
+    {n:'2',name:'Assess',agent:'Parikshan',bg:'var(--teal-tint)',fg:'var(--teal-dark)'},
+    {n:'3',name:'Report',agent:'Prativedan',bg:'var(--teal-tint)',fg:'var(--teal-dark)'},
+    {n:'4',name:'Remediate',agent:'Sudhaar + Karya',bg:'var(--indigo)',fg:'#fff'},
+    {n:'5',name:'Prove',agent:'Saakshi + Lekha',bg:'var(--gold)',fg:'#3a2f08'}
+  ];
+  safetyData = [
+    {icon:'✍️',t:'Recorded human approval',d:'Execution is physically impossible without a signed, scope-bound approval token validated per action.'},
+    {icon:'🔍',t:'Mandatory dry-run',d:'Every action produces a readable before/after diff. No diff, no approval — architecturally.'},
+    {icon:'↺',t:'Generated rollback',d:'A validated, executable rollback plan is created at planning time for every single action.'},
+    {icon:'📏',t:'Blast-radius caps',d:'Hard limits on records and systems per batch, enforced pre-flight and in-flight, with a global kill switch.'},
+    {icon:'🔗',t:'Hash-chained ledger',d:'Every action — read or write, agent or human — is written to an append-only, tamper-evident audit ledger.'},
+    {icon:'🚫',t:'Separation of duties',d:'The agent that proposes fixes holds no write credentials. It cannot execute its own plan.'}
+  ];
+  agentsData = [
+    {name:'Drishti',role:'Discovery',i:'द',bg:'#1E2A4A',persona:'I find what you didn’t know you had.'},
+    {name:'Vibhaag',role:'Classification',i:'वि',bg:'#243356',persona:'I tell you what kind of data it is.'},
+    {name:'Parikshan',role:'Assessment',i:'प',bg:'#0a8d80',persona:'I measure you against the law.'},
+    {name:'Saakshi',role:'Evidence',i:'सा',bg:'#C9A227',persona:'I am your witness.'},
+    {name:'Sudhaar',role:'Remediation planning',i:'सु',bg:'#33456e',persona:'I propose the fix. You decide.'},
+    {name:'Karya',role:'Execution',i:'क',bg:'#0FB5A5',persona:'I only act on your approval.'},
+    {name:'Lekha',role:'Audit & traceability',i:'ले',bg:'#2F3542',persona:'I remember everything, forever.'},
+    {name:'Nazar',role:'Regulatory watch',i:'न',bg:'#243356',persona:'I watch the law so you don’t have to.'},
+    {name:'Prativedan',role:'Reporting',i:'प्र',bg:'#1E2A4A',persona:'I turn findings into documents.'},
+    {name:'Sanket',role:'Market signal',i:'सं',bg:'#8a909b',persona:'I find who’s about to buy.'}
+  ];
+
+  startScan = () => this.setState({scanOpen:true, step:0, answers:{}});
+  closeScan = () => this.setState({scanOpen:false});
+  openApp = () => { window.location.href='Axiom Proof App.dc.html'; };
+  answer = (qid,v) => { const a={...this.state.answers,[qid]:v}; this.setState({answers:a, step:this.state.step+1}); };
+  back = () => this.setState({step:Math.max(0,this.state.step-1)});
+
+  score(){
+    const a=this.state.answers; let s=100;
+    const pen={dpo:{part:8,no:18},ropa:{part:10,no:22},consent:{banner:12,none:24},breach:{maybe:8,no:16},size:{m:4,l:8}};
+    Object.keys(pen).forEach(k=>{ const v=a[k]; if(v&&pen[k][v]) s-=pen[k][v]; });
+    return Math.max(28,s);
+  }
+
+  renderVals(){
+    const step=this.state.step, total=this.questions.length;
+    const inReport = step>=total && this.state.scanOpen;
+    const q=this.questions[step];
+    const loop=this.loopData.map((l,i)=>({...l,arrow:i<this.loopData.length-1}));
+
+    const pricing=[
+      {name:'Free Gap-Scan',price:'₹0',unit:'self-serve · lead magnet',dark:false,features:['Structured questionnaire','Auto-generated summary report','Prioritised gaps + exposure estimate','Consultation on request'],btn:'Run it now'},
+      {name:'Readiness Assessment',price:'₹75k – 3L',unit:'one-time project',dark:true,features:['Full discovery + classification','43-control gap assessment','Branded, Board-ready report','Sealed evidence pack'],btn:'Talk to us'},
+      {name:'vDPO Retainer',price:'₹40k – 1.5L',unit:'per month · flagship',dark:false,features:['Fractional DPO, agent-assisted','Continuous monitoring & re-assessment','Remediation planning & execution','DSAR + consent + breach ops'],btn:'Talk to us'}
+    ].map(p=>({...p,
+      cardStyle:`background:${p.dark?'var(--indigo)':'#fff'};border:1px solid ${p.dark?'var(--indigo)':'var(--line)'};border-radius:16px;padding:24px;${p.dark?'box-shadow:0 12px 40px rgba(30,42,74,.25);transform:scale(1.03)':''}`,
+      titleColor:p.dark?'var(--teal)':'var(--slate-2)', priceColor:p.dark?'#fff':'var(--indigo)', subColor:p.dark?'#a9b3ce':'var(--slate-3)',
+      featColor:p.dark?'#c7cfe0':'var(--slate-2)', line:p.dark?'rgba(255,255,255,.1)':'var(--line-2)',
+      btnStyle:`margin-top:18px;text-align:center;padding:11px;border-radius:9px;font-size:13px;font-weight:600;cursor:pointer;background:${p.dark?'var(--teal)':'var(--mist)'};color:${p.dark?'#fff':'var(--indigo)'}`,
+      cta:p.name==='Free Gap-Scan'?this.startScan:(()=>{}) }));
+
+    let report={};
+    if(inReport){
+      const sc=this.score();
+      const band = sc>=75?'Solid footing — close the last gaps':sc>=55?'Material exposure — act before enforcement':'High exposure — start remediation now';
+      const color = sc>=75?'var(--teal-dark)':sc>=55?'#8a6d10':'var(--ember)';
+      const a=this.state.answers;
+      const gaps=[];
+      if(a.ropa!=='yes') gaps.push({sev:'HIGH',name:'No current record of processing activities (RoPA)',cite:'DPDP Act §8 · Ctrl DIS-01',c:'var(--ember)',bg:'var(--ember-tint)'});
+      if(a.consent==='none'||a.consent==='banner') gaps.push({sev:'HIGH',name:'Consent not purpose-based with a ledger',cite:'§5 · §6 · Ctrl NOT-01',c:'var(--ember)',bg:'var(--ember-tint)'});
+      if(a.breach!=='yes') gaps.push({sev:'MED',name:'72-hour breach notification not tested',cite:'Rule 7 · Ctrl BRC-02',c:'#8a6d10',bg:'var(--amber-tint)'});
+      if(a.dpo!=='yes') gaps.push({sev:'MED',name:'No clear accountable owner for DPDPA',cite:'§8(9) · Ctrl GOV-01',c:'#8a6d10',bg:'var(--amber-tint)'});
+      gaps.push({sev:'LOW',name:'Retention limits undefined on logs & backups',cite:'§8(7) · Ctrl RET-05',c:'var(--teal-dark)',bg:'var(--teal-tint)'});
+      const exp = sc>=75?'₹4 – 12 cr':sc>=55?'₹18 – 46 cr':'₹40 – 110 cr';
+      report={reportScore:sc,reportBand:band,reportColor:color,reportExposure:exp,reportGaps:gaps.slice(0,5)};
+    }
+
+    const qv = q?{...q, options:q.options.map(o=>{
+      const picked=this.state.answers[q.id]===o.v;
+      return {...o, onPick:()=>this.answer(q.id,o.v),
+        style:`display:flex;align-items:center;gap:12px;padding:14px 16px;border:1.5px solid ${picked?'var(--teal)':'var(--line)'};border-radius:11px;cursor:pointer;background:${picked?'var(--teal-tint)':'#fff'}`,
+        radioStyle:`width:20px;height:20px;flex:0 0 20px;border-radius:50%;border:2px solid ${picked?'var(--teal)':'#c4ccd8'};background:${picked?'var(--teal)':'#fff'};color:#fff;font-size:11px;display:flex;align-items:center;justify-content:center`,
+        radioMark:picked?'✓':''};
+    })}:null;
+
+    return {
+      startScan:this.startScan, closeScan:this.closeScan, openApp:this.openApp,
+      loop, safety:this.safetyData, agents:this.agentsData, pricing,
+      scanOpen:this.state.scanOpen, scanQuestion:!!q&&!inReport, scanReport:inReport,
+      q:qv, qNum:Math.min(step+1,total), qTotal:total,
+      scanPct: inReport?'100%':Math.round(step/total*100)+'%',
+      scanBack:this.back, backLabel: step>0?'← Back':'',
+      ...report
+    };
+  }
+}
+</script>
+</body>
+</html>

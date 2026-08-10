@@ -1,0 +1,1129 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;600;700&family=Inter:wght@400;450;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --indigo:#1E2A4A; --indigo-800:#182238; --indigo-700:#243356; --indigo-600:#33456e;
+    --teal:#0FB5A5; --teal-dark:#0a8d80; --teal-tint:#e6f7f5;
+    --gold:#C9A227; --gold-tint:#f7f0d8;
+    --ember:#D9534F; --ember-tint:#fbeceb;
+    --slate:#2F3542; --slate-2:#5b6270; --slate-3:#8a909b;
+    --mist:#F4F6F8; --line:#e4e8ee; --line-2:#eef1f5; --white:#ffffff;
+    --amber:#E0A82E; --amber-tint:#fbf3df;
+    --r-sm:6px; --r:10px; --r-lg:16px;
+    --sans:'Inter',system-ui,sans-serif; --head:'Inter Tight',var(--sans); --mono:'JetBrains Mono',monospace;
+    --sh-1:0 1px 2px rgba(30,42,74,.06),0 1px 3px rgba(30,42,74,.04);
+    --sh-2:0 4px 16px rgba(30,42,74,.08); --sh-3:0 12px 40px rgba(30,42,74,.16);
+  }
+  *{box-sizing:border-box}
+  body{margin:0;font-family:var(--sans);color:var(--slate);background:var(--mist);-webkit-font-smoothing:antialiased}
+  a{color:var(--teal-dark);text-decoration:none} a:hover{color:var(--teal)}
+  ::-webkit-scrollbar{width:10px;height:10px}
+  ::-webkit-scrollbar-thumb{background:#cfd6e0;border-radius:20px;border:2px solid var(--mist)}
+  ::-webkit-scrollbar-track{background:transparent}
+  @keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.35;transform:scale(.82)}}
+  @keyframes spin{to{transform:rotate(360deg)}}
+  @keyframes shimmer{0%{background-position:-400px 0}100%{background-position:400px 0}}
+  @keyframes barGrow{from{width:0}}
+  @keyframes fadeUp{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+</style>
+</helmet>
+
+<div style="display:flex;min-height:100vh;background:var(--mist)">
+
+  <!-- ============ SIDEBAR ============ -->
+  <aside style="width:266px;flex:0 0 266px;background:var(--indigo);color:#c7cfe0;display:flex;flex-direction:column;position:sticky;top:0;height:100vh">
+    <div style="padding:20px 20px 16px;border-bottom:1px solid rgba(255,255,255,.08)">
+      <div style="display:flex;align-items:center;gap:11px">
+        <div style="width:34px;height:34px;border-radius:9px;background:linear-gradient(150deg,var(--teal),var(--teal-dark));display:flex;align-items:center;justify-content:center;box-shadow:0 2px 10px rgba(15,181,165,.4);position:relative">
+          <div style="width:15px;height:15px;border:2.5px solid #fff;border-radius:50%;display:flex;align-items:center;justify-content:center">
+            <div style="width:5px;height:2.5px;border-left:2px solid #fff;border-bottom:2px solid #fff;transform:rotate(-45deg);margin-top:-2px"></div>
+          </div>
+        </div>
+        <div>
+          <div style="font-family:var(--head);font-weight:700;font-size:15.5px;color:#fff;letter-spacing:.02em;line-height:1">AXIOM PROOF</div>
+          <div style="font-size:10px;color:var(--teal);letter-spacing:.06em;margin-top:3px">by Axiom Minds</div>
+        </div>
+      </div>
+    </div>
+
+    <div style="flex:1;overflow-y:auto;padding:6px 0 20px">
+      <sc-for list="{{ navGroups }}" as="group" hint-placeholder-count="8">
+        <div style="padding:14px 20px 5px;font-size:9.5px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:#6f7ba0">{{ group.label }}</div>
+        <sc-for list="{{ group.items }}" as="item" hint-placeholder-count="2">
+          <div onClick="{{ item.onClick }}" style="{{ item.rowStyle }}">
+            <span style="width:6px;height:6px;border-radius:50%;flex:0 0 6px;{{ item.dotStyle }}"></span>
+            <span style="flex:1;font-size:13px;font-weight:{{ item.weight }};color:{{ item.textColor }};display:flex;align-items:center;gap:6px">{{ item.en }}<span style="font-family:var(--head);font-size:10.5px;color:#6f7ba0;font-weight:400">{{ item.hi }}</span></span>
+            <sc-if value="{{ item.star }}" hint-placeholder-val="{{ false }}"><span style="color:var(--gold);font-size:11px">★</span></sc-if>
+            <span style="font-size:8.5px;font-weight:600;letter-spacing:.03em;padding:2px 5px;border-radius:4px;{{ item.phaseStyle }}">{{ item.phase }}</span>
+          </div>
+        </sc-for>
+      </sc-for>
+    </div>
+
+    <div style="padding:12px 16px;border-top:1px solid rgba(255,255,255,.08);display:flex;align-items:center;gap:9px">
+      <div style="width:30px;height:30px;border-radius:50%;background:var(--gold);color:var(--indigo);font-weight:700;font-size:12px;display:flex;align-items:center;justify-content:center;font-family:var(--head)">P</div>
+      <div style="flex:1;min-width:0">
+        <div style="font-size:12px;color:#fff;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">Priya Nair</div>
+        <div style="font-size:10px;color:#6f7ba0">Compliance Head · Approver</div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- ============ MAIN ============ -->
+  <div style="flex:1;min-width:0;display:flex;flex-direction:column">
+
+    <!-- Topbar -->
+    <header style="height:60px;flex:0 0 60px;background:var(--white);border-bottom:1px solid var(--line);display:flex;align-items:center;gap:16px;padding:0 26px;position:sticky;top:0;z-index:40">
+      <div style="flex:1;min-width:0">
+        <div style="font-size:11px;color:var(--slate-3)">{{ crumb }}</div>
+        <div style="font-family:var(--head);font-size:17px;font-weight:600;color:var(--indigo);line-height:1.1">{{ screenTitle }}</div>
+      </div>
+
+      <!-- Tenant switcher -->
+      <div style="position:relative">
+        <div onClick="{{ toggleTenants }}" style="display:flex;align-items:center;gap:9px;padding:6px 11px;border:1px solid var(--line);border-radius:9px;cursor:pointer;background:var(--white)">
+          <span style="width:26px;height:26px;border-radius:7px;background:{{ tenant.color }};color:#fff;font-weight:700;font-size:11px;display:flex;align-items:center;justify-content:center;font-family:var(--head)">{{ tenant.mark }}</span>
+          <div style="line-height:1.15">
+            <div style="font-size:12.5px;font-weight:600;color:var(--slate)">{{ tenant.name }}</div>
+            <div style="font-size:10px;color:var(--slate-3)">{{ tenant.sector }}</div>
+          </div>
+          <span style="color:var(--slate-3);font-size:10px">▾</span>
+        </div>
+        <sc-if value="{{ tenantsOpen }}" hint-placeholder-val="{{ false }}">
+          <div style="position:absolute;top:46px;right:0;width:280px;background:#fff;border:1px solid var(--line);border-radius:12px;box-shadow:var(--sh-3);padding:6px;z-index:60">
+            <div style="font-size:10px;color:var(--slate-3);padding:7px 9px 4px;letter-spacing:.04em;text-transform:uppercase;font-weight:600">Switch client · demo tenants</div>
+            <sc-for list="{{ tenants }}" as="t" hint-placeholder-count="3">
+              <div onClick="{{ t.onSelect }}" style="{{ t.rowStyle }}">
+                <span style="width:28px;height:28px;border-radius:7px;background:{{ t.color }};color:#fff;font-weight:700;font-size:11px;display:flex;align-items:center;justify-content:center;font-family:var(--head)">{{ t.mark }}</span>
+                <div style="flex:1">
+                  <div style="font-size:13px;font-weight:600;color:var(--slate)">{{ t.name }}</div>
+                  <div style="font-size:10.5px;color:var(--slate-3)">{{ t.sector }} · {{ t.employees }} employees</div>
+                </div>
+                <span style="font-size:13px;font-weight:700;color:{{ t.scoreColor }}">{{ t.score }}</span>
+              </div>
+            </sc-for>
+          </div>
+        </sc-if>
+      </div>
+
+      <div style="display:flex;align-items:center;gap:5px;padding:6px 10px;border:1px solid var(--line);border-radius:9px">
+        <span style="width:7px;height:7px;border-radius:50%;background:var(--teal);animation:pulse 1.8s infinite"></span>
+        <span style="font-size:11px;color:var(--slate-2);font-weight:500">{{ tenant.env }}</span>
+      </div>
+      <div onClick="{{ toggleKill }}" style="{{ killStyle }}" title="Global kill switch">⏻ Kill switch</div>
+    </header>
+
+    <!-- Kill banner -->
+    <sc-if value="{{ killOn }}" hint-placeholder-val="{{ false }}">
+      <div style="background:var(--ember);color:#fff;padding:9px 26px;font-size:12.5px;font-weight:600;display:flex;align-items:center;gap:10px">⏻ KILL SWITCH ENGAGED — all in-flight agent execution halted globally. <span onClick="{{ toggleKill }}" style="margin-left:auto;text-decoration:underline;cursor:pointer;font-weight:500">Disengage</span></div>
+    </sc-if>
+
+    <!-- Scroll region -->
+    <main style="flex:1;overflow-y:auto;padding:26px 30px 60px">
+
+      <!-- ===== DASHBOARD ===== -->
+      <sc-if value="{{ isDashboard }}" hint-placeholder-val="{{ true }}">
+        <div style="max-width:1180px;margin:0 auto;animation:fadeUp .3s ease">
+          <!-- posture hero -->
+          <div style="display:grid;grid-template-columns:300px minmax(0,1fr);gap:18px;margin-bottom:18px">
+            <div style="background:var(--indigo);border-radius:var(--r-lg);padding:24px;color:#fff;position:relative;overflow:hidden">
+              <div style="font-size:11px;color:var(--teal);letter-spacing:.05em;text-transform:uppercase;font-weight:600">Compliance posture</div>
+              <div style="display:flex;align-items:baseline;gap:6px;margin-top:10px">
+                <span style="font-family:var(--head);font-size:62px;font-weight:700;line-height:1">{{ tenant.score }}</span>
+                <span style="font-size:20px;color:#8a97b8">/100</span>
+              </div>
+              <div style="height:7px;background:rgba(255,255,255,.12);border-radius:20px;margin-top:14px;overflow:hidden">
+                <div style="height:100%;width:{{ tenant.scorePct }};background:linear-gradient(90deg,var(--teal),var(--gold));border-radius:20px;animation:barGrow 1s ease"></div>
+              </div>
+              <div style="display:flex;justify-content:space-between;margin-top:12px;font-size:11.5px;color:#a9b3ce">
+                <span>{{ tenant.controlsPassing }}/43 controls passing</span>
+                <span style="color:var(--teal)">▲ {{ tenant.trend }} vs last scan</span>
+              </div>
+              <div style="margin-top:18px;padding-top:14px;border-top:1px solid rgba(255,255,255,.1);font-size:11px;color:#a9b3ce">Last full assessment {{ tenant.lastScan }} · Parikshan v1.4 · Library v{{ tenant.libVersion }}</div>
+            </div>
+
+            <div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;min-width:0">
+              <sc-for list="{{ kpis }}" as="k" hint-placeholder-count="6">
+                <div onClick="{{ k.onClick }}" style="background:#fff;border:1px solid var(--line);border-radius:var(--r);padding:16px 17px;cursor:pointer;transition:box-shadow .15s" style-hover="box-shadow:var(--sh-2)">
+                  <div style="display:flex;align-items:center;justify-content:space-between">
+                    <span style="font-size:11px;color:var(--slate-3);font-weight:500">{{ k.label }}</span>
+                    <span style="font-size:8.5px;font-weight:600;padding:1.5px 5px;border-radius:4px;{{ k.tagStyle }}">{{ k.tag }}</span>
+                  </div>
+                  <div style="font-family:var(--head);font-size:31px;font-weight:700;color:{{ k.color }};margin-top:7px;line-height:1">{{ k.value }}</div>
+                  <div style="font-size:11px;color:var(--slate-3);margin-top:4px">{{ k.sub }}</div>
+                </div>
+              </sc-for>
+            </div>
+          </div>
+
+          <div style="display:grid;grid-template-columns:minmax(0,1fr) 340px;gap:18px">
+            <div style="display:flex;flex-direction:column;gap:18px">
+              <!-- gaps by severity -->
+              <div style="background:#fff;border:1px solid var(--line);border-radius:var(--r-lg);padding:20px 22px">
+                <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
+                  <div style="font-family:var(--head);font-size:15px;font-weight:600;color:var(--indigo)">Open gaps by domain</div>
+                  <a onClick="{{ goAssessment }}" style="font-size:12px;cursor:pointer">Open assessment →</a>
+                </div>
+                <sc-for list="{{ gapDomains }}" as="g" hint-placeholder-count="6">
+                  <div style="display:flex;align-items:center;gap:14px;margin-bottom:13px">
+                    <div style="width:150px;flex:0 0 150px;font-size:12.5px;color:var(--slate);font-weight:500">{{ g.name }}</div>
+                    <div style="flex:1;height:22px;background:var(--mist);border-radius:6px;position:relative;overflow:hidden">
+                      <div style="height:100%;width:{{ g.pct }};background:{{ g.color }};border-radius:6px;animation:barGrow 1s ease"></div>
+                    </div>
+                    <div style="width:90px;flex:0 0 90px;text-align:right;font-size:11.5px;color:var(--slate-2)"><b style="color:var(--slate)">{{ g.open }}</b> open · {{ g.total }}</div>
+                  </div>
+                </sc-for>
+              </div>
+
+              <!-- pending approvals -->
+              <div style="background:#fff;border:1px solid var(--line);border-radius:var(--r-lg);padding:20px 22px">
+                <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
+                  <div style="font-family:var(--head);font-size:15px;font-weight:600;color:var(--indigo)">Pending your approval</div>
+                  <span style="font-size:11px;background:var(--gold-tint);color:#8a6d10;padding:3px 9px;border-radius:20px;font-weight:600">Karya is waiting</span>
+                </div>
+                <sc-for list="{{ pendingPlans }}" as="p" hint-placeholder-count="2">
+                  <div onClick="{{ goApproval }}" style="display:flex;align-items:center;gap:14px;padding:13px;border:1px solid var(--line);border-radius:var(--r);margin-bottom:10px;cursor:pointer" style-hover="border-color:var(--teal)">
+                    <div style="width:38px;height:38px;border-radius:9px;background:var(--indigo);color:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;font-family:var(--head)"><span style="font-size:15px;font-weight:700;line-height:1">{{ p.count }}</span><span style="font-size:7px;color:#8a97b8">actions</span></div>
+                    <div style="flex:1">
+                      <div style="font-size:13.5px;font-weight:600;color:var(--slate)">{{ p.title }}</div>
+                      <div style="font-size:11.5px;color:var(--slate-3);margin-top:2px">Blast radius {{ p.blast }} · Sudhaar · dry-run ✓</div>
+                    </div>
+                    <span style="font-size:9px;font-weight:600;padding:3px 8px;border-radius:5px;{{ p.riskStyle }}">{{ p.risk }}</span>
+                    <span style="color:var(--teal);font-size:13px">→</span>
+                  </div>
+                </sc-for>
+              </div>
+            </div>
+
+            <!-- right column -->
+            <div style="display:flex;flex-direction:column;gap:18px">
+              <div style="background:#fff;border:1px solid var(--line);border-radius:var(--r-lg);padding:20px 22px">
+                <div style="font-family:var(--head);font-size:15px;font-weight:600;color:var(--indigo);margin-bottom:14px">Agent activity</div>
+                <sc-for list="{{ agentFeed }}" as="a" hint-placeholder-count="5">
+                  <div style="display:flex;gap:11px;margin-bottom:15px">
+                    <span style="width:9px;height:9px;border-radius:50%;flex:0 0 9px;margin-top:4px;background:{{ a.dot }};{{ a.anim }}"></span>
+                    <div style="flex:1">
+                      <div style="font-size:12.5px;color:var(--slate)"><b style="color:var(--indigo)">{{ a.agent }}</b> {{ a.text }}</div>
+                      <div style="font-size:10.5px;color:var(--slate-3);margin-top:2px">{{ a.time }}</div>
+                    </div>
+                  </div>
+                </sc-for>
+              </div>
+
+              <div style="background:linear-gradient(160deg,var(--indigo),var(--indigo-700));border-radius:var(--r-lg);padding:20px 22px;color:#fff">
+                <div style="font-size:11px;color:var(--gold);letter-spacing:.05em;text-transform:uppercase;font-weight:600">DPDPA enforcement</div>
+                <div style="font-family:var(--head);font-size:34px;font-weight:700;margin-top:8px;line-height:1">{{ daysToEnforce }} days</div>
+                <div style="font-size:11.5px;color:#a9b3ce;margin-top:4px">until 13 May 2027 · ₹250 cr max penalty / contravention</div>
+                <div style="margin-top:14px;font-size:11px;color:#a9b3ce;border-top:1px solid rgba(255,255,255,.1);padding-top:12px">Nazar is monitoring MeitY / DPB. <a onClick="{{ goRegwatch }}" style="color:var(--teal);cursor:pointer">2 new signals →</a></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </sc-if>
+
+      <!-- ===== APPROVAL CONSOLE ===== -->
+      <sc-if value="{{ isApproval }}" hint-placeholder-val="{{ false }}">
+        <div style="max-width:1240px;margin:0 auto;animation:fadeUp .3s ease">
+          <!-- plan header -->
+          <div style="background:#fff;border:1px solid var(--line);border-radius:var(--r-lg);padding:18px 22px;margin-bottom:16px;display:flex;align-items:center;gap:20px">
+            <div style="flex:1">
+              <div style="display:flex;align-items:center;gap:10px">
+                <div style="font-family:var(--head);font-size:18px;font-weight:600;color:var(--indigo)">{{ plan.title }}</div>
+                <span style="font-family:var(--mono);font-size:10.5px;background:var(--mist);color:var(--slate-2);padding:2px 7px;border-radius:5px">{{ plan.id }} · v{{ plan.version }}</span>
+              </div>
+              <div style="font-size:12px;color:var(--slate-3);margin-top:5px">Planned by <b style="color:var(--slate-2)">Sudhaar</b> · {{ plan.gap }} · rollback plan generated for every action · Sudhaar holds no write access</div>
+            </div>
+            <div style="display:flex;gap:26px">
+              <div style="text-align:center"><div style="font-family:var(--head);font-size:22px;font-weight:700;color:var(--indigo)">{{ approvedCount }}/{{ plan.actionsTotal }}</div><div style="font-size:10px;color:var(--slate-3)">approved</div></div>
+              <div style="text-align:center"><div style="font-family:var(--head);font-size:22px;font-weight:700;color:var(--slate)">{{ plan.blastTotal }}</div><div style="font-size:10px;color:var(--slate-3)">records in scope</div></div>
+              <div style="text-align:center"><div style="font-family:var(--head);font-size:22px;font-weight:700;color:var(--amber)">{{ plan.envLabel }}</div><div style="font-size:10px;color:var(--slate-3)">environment</div></div>
+            </div>
+          </div>
+
+          <div style="display:grid;grid-template-columns:420px minmax(0,1fr);gap:16px;align-items:start">
+            <!-- action list -->
+            <div style="background:#fff;border:1px solid var(--line);border-radius:var(--r-lg);overflow:hidden">
+              <div style="display:flex;align-items:center;justify-content:space-between;padding:13px 16px;border-bottom:1px solid var(--line);background:var(--mist)">
+                <span style="font-size:12px;font-weight:600;color:var(--slate)">{{ plan.actionsTotal }} typed actions</span>
+                <span onClick="{{ toggleSelectAll }}" style="font-size:11.5px;color:var(--teal-dark);cursor:pointer;font-weight:600">{{ selectAllLabel }}</span>
+              </div>
+              <div style="max-height:560px;overflow-y:auto">
+                <sc-for list="{{ actions }}" as="a" hint-placeholder-count="6">
+                  <div onClick="{{ a.onSelect }}" style="{{ a.rowStyle }}">
+                    <div onClick="{{ a.onCheck }}" style="{{ a.checkStyle }}">{{ a.checkMark }}</div>
+                    <div style="flex:1;min-width:0">
+                      <div style="display:flex;align-items:center;gap:7px">
+                        <span style="font-family:var(--mono);font-size:9.5px;color:var(--slate-3)">{{ a.id }}</span>
+                        <span style="font-size:8.5px;font-weight:600;padding:1px 5px;border-radius:4px;{{ a.riskStyle }}">{{ a.risk }}</span>
+                        <sc-if value="{{ a.statusShow }}" hint-placeholder-val="{{ false }}"><span style="font-size:8.5px;font-weight:600;padding:1px 5px;border-radius:4px;{{ a.statusStyle }}">{{ a.statusLabel }}</span></sc-if>
+                      </div>
+                      <div style="font-size:12.5px;color:var(--slate);font-weight:500;margin-top:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ a.title }}</div>
+                      <div style="font-size:10.5px;color:var(--slate-3);margin-top:2px">{{ a.target }} · {{ a.blast }} records</div>
+                    </div>
+                  </div>
+                </sc-for>
+              </div>
+            </div>
+
+            <!-- detail -->
+            <div style="background:#fff;border:1px solid var(--line);border-radius:var(--r-lg);overflow:hidden">
+              <div style="padding:18px 22px;border-bottom:1px solid var(--line)">
+                <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">
+                  <span style="font-family:var(--mono);font-size:10px;color:var(--slate-3)">{{ sel.id }}</span>
+                  <span style="font-size:9px;font-weight:600;padding:2px 6px;border-radius:5px;{{ sel.riskStyle }}">{{ sel.risk }} RISK</span>
+                  <span style="font-size:9px;font-weight:600;padding:2px 6px;border-radius:5px;background:var(--mist);color:var(--slate-2)">{{ sel.type }}</span>
+                </div>
+                <div style="font-family:var(--head);font-size:19px;font-weight:600;color:var(--indigo)">{{ sel.title }}</div>
+              </div>
+
+              <div style="padding:20px 22px;display:flex;flex-direction:column;gap:18px">
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+                  <div><div style="font-size:10px;font-weight:600;letter-spacing:.05em;text-transform:uppercase;color:var(--slate-3);margin-bottom:5px">Why — gap it closes</div><div style="font-size:12.5px;color:var(--slate);line-height:1.5">{{ sel.why }}</div><div style="font-family:var(--mono);font-size:10.5px;color:var(--teal-dark);margin-top:6px">{{ sel.citation }}</div></div>
+                  <div><div style="font-size:10px;font-weight:600;letter-spacing:.05em;text-transform:uppercase;color:var(--slate-3);margin-bottom:5px">How risky · why</div><div style="font-size:12.5px;color:var(--slate);line-height:1.5">{{ sel.riskReason }}</div></div>
+                </div>
+
+                <!-- blast radius -->
+                <div style="display:flex;gap:10px">
+                  <sc-for list="{{ sel.blastCards }}" as="b" hint-placeholder-count="3">
+                    <div style="flex:1;background:var(--mist);border-radius:var(--r);padding:12px 14px"><div style="font-family:var(--head);font-size:19px;font-weight:700;color:var(--indigo)">{{ b.v }}</div><div style="font-size:10.5px;color:var(--slate-3)">{{ b.l }}</div></div>
+                  </sc-for>
+                </div>
+
+                <!-- dry run diff -->
+                <div>
+                  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:7px">
+                    <div style="font-size:10px;font-weight:600;letter-spacing:.05em;text-transform:uppercase;color:var(--slate-3)">What changes — dry-run diff</div>
+                    <span style="font-size:10px;color:var(--teal-dark);font-weight:600">✓ dry-run passed {{ sel.dryAge }} · hash {{ sel.dryHash }}</span>
+                  </div>
+                  <div style="border:1px solid var(--line);border-radius:var(--r);overflow:hidden;font-family:var(--mono);font-size:11.5px">
+                    <sc-for list="{{ sel.diff }}" as="d" hint-placeholder-count="4">
+                      <div style="{{ d.style }}"><span style="width:16px;display:inline-block;color:var(--slate-3)">{{ d.sign }}</span>{{ d.text }}</div>
+                    </sc-for>
+                  </div>
+                </div>
+
+                <!-- rollback -->
+                <div style="background:var(--teal-tint);border:1px solid #bfe8e3;border-radius:var(--r);padding:14px 16px">
+                  <div style="display:flex;align-items:center;gap:7px;margin-bottom:6px"><span style="font-size:13px">↺</span><span style="font-size:11px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;color:var(--teal-dark)">How to undo — generated rollback plan</span></div>
+                  <div style="font-size:12.5px;color:var(--slate);line-height:1.55">{{ sel.rollback }}</div>
+                  <div style="font-size:10.5px;color:var(--teal-dark);margin-top:6px;font-family:var(--mono)">rollback validated executable · dry-run-able · {{ sel.rollbackRef }}</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- approval bar -->
+          <div style="position:sticky;bottom:0;margin-top:16px;background:#fff;border:1px solid var(--line);border-radius:var(--r-lg);box-shadow:var(--sh-3);padding:14px 20px;display:flex;align-items:center;gap:14px">
+            <div style="flex:1;font-size:12px;color:var(--slate-2)"><b style="color:var(--indigo)">{{ selectedCount }} selected</b> · Approval issues a signed, scope-bound, single-use token validated per action — <span style="color:var(--slate-3)">execution is architecturally impossible without it</span></div>
+            <div onClick="{{ rejectSelected }}" style="padding:10px 16px;border:1px solid var(--ember);color:var(--ember);border-radius:9px;font-size:12.5px;font-weight:600;cursor:pointer">Reject with reason</div>
+            <div onClick="{{ deferSelected }}" style="padding:10px 16px;border:1px solid var(--line);color:var(--slate-2);border-radius:9px;font-size:12.5px;font-weight:600;cursor:pointer">Defer</div>
+            <div onClick="{{ approveSelected }}" style="padding:10px 18px;background:var(--teal);color:#fff;border-radius:9px;font-size:12.5px;font-weight:700;cursor:pointer;box-shadow:0 2px 10px rgba(15,181,165,.35)">Approve selected → Karya executes</div>
+            <div onClick="{{ approveAll }}" style="padding:10px 18px;background:var(--indigo);color:#fff;border-radius:9px;font-size:12.5px;font-weight:700;cursor:pointer">Approve all {{ plan.actionsTotal }}</div>
+          </div>
+        </div>
+      </sc-if>
+
+      <!-- ===== DSAR ===== -->
+      <sc-if value="{{ isDsar }}" hint-placeholder-val="{{ false }}">
+        <div style="max-width:1180px;margin:0 auto;animation:fadeUp .3s ease">
+          <div style="display:grid;grid-template-columns:minmax(0,1fr) 440px;gap:16px;align-items:start">
+            <div style="background:#fff;border:1px solid var(--line);border-radius:var(--r-lg);overflow:hidden">
+              <div style="display:flex;align-items:center;justify-content:space-between;padding:13px 16px;border-bottom:1px solid var(--line);background:var(--mist)"><span style="font-size:12px;font-weight:600;color:var(--slate)">Rights requests · statutory clock monitored</span><span style="font-size:11px;background:var(--indigo);color:#fff;padding:4px 10px;border-radius:20px;cursor:pointer">+ New request</span></div>
+              <sc-for list="{{ dsar }}" as="d" hint-placeholder-count="5">
+                <div onClick="{{ d.onClick }}" style="{{ d.rowStyle }}">
+                  <div style="width:36px;height:36px;border-radius:9px;background:var(--mist);color:var(--slate-2);display:flex;align-items:center;justify-content:center;font-family:var(--head);font-weight:700;font-size:13px">{{ d.principalInitial }}</div>
+                  <div style="flex:1;min-width:0">
+                    <div style="display:flex;align-items:center;gap:8px"><span style="font-size:13px;font-weight:600;color:var(--slate)">{{ d.principal }}</span><span style="font-size:9px;font-weight:600;padding:1px 6px;border-radius:4px;color:#fff;background:{{ d.typeColor }}">{{ d.type }}</span></div>
+                    <div style="font-family:var(--mono);font-size:10px;color:var(--slate-3);margin-top:2px">{{ d.id }} · recv {{ d.recv }} · {{ d.stageLabel }}</div>
+                  </div>
+                  <span style="font-size:11px;font-weight:600;color:{{ d.slaColor }}">{{ d.slaLabel }}</span>
+                </div>
+              </sc-for>
+            </div>
+
+            <!-- workflow -->
+            <div style="background:#fff;border:1px solid var(--line);border-radius:var(--r-lg);overflow:hidden;position:sticky;top:0">
+              <div style="padding:16px 20px;border-bottom:1px solid var(--line)">
+                <div style="display:flex;align-items:center;justify-content:space-between"><span style="font-family:var(--head);font-size:16px;font-weight:600;color:var(--indigo)">{{ dsarSel.principal }}</span><span style="font-size:9px;font-weight:600;padding:2px 7px;border-radius:5px;color:#fff;background:{{ dsarSel.typeColor }}">{{ dsarSel.type }}</span></div>
+                <div style="font-family:var(--mono);font-size:10.5px;color:var(--slate-3);margin-top:3px">{{ dsarSel.id }} · {{ dsarSel.systems }} systems · {{ dsarSel.slaLabel }}</div>
+              </div>
+              <div style="padding:18px 20px">
+                <sc-for list="{{ dsarWorkflow }}" as="w" hint-placeholder-count="5">
+                  <div style="display:flex;gap:13px">
+                    <div style="display:flex;flex-direction:column;align-items:center">
+                      <span style="width:26px;height:26px;flex:0 0 26px;border-radius:50%;background:{{ w.dotBg }};color:{{ w.dotColor }};display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;font-family:var(--head)">{{ w.mark }}</span>
+                      <sc-if value="{{ w.notLast }}" hint-placeholder-val="{{ true }}"><span style="width:2px;flex:1;background:var(--line-2);min-height:12px"></span></sc-if>
+                    </div>
+                    <div style="flex:1;padding-bottom:14px"><div style="font-size:12.5px;font-weight:600;color:{{ w.titleColor }}">{{ w.label }}</div><div style="font-size:11px;color:var(--slate-3);margin-top:2px;line-height:1.45">{{ w.detail }}</div></div>
+                  </div>
+                </sc-for>
+                <div onClick="{{ advanceDsar }}" style="{{ dsarBtnStyle }}">{{ dsarBtnLabel }}</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </sc-if>
+
+      <!-- ===== BREACH ===== -->
+      <sc-if value="{{ isBreach }}" hint-placeholder-val="{{ false }}">
+        <div style="max-width:1180px;margin:0 auto;animation:fadeUp .3s ease">
+          <div style="display:grid;grid-template-columns:340px minmax(0,1fr);gap:16px;align-items:start">
+            <div style="display:flex;flex-direction:column;gap:16px">
+              <div style="background:var(--ember);border-radius:var(--r-lg);padding:22px 24px;color:#fff">
+                <div style="font-size:11px;letter-spacing:.05em;text-transform:uppercase;font-weight:600;opacity:.9">72-hour DPB clock · INC-0042</div>
+                <div style="font-family:var(--mono);font-size:44px;font-weight:500;margin-top:8px;line-height:1;letter-spacing:.02em">{{ breachClock }}</div>
+                <div style="font-size:11.5px;opacity:.9;margin-top:6px">remaining to notify the Data Protection Board</div>
+                <div style="height:6px;background:rgba(255,255,255,.25);border-radius:20px;margin-top:14px;overflow:hidden"><div style="height:100%;width:{{ breachPctStr }};background:#fff;border-radius:20px"></div></div>
+              </div>
+              <div style="background:#fff;border:1px solid var(--line);border-radius:var(--r-lg);padding:18px 20px">
+                <div style="font-size:11px;color:var(--slate-3);text-transform:uppercase;letter-spacing:.04em;font-weight:600;margin-bottom:12px">Impact</div>
+                <div style="display:flex;flex-direction:column;gap:12px">
+                  <div style="display:flex;justify-content:space-between;font-size:12.5px"><span style="color:var(--slate-2)">Affected principals</span><b style="color:var(--indigo)">~2,100</b></div>
+                  <div style="display:flex;justify-content:space-between;font-size:12.5px"><span style="color:var(--slate-2)">Data exposed</span><b style="color:var(--ember)">PAN · contact</b></div>
+                  <div style="display:flex;justify-content:space-between;font-size:12.5px"><span style="color:var(--slate-2)">Status</span><b style="color:var(--teal-dark)">Contained</b></div>
+                  <div style="display:flex;justify-content:space-between;font-size:12.5px"><span style="color:var(--slate-2)">Forensic logs</span><b style="color:var(--teal-dark)">Warm · answerable</b></div>
+                </div>
+              </div>
+            </div>
+
+            <div style="background:#fff;border:1px solid var(--line);border-radius:var(--r-lg);overflow:hidden">
+              <div style="display:flex;align-items:center;justify-content:space-between;padding:16px 22px;border-bottom:1px solid var(--line)"><span style="font-family:var(--head);font-size:16px;font-weight:600;color:var(--indigo)">Incident timeline & 72h workflow</span><span style="padding:8px 14px;background:var(--indigo);color:#fff;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer">Review DPB notification →</span></div>
+              <div style="padding:20px 22px">
+                <sc-for list="{{ breachTimeline }}" as="e" hint-placeholder-count="6">
+                  <div style="display:flex;gap:14px">
+                    <div style="display:flex;flex-direction:column;align-items:center"><span style="{{ e.dotStyle }}"></span><sc-if value="{{ e.notLast }}" hint-placeholder-val="{{ true }}"><span style="width:2px;flex:1;background:var(--line-2);min-height:16px"></span></sc-if></div>
+                    <div style="flex:1;padding-bottom:18px">
+                      <div style="display:flex;align-items:center;gap:10px"><span style="font-size:13px;font-weight:600;color:{{ e.titleColor }}">{{ e.label }}</span><span style="font-family:var(--mono);font-size:10px;color:var(--slate-3)">{{ e.t }}</span></div>
+                      <div style="font-size:11.5px;color:var(--slate-3);margin-top:3px;line-height:1.45">{{ e.detail }}</div>
+                    </div>
+                  </div>
+                </sc-for>
+              </div>
+            </div>
+          </div>
+        </div>
+      </sc-if>
+
+      <!-- ===== CONSENT ===== -->
+      <sc-if value="{{ isConsent }}" hint-placeholder-val="{{ false }}">
+        <div style="max-width:1180px;margin:0 auto;animation:fadeUp .3s ease">
+          <div style="display:grid;grid-template-columns:minmax(0,1fr) 400px;gap:16px;align-items:start">
+            <div style="display:flex;flex-direction:column;gap:16px">
+              <div style="display:flex;gap:14px">
+                <div style="flex:1;background:#fff;border:1px solid var(--line);border-radius:var(--r);padding:16px 18px"><div style="font-family:var(--head);font-size:24px;font-weight:700;color:var(--teal-dark)">182,400</div><div style="font-size:11px;color:var(--slate-3)">active consents</div></div>
+                <div style="flex:1;background:#fff;border:1px solid var(--line);border-radius:var(--r);padding:16px 18px"><div style="font-family:var(--head);font-size:24px;font-weight:700;color:#8a6d10">1,204</div><div style="font-size:11px;color:var(--slate-3)">withdrawals (30d)</div></div>
+                <div style="flex:1;background:#fff;border:1px solid var(--line);border-radius:var(--r);padding:16px 18px"><div style="font-family:var(--head);font-size:24px;font-weight:700;color:var(--gold)">7 yrs</div><div style="font-size:11px;color:var(--slate-3)">ledger retention</div></div>
+              </div>
+              <div style="background:#fff;border:1px solid var(--line);border-radius:var(--r-lg);overflow:hidden">
+                <div style="padding:14px 20px;border-bottom:1px solid var(--line);background:var(--mist);font-size:12px;font-weight:600;color:var(--slate)">Consent ledger — recent events (immutable, 7-yr retention)</div>
+                <div style="font-family:var(--mono);font-size:11px">
+                  <div style="padding:9px 20px;border-bottom:1px solid var(--line-2);display:flex;justify-content:space-between"><span style="color:var(--slate)">p-77213 · GRANTED · p1,p2,p3,p5 · notice v3</span><span style="color:var(--slate-3)">11:40:02</span></div>
+                  <div style="padding:9px 20px;border-bottom:1px solid var(--line-2);display:flex;justify-content:space-between"><span style="color:var(--ember)">p-77198 · WITHDRAWN · p4 marketing</span><span style="color:var(--slate-3)">11:22:51</span></div>
+                  <div style="padding:9px 20px;border-bottom:1px solid var(--line-2);display:flex;justify-content:space-between"><span style="color:var(--slate)">p-77190 · GRANTED · p1,p2,p3 · notice v3 · hi</span><span style="color:var(--slate-3)">10:58:14</span></div>
+                  <div style="padding:9px 20px;display:flex;justify-content:space-between"><span style="color:#8a6d10">p-77181 · WITHDRAWN → erasure queued (RTS-04)</span><span style="color:var(--slate-3)">10:31:09</span></div>
+                </div>
+              </div>
+            </div>
+
+            <!-- live notice preview -->
+            <div style="border:1px solid var(--line);border-radius:var(--r-lg);overflow:hidden;box-shadow:var(--sh-2);position:sticky;top:0">
+              <div style="background:var(--indigo);padding:14px 18px;display:flex;align-items:center;justify-content:space-between">
+                <span style="color:#fff;font-size:12px;font-weight:600">Consent notice · live preview</span>
+                <div style="display:flex;background:rgba(255,255,255,.12);border-radius:7px;padding:2px">
+                  <span onClick="{{ setLangEn }}" style="{{ langEnStyle }}">EN</span>
+                  <span onClick="{{ setLangHi }}" style="{{ langHiStyle }}">हिन्दी</span>
+                </div>
+              </div>
+              <div style="background:#fff;padding:18px 20px">
+                <div style="font-family:var(--head);font-size:15px;font-weight:600;color:var(--indigo);margin-bottom:4px">{{ consentHeading }}</div>
+                <div style="font-size:11.5px;color:var(--slate-3);margin-bottom:14px;line-height:1.5">{{ consentSub }}</div>
+                <sc-for list="{{ consentPurposes }}" as="p" hint-placeholder-count="6">
+                  <div style="display:flex;align-items:center;gap:12px;padding:11px 0;border-bottom:1px solid var(--line-2)">
+                    <div style="flex:1"><div style="font-size:12.5px;color:var(--slate);font-weight:500">{{ p.label }}</div><div style="font-size:10px;color:var(--slate-3)">{{ p.reqLabel }}</div></div>
+                    <div onClick="{{ p.onToggle }}" style="{{ p.toggleStyle }}"><span style="{{ p.knobStyle }}"></span></div>
+                  </div>
+                </sc-for>
+                <div style="margin-top:16px;padding:11px;background:var(--teal);color:#fff;text-align:center;border-radius:8px;font-size:12.5px;font-weight:600;cursor:pointer">{{ consentBtn }}</div>
+                <div style="font-size:9.5px;color:var(--slate-3);text-align:center;margin-top:8px;font-family:var(--mono)">every grant/withdrawal → consent ledger · Lekha</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </sc-if>
+
+      <!-- ===== ASSESSMENT ===== -->
+      <sc-if value="{{ isAssessment }}" hint-placeholder-val="{{ false }}">
+        <div style="max-width:1180px;margin:0 auto;animation:fadeUp .3s ease">
+          <!-- run pipeline -->
+          <div style="background:var(--indigo);border-radius:var(--r-lg);padding:20px 24px;color:#fff;margin-bottom:18px">
+            <div style="display:flex;align-items:center;gap:16px;margin-bottom:16px">
+              <div style="flex:1">
+                <div style="font-family:var(--head);font-size:16px;font-weight:600">Assessment pipeline</div>
+                <div style="font-size:11.5px;color:#a9b3ce;margin-top:2px">Parikshan scores against control library v{{ tenant.libVersion }} · agents propose, you approve</div>
+              </div>
+              <div onClick="{{ runAssessment }}" style="{{ runBtnStyle }}">{{ runBtnLabel }}</div>
+            </div>
+            <div style="display:flex;align-items:center;gap:0">
+              <sc-for list="{{ pipeline }}" as="p" hint-placeholder-count="5">
+                <div style="flex:1;display:flex;flex-direction:column;align-items:center;text-align:center;position:relative">
+                  <div style="width:34px;height:34px;border-radius:50%;background:{{ p.dotBg }};color:#04322d;display:flex;align-items:center;justify-content:center;font-family:var(--head);font-weight:700;font-size:13px;{{ p.anim }}">{{ p.mark }}</div>
+                  <div style="font-size:12px;font-weight:600;margin-top:8px;color:#fff">{{ p.agent }}</div>
+                  <div style="font-size:10px;color:#8a97b8">{{ p.label }} · {{ p.hi }}</div>
+                </div>
+              </sc-for>
+            </div>
+            <sc-if value="{{ assessRunning }}" hint-placeholder-val="{{ false }}">
+              <div style="margin-top:14px;text-align:center;font-size:12px;color:var(--teal)">● {{ pipelineMsg }}</div>
+            </sc-if>
+          </div>
+
+          <!-- summary + exposure -->
+          <div style="display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr) 320px;gap:16px;margin-bottom:18px">
+            <div style="background:#fff;border:1px solid var(--line);border-radius:var(--r-lg);padding:18px 20px">
+              <div style="font-size:11px;color:var(--slate-3);text-transform:uppercase;letter-spacing:.04em;font-weight:600;margin-bottom:12px">Control posture (showing 12 of 43)</div>
+              <div style="display:flex;gap:6px;height:12px;border-radius:20px;overflow:hidden;margin-bottom:12px">
+                <div style="flex:{{ passCount }};background:var(--teal)"></div>
+                <div style="flex:{{ partialCount }};background:var(--amber)"></div>
+                <div style="flex:{{ failCount }};background:var(--ember)"></div>
+              </div>
+              <div style="display:flex;gap:18px;font-size:12px">
+                <span><b style="color:var(--teal-dark);font-size:16px;font-family:var(--head)">{{ passCount }}</b> pass</span>
+                <span><b style="color:#8a6d10;font-size:16px;font-family:var(--head)">{{ partialCount }}</b> partial</span>
+                <span><b style="color:var(--ember);font-size:16px;font-family:var(--head)">{{ failCount }}</b> fail</span>
+              </div>
+            </div>
+            <div style="background:#fff;border:1px solid var(--line);border-radius:var(--r-lg);padding:18px 20px">
+              <div style="font-size:11px;color:var(--slate-3);text-transform:uppercase;letter-spacing:.04em;font-weight:600;margin-bottom:8px">SDF self-assessment</div>
+              <div style="font-family:var(--head);font-size:26px;font-weight:700;color:var(--indigo)">Not designated</div>
+              <div style="font-size:11.5px;color:var(--slate-3);margin-top:4px">Below SDF thresholds on volume + sensitivity. Re-evaluated each scan.</div>
+            </div>
+            <div style="background:var(--ember-tint);border:1px solid #f0cbc9;border-radius:var(--r-lg);padding:18px 20px">
+              <div style="font-size:11px;color:var(--ember);text-transform:uppercase;letter-spacing:.04em;font-weight:600;margin-bottom:6px">Penalty exposure estimate</div>
+              <div style="font-family:var(--head);font-size:30px;font-weight:700;color:var(--ember)">₹18–46 cr</div>
+              <div style="font-size:11px;color:#a03734;margin-top:4px">weighted across open gaps · max ₹250 cr / contravention · illustrative, not legal advice</div>
+            </div>
+          </div>
+
+          <!-- control table -->
+          <div style="background:#fff;border:1px solid var(--line);border-radius:var(--r-lg);overflow:hidden">
+            <div style="display:grid;grid-template-columns:90px 1fr 150px 110px 90px 70px;gap:10px;padding:11px 18px;background:var(--mist);border-bottom:1px solid var(--line);font-size:10px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;color:var(--slate-3)"><span>Control</span><span>Requirement</span><span>Domain</span><span>Citation</span><span>Evidence</span><span>Status</span></div>
+            <sc-for list="{{ controls }}" as="c" hint-placeholder-count="12">
+              <div style="display:grid;grid-template-columns:90px 1fr 150px 110px 90px 70px;gap:10px;padding:12px 18px;border-bottom:1px solid var(--line-2);align-items:center">
+                <span style="font-family:var(--mono);font-size:11px;color:var(--indigo);font-weight:500">{{ c.id }}</span>
+                <div><div style="font-size:12.5px;color:var(--slate);font-weight:500">{{ c.name }}</div><div style="height:5px;background:var(--mist);border-radius:20px;margin-top:5px;max-width:160px"><div style="{{ c.barStyle }}"></div></div></div>
+                <span style="font-size:11px;color:var(--slate-2)">{{ c.domain }}</span>
+                <span style="font-family:var(--mono);font-size:10.5px;color:var(--slate-3)">{{ c.cite }}</span>
+                <sc-if value="{{ c.hasEv }}" hint-placeholder-val="{{ true }}"><span style="font-family:var(--mono);font-size:10px;color:#8a6d10;background:var(--gold-tint);padding:2px 6px;border-radius:5px;justify-self:start">✦ {{ c.ev }}</span></sc-if>
+                <sc-if value="{{ c.noEv }}" hint-placeholder-val="{{ false }}"><span style="font-size:10.5px;color:var(--slate-3)">—</span></sc-if>
+                <span style="font-size:9px;font-weight:700;padding:3px 7px;border-radius:5px;justify-self:start;color:{{ c.stC }};background:{{ c.stBg }}">{{ c.stL }}</span>
+              </div>
+            </sc-for>
+          </div>
+        </div>
+      </sc-if>
+
+      <!-- ===== EVIDENCE EXPLORER ===== -->
+      <sc-if value="{{ isEvidence }}" hint-placeholder-val="{{ false }}">
+        <div style="max-width:1180px;margin:0 auto;animation:fadeUp .3s ease">
+          <div style="display:flex;align-items:center;gap:14px;margin-bottom:18px;flex-wrap:wrap">
+            <div style="background:#fff;border:1px solid var(--line);border-radius:var(--r);padding:12px 16px;flex:1;min-width:160px"><div style="font-family:var(--head);font-size:22px;font-weight:700;color:var(--gold)">1,284</div><div style="font-size:11px;color:var(--slate-3)">sealed artifacts (WORM)</div></div>
+            <div style="background:#fff;border:1px solid var(--line);border-radius:var(--r);padding:12px 16px;flex:1;min-width:160px"><div style="font-family:var(--head);font-size:22px;font-weight:700;color:var(--indigo)">9</div><div style="font-size:11px;color:var(--slate-3)">evidence packs assembled</div></div>
+            <div style="background:#fff;border:1px solid var(--line);border-radius:var(--r);padding:12px 16px;flex:1;min-width:160px"><div style="font-family:var(--head);font-size:22px;font-weight:700;color:var(--teal-dark)">✓ verified</div><div style="font-size:11px;color:var(--slate-3)">content-hash integrity</div></div>
+            <div style="padding:11px 16px;background:var(--indigo);color:#fff;border-radius:var(--r);font-size:12.5px;font-weight:600;cursor:pointer">⬇ Export evidence pack (DPB)</div>
+          </div>
+
+          <div style="display:grid;grid-template-columns:minmax(0,1fr) 380px;gap:16px;align-items:start">
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+              <sc-for list="{{ evidence }}" as="e" hint-placeholder-count="6">
+                <div onClick="{{ e.onClick }}" style="{{ e.cardStyle }}">
+                  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+                    <span style="font-family:var(--mono);font-size:10.5px;color:var(--slate-3)">{{ e.id }}</span>
+                    <span style="{{ sealBadge }}">● sealed</span>
+                  </div>
+                  <div style="font-size:13px;font-weight:600;color:var(--slate);line-height:1.35;margin-bottom:8px">{{ e.title }}</div>
+                  <div style="display:flex;align-items:center;gap:7px;flex-wrap:wrap;font-size:10px">
+                    <span style="color:{{ e.typeColor }};font-weight:600;text-transform:uppercase;letter-spacing:.03em">{{ e.type }}</span>
+                    <span style="color:var(--slate-3)">· {{ e.agent }}</span>
+                    <span style="color:var(--slate-3)">· {{ e.size }}</span>
+                  </div>
+                  <div style="font-family:var(--mono);font-size:9.5px;color:var(--slate-3);margin-top:8px;padding-top:8px;border-top:1px solid var(--line-2)">sha256 {{ e.hash }}…</div>
+                </div>
+              </sc-for>
+            </div>
+
+            <!-- artifact detail -->
+            <div style="background:#fff;border:1px solid var(--gold);border-radius:var(--r-lg);overflow:hidden;position:sticky;top:0">
+              <div style="background:linear-gradient(150deg,#3a3416,#151107);color:#fff;padding:18px 20px">
+                <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px"><span style="font-family:var(--mono);font-size:11px;color:var(--gold)">{{ evSel.id }}</span><span style="font-size:10px;font-weight:600;color:#1a140a;background:var(--gold);padding:3px 9px;border-radius:20px">✦ PROOF SEALED</span></div>
+                <div style="font-family:var(--head);font-size:17px;font-weight:600;line-height:1.3">{{ evSel.title }}</div>
+              </div>
+              <div style="padding:18px 20px;display:flex;flex-direction:column;gap:14px">
+                <div style="font-size:12.5px;color:var(--slate);line-height:1.55">{{ evSel.desc }}</div>
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px 14px;font-size:12px">
+                  <div><div style="color:var(--slate-3);font-size:10px;margin-bottom:2px">Collected by</div><b>{{ evSel.agent }}</b></div>
+                  <div><div style="color:var(--slate-3);font-size:10px;margin-bottom:2px">Sealed</div><b>{{ evSel.date }}</b></div>
+                  <div><div style="color:var(--slate-3);font-size:10px;margin-bottom:2px">Size</div><b>{{ evSel.size }}</b></div>
+                  <div><div style="color:var(--slate-3);font-size:10px;margin-bottom:2px">Type</div><b style="text-transform:capitalize">{{ evSel.type }}</b></div>
+                </div>
+                <div><div style="color:var(--slate-3);font-size:10px;margin-bottom:5px">Content hash (sha256)</div><div style="font-family:var(--mono);font-size:11px;background:var(--mist);padding:9px 11px;border-radius:7px;color:var(--slate);word-break:break-all">{{ evSel.hash }}b2c4a7e9f10d</div></div>
+                <div><div style="color:var(--slate-3);font-size:10px;margin-bottom:6px">Satisfies controls</div><div style="display:flex;gap:6px;flex-wrap:wrap"><sc-for list="{{ evSel.links }}" as="c" hint-placeholder-count="2"><span style="font-family:var(--mono);font-size:10.5px;background:var(--teal-tint);color:var(--teal-dark);padding:3px 8px;border-radius:5px">{{ c }}</span></sc-for></div></div>
+                <div style="display:flex;gap:9px;margin-top:2px">
+                  <div style="flex:1;text-align:center;padding:9px;border:1px solid var(--teal);color:var(--teal-dark);border-radius:8px;font-size:12px;font-weight:600;cursor:pointer">Verify hash</div>
+                  <div style="flex:1;text-align:center;padding:9px;background:var(--indigo);color:#fff;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer">⬇ Export</div>
+                </div>
+                <div style="font-size:10.5px;color:var(--slate-3);text-align:center;font-family:var(--mono)">immutable · corrections appended, never overwritten (BR-5)</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </sc-if>
+
+      <!-- ===== AUDIT LEDGER ===== -->
+      <sc-if value="{{ isLedger }}" hint-placeholder-val="{{ false }}">
+        <div style="max-width:1180px;margin:0 auto;animation:fadeUp .3s ease">
+          <div style="display:flex;align-items:center;gap:12px;margin-bottom:16px;flex-wrap:wrap">
+            <div style="display:flex;align-items:center;gap:8px;background:var(--teal-tint);border:1px solid #bfe8e3;border-radius:20px;padding:6px 14px;font-size:12px;font-weight:600;color:var(--teal-dark)"><span style="width:8px;height:8px;border-radius:50%;background:var(--teal);animation:pulse 2s infinite"></span>Chain integrity verified from genesis · 48,102 entries</div>
+            <div style="font-size:11.5px;color:var(--slate-3)">Append-only · hash-chained · INSERT-only enforced by DB role, not app code (ADR-5)</div>
+            <div style="margin-left:auto;padding:8px 14px;border:1px solid var(--line);border-radius:8px;font-size:12px;font-weight:600;color:var(--slate-2);cursor:pointer;background:#fff">⬇ Export ledger for auditor</div>
+          </div>
+
+          <div style="display:grid;grid-template-columns:minmax(0,1fr) 440px;gap:16px;align-items:start">
+            <!-- ledger stream -->
+            <div style="background:#fff;border:1px solid var(--line);border-radius:var(--r-lg);overflow:hidden">
+              <div style="display:grid;grid-template-columns:60px 1fr 90px;gap:12px;padding:10px 16px;border-bottom:1px solid var(--line);background:var(--mist);font-size:10px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;color:var(--slate-3)"><span>Seq</span><span>Event · actor</span><span>Result</span></div>
+              <sc-for list="{{ ledger }}" as="l" hint-placeholder-count="8">
+                <div onClick="{{ l.onClick }}" style="{{ l.rowStyle }}">
+                  <span style="font-family:var(--mono);font-size:11px;color:var(--slate-3);width:60px;flex:0 0 60px">#{{ l.seq }}</span>
+                  <div style="flex:1;min-width:0">
+                    <div style="display:flex;align-items:center;gap:8px">
+                      <span style="width:7px;height:7px;border-radius:2px;background:{{ l.dot }}"></span>
+                      <span style="font-size:12.5px;font-weight:600;color:var(--slate)">{{ l.type }}</span>
+                      <span style="font-size:8.5px;font-weight:600;padding:1px 6px;border-radius:4px;{{ l.actorStyle }}">{{ l.actor }}</span>
+                      <sc-if value="{{ l.chainHead }}" hint-placeholder-val="{{ false }}"><span style="font-size:8.5px;color:var(--teal-dark)">◆ chain root</span></sc-if>
+                    </div>
+                    <div style="font-family:var(--mono);font-size:9.5px;color:var(--slate-3);margin-top:3px">{{ l.time }} · {{ l.corr }} · {{ l.target }} · H:{{ l.entryHash }}←{{ l.prevHash }}</div>
+                  </div>
+                  <span style="width:90px;flex:0 0 90px;font-size:11px;color:var(--teal-dark);font-weight:600">✓ {{ l.result }}</span>
+                </div>
+              </sc-for>
+            </div>
+
+            <!-- chain reconstruction -->
+            <div style="background:var(--indigo);border-radius:var(--r-lg);overflow:hidden;position:sticky;top:0">
+              <div style="padding:16px 20px;border-bottom:1px solid rgba(255,255,255,.1)">
+                <div style="font-size:10px;color:var(--teal);letter-spacing:.05em;text-transform:uppercase;font-weight:600">Reconstructed chain · {{ chainOpen }}</div>
+                <div style="font-family:var(--head);font-size:16px;font-weight:600;color:#fff;margin-top:4px">finding → … → closure</div>
+                <div style="font-size:11px;color:#a9b3ce;margin-top:4px">FR-10.3 — the full lifecycle, independently reconstructable</div>
+              </div>
+              <div style="padding:18px 20px">
+                <sc-for list="{{ chainSteps }}" as="s" hint-placeholder-count="7">
+                  <div style="display:flex;gap:13px">
+                    <div style="display:flex;flex-direction:column;align-items:center">
+                      <span style="width:26px;height:26px;flex:0 0 26px;border-radius:50%;background:{{ s.dot }};color:#04322d;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;font-family:var(--head)">{{ s.n }}</span>
+                      <sc-if value="{{ s.last }}" hint-placeholder-val="{{ false }}"><span></span></sc-if>
+                      <span style="width:2px;flex:1;background:rgba(255,255,255,.12);min-height:14px"></span>
+                    </div>
+                    <div style="flex:1;padding-bottom:16px">
+                      <div style="font-size:12.5px;font-weight:600;color:#fff">{{ s.k }}</div>
+                      <div style="font-size:11px;color:#a9b3ce;margin-top:2px;line-height:1.45">{{ s.detail }}</div>
+                      <div style="font-family:var(--mono);font-size:9.5px;color:#6f7ba0;margin-top:4px">{{ s.agent }} · {{ s.model }} · {{ s.hash }}</div>
+                    </div>
+                  </div>
+                </sc-for>
+              </div>
+            </div>
+          </div>
+        </div>
+      </sc-if>
+
+      <!-- ===== GENERIC MODULE SCREEN ===== -->
+      <sc-if value="{{ isGeneric }}" hint-placeholder-val="{{ false }}">
+        <div style="max-width:1120px;margin:0 auto;animation:fadeUp .3s ease">
+          <div style="background:linear-gradient(150deg,var(--indigo),var(--indigo-700));border-radius:var(--r-lg);padding:26px 28px;color:#fff;margin-bottom:20px">
+            <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">
+              <span style="font-size:9px;font-weight:600;letter-spacing:.04em;padding:3px 8px;border-radius:5px;background:var(--teal);color:#04322d">{{ gen.phase }}</span>
+              <sc-if value="{{ gen.agentShow }}" hint-placeholder-val="{{ false }}"><span style="font-size:11px;color:var(--teal)">Agent · {{ gen.agent }}</span></sc-if>
+              <span style="font-size:11px;color:#8a97b8">Autonomy {{ gen.autonomy }}</span>
+            </div>
+            <div style="display:flex;align-items:baseline;gap:12px"><div style="font-family:var(--head);font-size:26px;font-weight:700">{{ gen.title }}</div><div style="font-family:var(--head);font-size:18px;color:var(--teal)">{{ gen.hi }}</div></div>
+            <div style="font-size:13px;color:#c7cfe0;margin-top:8px;max-width:720px;line-height:1.55">{{ gen.desc }}</div>
+            <div style="margin-top:14px;display:inline-flex;align-items:center;gap:7px;font-size:11px;background:rgba(255,255,255,.08);padding:5px 11px;border-radius:20px"><span style="color:var(--gold)">◆</span> Sold standalone or bundled · module {{ gen.moduleId }}</div>
+          </div>
+          <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:16px">
+            <sc-for list="{{ gen.cards }}" as="c" hint-placeholder-count="4">
+              <div style="background:#fff;border:1px solid var(--line);border-radius:var(--r-lg);padding:20px 22px">
+                <div style="font-family:var(--head);font-size:14px;font-weight:600;color:var(--indigo);margin-bottom:12px">{{ c.h }}</div>
+                <sc-for list="{{ c.rows }}" as="r" hint-placeholder-count="3">
+                  <div style="display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid var(--line-2)">
+                    <span style="width:7px;height:7px;border-radius:2px;flex:0 0 7px;background:{{ r.dot }}"></span>
+                    <span style="flex:1;font-size:12.5px;color:var(--slate)">{{ r.t }}</span>
+                    <span style="font-size:11px;color:var(--slate-3);font-family:var(--mono)">{{ r.v }}</span>
+                  </div>
+                </sc-for>
+              </div>
+            </sc-for>
+          </div>
+          <div style="margin-top:18px;background:var(--gold-tint);border:1px solid #ecdca8;border-radius:var(--r);padding:14px 18px;font-size:12.5px;color:#7a5f10">Fully hi-fi build of this module is staged — the marquee flows (Dashboard, Approval Console) are complete; this module screen carries live mock data and its final structure.</div>
+        </div>
+      </sc-if>
+
+    </main>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+class Component extends DCLogic {
+  state = {
+    route: 'dashboard',
+    tenantId: 'meridian',
+    tenantsOpen: false,
+    killOn: false,
+    selected: {},           // action id -> true
+    statuses: {},           // action id -> pending|approved|rejected|deferred|executing|executed|verified
+    selId: 'ACT-01',
+    evId: 'e-8841',
+    chainOpen: 'cr-118',
+    assessStage: -1,
+    dsarSel: 'DSAR-0050',
+    dsarProgress: {},
+    consentLang: 'en',
+    consentState: {}
+  };
+  breachDeadline = Date.now() + (46*3600 + 12*60)*1000;
+  componentDidMount(){ this._t = setInterval(()=>{ if(this.state.route==='breach') this.forceUpdate(); }, 1000); }
+  componentWillUnmount(){ clearInterval(this._t); }
+
+  // ---------- static data ----------
+  tenantsData = {
+    meridian:{id:'meridian',name:'Meridian Pay',sector:'Fintech',mark:'MP',color:'#1E2A4A',employees:420,score:74,trend:'+6',controlsPassing:32,libVersion:'25.11.2',lastScan:'6 Aug 2026',env:'Production'},
+    aarogya:{id:'aarogya',name:'Aarogya Health',sector:'Healthcare',mark:'AH',color:'#0FB5A5',employees:680,score:61,trend:'+3',controlsPassing:27,libVersion:'25.11.2',lastScan:'4 Aug 2026',env:'Production'},
+    streamline:{id:'streamline',name:'Streamline SaaS',sector:'B2B SaaS',mark:'SS',color:'#C9A227',employees:210,score:83,trend:'+9',controlsPassing:37,libVersion:'25.11.2',lastScan:'8 Aug 2026',env:'Staging'}
+  };
+
+  navDef = [
+    {label:'Overview', items:[{route:'dashboard',en:'Dashboard',hi:'डैशबोर्ड',phase:'P0'}]},
+    {label:'Discover & Classify · Drishti + Vibhaag', items:[
+      {route:'discovery',en:'Data Discovery',hi:'डेटा खोज',phase:'P1'},
+      {route:'classification',en:'Classification',hi:'वर्गीकरण',phase:'P1'},
+      {route:'datamap',en:'Data Map & RoPA',hi:'डेटा मानचित्र',phase:'P1'}]},
+    {label:'Assess · Parikshan', items:[
+      {route:'assessment',en:'Assessment',hi:'मूल्यांकन',phase:'P0'},
+      {route:'controls',en:'Control Library',hi:'नियंत्रण संग्रह',phase:'P0'}]},
+    {label:'Remediate · Sudhaar + Karya', items:[
+      {route:'remediation',en:'Remediation Plans',hi:'सुधार योजना',phase:'P3'},
+      {route:'approval',en:'Approval Console',hi:'अनुमोदन कंसोल',phase:'P3',star:true},
+      {route:'execution',en:'Execution & Rollback',hi:'निष्पादन',phase:'P3'}]},
+    {label:'Evidence & Audit · Saakshi + Lekha', items:[
+      {route:'evidence',en:'Evidence Explorer',hi:'साक्ष्य',phase:'P2'},
+      {route:'ledger',en:'Audit Ledger',hi:'अंकेक्षण बही',phase:'P2'}]},
+    {label:'Rights & Consent', items:[
+      {route:'dsar',en:'DSAR / Rights',hi:'अधिकार अनुरोध',phase:'P3'},
+      {route:'consent',en:'Consent Manager',hi:'सहमति प्रबंधन',phase:'P3'}]},
+    {label:'Incident', items:[{route:'breach',en:'Breach & Incident',hi:'उल्लंघन',phase:'P3'}]},
+    {label:'Monitor · Nazar', items:[
+      {route:'monitoring',en:'Continuous Monitoring',hi:'सतत निगरानी',phase:'P3'},
+      {route:'regwatch',en:'Regulatory Watch',hi:'नियामक निगरानी',phase:'P2'}]},
+    {label:'Report · Prativedan', items:[{route:'reports',en:'Reports',hi:'रिपोर्ट',phase:'P2'}]},
+    {label:'Operate', items:[
+      {route:'workbench',en:'Agent Workbench',hi:'एजेंट कार्यक्षेत्र',phase:'P0'},
+      {route:'partner',en:'Partner Portal',hi:'भागीदार पोर्टल',phase:'P4'},
+      {route:'connectors',en:'Connectors',hi:'कनेक्टर',phase:'P2'},
+      {route:'policies',en:'Standing Policies',hi:'स्थायी नीतियाँ',phase:'P4'}]}
+  ];
+
+  genericMeta = {
+    discovery:{title:'Data Discovery',hi:'डेटा खोज',phase:'P1',agent:'Drishti',autonomy:'L2 (read-only)',moduleId:'M2.2',desc:'Drishti finds personal data across connected systems — batch sweep of the whole estate or targeted at one schema. Read-only by default; write access is a separate, explicit grant.',cards:[{h:'Latest scans',rows:[{t:'Full estate sweep — Postgres prod',v:'12.4M rows',dot:'var(--teal)'},{t:'Google Workspace — targeted',v:'8,210 files',dot:'var(--teal)'},{t:'S3 object store — incremental',v:'+340 obj',dot:'var(--amber)'}]},{h:'Discovered surfaces',rows:[{t:'Tables containing personal data',v:'47',dot:'var(--indigo)'},{t:'Cross-border flows flagged',v:'2',dot:'var(--ember)'},{t:'Third-party processors',v:'6',dot:'var(--amber)'}]}]},
+    classification:{title:'Classification',hi:'वर्गीकरण',phase:'P1',agent:'Vibhaag',autonomy:'L2 (read-only)',moduleId:'M2.3',desc:'Vibhaag classifies discovered fields into DPDPA categories with confidence scoring. Low-confidence items route to a human review queue; corrections become training signal.',cards:[{h:'By category',rows:[{t:'Identifiers (name, phone, PAN)',v:'2,840',dot:'var(--indigo)'},{t:'Sensitive — financial',v:'1,120',dot:'var(--ember)'},{t:'Children’s data flagged',v:'38',dot:'var(--ember)'}]},{h:'Review queue',rows:[{t:'Low-confidence (<0.7)',v:'54 items',dot:'var(--amber)'},{t:'Awaiting human confirm',v:'12',dot:'var(--amber)'},{t:'Confirmed this week',v:'201',dot:'var(--teal)'}]}]},
+    datamap:{title:'Data Map & RoPA',hi:'डेटा मानचित्र',phase:'P1',agent:'Vibhaag',autonomy:'L1',moduleId:'M1.3',desc:'Auto-generated Record of Processing Activities from discovery + classification output, including data-flow mapping and cross-border transfers.',cards:[{h:'RoPA entries',rows:[{t:'Processing activities',v:'34',dot:'var(--indigo)'},{t:'With lawful basis mapped',v:'29',dot:'var(--teal)'},{t:'Missing basis',v:'5',dot:'var(--ember)'}]},{h:'Data flows',rows:[{t:'Internal systems',v:'18',dot:'var(--indigo)'},{t:'To processors',v:'6',dot:'var(--amber)'},{t:'Cross-border',v:'2',dot:'var(--ember)'}]}]},
+    controls:{title:'Control Library',hi:'नियंत्रण संग्रह',phase:'P0',agent:'Parikshan',autonomy:'—',moduleId:'M0.2',desc:'Versioned catalogue of ~43 discrete, testable controls, each mapped to a DPDP Act section / Rule citation, required evidence type and remediation pattern. Multi-framework overlays from Phase 4.',cards:[{h:'Coverage',rows:[{t:'Total controls',v:'43',dot:'var(--indigo)'},{t:'Library version',v:'v25.11.2',dot:'var(--teal)'},{t:'Multi-framework overlays',v:'P4',dot:'var(--amber)'}]},{h:'By obligation',rows:[{t:'Notice & consent',v:'9',dot:'var(--indigo)'},{t:'Rights of principals',v:'7',dot:'var(--indigo)'},{t:'Security safeguards',v:'11',dot:'var(--indigo)'}]}]},
+    remediation:{title:'Remediation Plans',hi:'सुधार योजना',phase:'P3',agent:'Sudhaar',autonomy:'L2 (proposes only)',moduleId:'M3.1',desc:'Sudhaar converts each gap into typed, parameterised, risk-scored, dependency-ordered actions — each with a mandatory generated rollback plan. Sudhaar holds no write credentials.',cards:[{h:'Active plans',rows:[{t:'Retention & erasure remediation',v:'12 actions',dot:'var(--amber)'},{t:'Consent notice rollout',v:'7 actions',dot:'var(--teal)'},{t:'Access-control tightening',v:'5 actions',dot:'var(--indigo)'}]},{h:'Readiness gates',rows:[{t:'Dry-run complete',v:'18/24',dot:'var(--teal)'},{t:'Rollback generated',v:'24/24',dot:'var(--teal)'},{t:'Awaiting approval',v:'24',dot:'var(--amber)'}]}]},
+    execution:{title:'Execution & Rollback',hi:'निष्पादन',phase:'P3',agent:'Karya',autonomy:'L2 (token-gated)',moduleId:'M3.4',desc:'Karya executes only approved actions — batch with configurable concurrency and stop-on-failure, or individually. Pre/post state captured per action; blast-radius caps and kill switch enforced.',cards:[{h:'Recent executions',rows:[{t:'Batch RB-118 · 7 actions',v:'✓ verified',dot:'var(--teal)'},{t:'ACT-09 rollback exercised',v:'✓ reversed',dot:'var(--teal)'},{t:'ACT-14 halted — blast cap',v:'escalated',dot:'var(--ember)'}]},{h:'Guardrails',rows:[{t:'Blast-radius cap / batch',v:'5,000 rec',dot:'var(--indigo)'},{t:'Concurrency',v:'4',dot:'var(--indigo)'},{t:'Kill switch',v:'armed',dot:'var(--teal)'}]}]},
+    evidence:{title:'Evidence Explorer',hi:'साक्ष्य',phase:'P2',agent:'Saakshi',autonomy:'L3 (write-once)',moduleId:'M2.4',desc:'Immutable, content-addressed evidence store with WORM semantics. Every artifact carries source, timestamp, collecting agent and content hash; evidence-pack assembly and export for auditors / DPB.',cards:[{h:'Vault',rows:[{t:'Sealed artifacts',v:'1,284',dot:'var(--gold)'},{t:'Evidence packs assembled',v:'9',dot:'var(--teal)'},{t:'Chain checkpoints',v:'sealed',dot:'var(--gold)'}]},{h:'By control',rows:[{t:'Multi-control artifacts',v:'112',dot:'var(--indigo)'},{t:'Consent records (7yr)',v:'sealed',dot:'var(--gold)'},{t:'Dry-run diffs archived',v:'340',dot:'var(--indigo)'}]}]},
+    ledger:{title:'Audit Ledger',hi:'अंकेक्षण बही',phase:'P2',agent:'Lekha',autonomy:'L3 (append-only)',moduleId:'M2.5',desc:'Append-only, hash-chained ledger recording acting agent, model + version, prompt hash, inputs, outputs, human approver and timestamp for every action. Tamper-evident and independently verifiable — the entire chain finding→…→closure is reconstructable.',cards:[{h:'Chain',rows:[{t:'Total entries',v:'48,102',dot:'var(--indigo)'},{t:'Integrity',v:'✓ verified',dot:'var(--teal)'},{t:'Genesis',v:'12 Feb 2026',dot:'var(--slate-3)'}]},{h:'Recent',rows:[{t:'ApprovalGranted · Priya',v:'2m ago',dot:'var(--teal)'},{t:'ExecutionComplete · Karya',v:'2m ago',dot:'var(--teal)'},{t:'EvidenceSealed · Saakshi',v:'1m ago',dot:'var(--gold)'}]}]},
+    dsar:{title:'DSAR / Rights Request Tracker',hi:'अधिकार अनुरोध',phase:'P3',agent:'—',autonomy:'L2',moduleId:'M2.8',desc:'Intake, identity verification workflow, fulfilment tracking, statutory-clock monitoring and response generation for data-principal rights requests.',cards:[{h:'Open requests',rows:[{t:'Access requests',v:'6',dot:'var(--indigo)'},{t:'Erasure requests',v:'3',dot:'var(--amber)'},{t:'Nearing SLA',v:'1',dot:'var(--ember)'}]},{h:'This month',rows:[{t:'Fulfilled on time',v:'14',dot:'var(--teal)'},{t:'Avg turnaround',v:'4.2 days',dot:'var(--indigo)'},{t:'Identity verified',v:'100%',dot:'var(--teal)'}]}]},
+    consent:{title:'Consent Manager',hi:'सहमति प्रबंधन',phase:'P3',agent:'—',autonomy:'L2',moduleId:'M3.8',desc:'Cookie + purpose-based consent capture, consent ledger with 7-year retention and withdrawal workflow. English + Hindi at launch.',cards:[{h:'Consent ledger',rows:[{t:'Active consents',v:'182,400',dot:'var(--teal)'},{t:'Withdrawals (30d)',v:'1,204',dot:'var(--amber)'},{t:'Retention',v:'7 years',dot:'var(--gold)'}]},{h:'Purposes',rows:[{t:'Registered purposes',v:'11',dot:'var(--indigo)'},{t:'Languages',v:'EN · HI',dot:'var(--indigo)'},{t:'Notice version',v:'v3',dot:'var(--slate-3)'}]}]},
+    breach:{title:'Breach & Incident Ops',hi:'उल्लंघन',phase:'P3',agent:'—',autonomy:'L2',moduleId:'M3.9',desc:'Incident intake and triage, 72-hour DPB notification workflow with statutory countdown, affected-principal notification generation and forensic log instrumentation.',cards:[{h:'Active incidents',rows:[{t:'INC-0042 · under triage',v:'46:12 left',dot:'var(--ember)'},{t:'Affected principals (est.)',v:'2,100',dot:'var(--amber)'},{t:'DPB draft',v:'ready',dot:'var(--teal)'}]},{h:'Playbook',rows:[{t:'72h clock',v:'running',dot:'var(--ember)'},{t:'Forensic logs',v:'warm',dot:'var(--teal)'},{t:'Principal notice',v:'drafted',dot:'var(--amber)'}]}]},
+    monitoring:{title:'Continuous Monitoring',hi:'सतत निगरानी',phase:'P3',agent:'Drishti + Parikshan',autonomy:'L3',moduleId:'M3.10',desc:'Scheduled re-discovery and re-assessment with drift detection and alerting on newly-introduced gaps.',cards:[{h:'Schedules',rows:[{t:'Weekly estate re-scan',v:'Mon 02:00',dot:'var(--teal)'},{t:'Daily consent-drift check',v:'enabled',dot:'var(--teal)'},{t:'Drift alerts (7d)',v:'3',dot:'var(--amber)'}]},{h:'Detected drift',rows:[{t:'New table, unclassified',v:'crm.leads',dot:'var(--ember)'},{t:'Retention breach',v:'logs_2019',dot:'var(--ember)'},{t:'Resolved',v:'2',dot:'var(--teal)'}]}]},
+    regwatch:{title:'Regulatory Watch',hi:'नियामक निगरानी',phase:'P2',agent:'Nazar',autonomy:'L3',moduleId:'M2.9',desc:'Nazar monitors MeitY / DPB / gazette sources, flags changes and maps each change to the affected controls in the library.',cards:[{h:'Recent signals',rows:[{t:'SDF window 18→12mo (proposal)',v:'unGazetted',dot:'var(--amber)'},{t:'DPB staffing update',v:'legal press',dot:'var(--indigo)'},{t:'Consent Mgr registry opens',v:'~13 Nov',dot:'var(--teal)'}]},{h:'Impact mapping',rows:[{t:'Controls affected',v:'4',dot:'var(--amber)'},{t:'Clients notified',v:'3',dot:'var(--teal)'},{t:'Library update queued',v:'v25.11.3',dot:'var(--indigo)'}]}]},
+    reports:{title:'Reports',hi:'रिपोर्ट',phase:'P2',agent:'Prativedan',autonomy:'L3',moduleId:'M2.7',desc:'Prativedan generates Board reports, auditor packs, DPB-ready submissions and technical remediation registers. Every claim traceable to a specific evidence artifact; agent attribution and human approver named on every report.',cards:[{h:'Report types',rows:[{t:'Board report',v:'branded PDF',dot:'var(--indigo)'},{t:'Auditor pack',v:'+ evidence',dot:'var(--gold)'},{t:'DPB-ready submission',v:'template',dot:'var(--indigo)'}]},{h:'Generated',rows:[{t:'This quarter',v:'11',dot:'var(--teal)'},{t:'Avg gen time',v:'3.4 min',dot:'var(--indigo)'},{t:'All approver-signed',v:'✓',dot:'var(--teal)'}]}]},
+    workbench:{title:'Agent Workbench',hi:'एजेंट कार्यक्षेत्र',phase:'P0',agent:'all',autonomy:'—',moduleId:'M0.6',desc:'The founder’s private cockpit: run any agent, review every output before it reaches a client, and manage the versioned prompt / model registry. High-throughput review is a first-class product surface.',cards:[{h:'Agent fleet',rows:[{t:'Agents online',v:'10 / 10',dot:'var(--teal)'},{t:'Runs today',v:'214',dot:'var(--indigo)'},{t:'Awaiting founder review',v:'8',dot:'var(--amber)'}]},{h:'Prompt registry',rows:[{t:'Versioned prompts',v:'64',dot:'var(--indigo)'},{t:'Model gateway',v:'abstracted',dot:'var(--teal)'},{t:'Prompt drift',v:'0 untracked',dot:'var(--teal)'}]}]},
+    partner:{title:'Partner / White-label Portal',hi:'भागीदार पोर्टल',phase:'P4',agent:'—',autonomy:'L3',moduleId:'M4.7',desc:'Multi-client management for CA / CS / law / MSP partners, with branded report output. Referral fee or white-label delivery, paid only on realised revenue.',cards:[{h:'Partner book',rows:[{t:'Active partners',v:'5',dot:'var(--indigo)'},{t:'Managed clients',v:'23',dot:'var(--teal)'},{t:'White-label brands',v:'3',dot:'var(--gold)'}]},{h:'Economics',rows:[{t:'Referral fee',v:'15–20%',dot:'var(--indigo)'},{t:'White-label',v:'60–65% list',dot:'var(--indigo)'},{t:'Paid on',v:'realised rev',dot:'var(--teal)'}]}]},
+    connectors:{title:'Connectors',hi:'कनेक्टर',phase:'P2',agent:'—',autonomy:'L2',moduleId:'M2.1',desc:'Pluggable read-only connectors with a common contract: authenticate → enumerate → sample → read → (write). Read and write are separate interfaces with separate, time-bound, revocable credential scopes.',cards:[{h:'Connected',rows:[{t:'PostgreSQL · prod',v:'read-only',dot:'var(--teal)'},{t:'Google Workspace',v:'read-only',dot:'var(--teal)'},{t:'AWS S3',v:'read + write*',dot:'var(--amber)'}]},{h:'Grants',rows:[{t:'Write scopes active',v:'1',dot:'var(--amber)'},{t:'Auto-expiry',v:'24h',dot:'var(--indigo)'},{t:'Revocable',v:'instant',dot:'var(--teal)'}]}]},
+    policies:{title:'Standing Approval Policies',hi:'स्थायी नीतियाँ',phase:'P4',agent:'Policy Engine',autonomy:'L3',moduleId:'M4.1',desc:'Human authors policy — e.g. “auto-remediate expired-retention deletions under 1,000 records in non-production, without per-instance approval.” Agents operate within it; everything outside escalates.',cards:[{h:'Active policies',rows:[{t:'Expired-retention deletes <1k (non-prod)',v:'auto',dot:'var(--teal)'},{t:'Consent-notice text updates',v:'auto',dot:'var(--teal)'},{t:'All production writes',v:'escalate',dot:'var(--ember)'}]},{h:'This week',rows:[{t:'Auto-remediated in policy',v:'42',dot:'var(--teal)'},{t:'Escalated to human',v:'6',dot:'var(--amber)'},{t:'Policy violations',v:'0',dot:'var(--teal)'}]}]}
+  };
+
+  // approval console actions
+  actionsData = [
+    {id:'ACT-01',title:'Purge expired KYC records past 5-yr retention',type:'delete.records',risk:'MED',target:'pg.prod · kyc_documents',blast:1840,why:'Retention control fails — KYC docs held beyond the 5-year statutory limit with no lawful basis to retain.',citation:'DPDP Act §8(7) · Rule 8 · Ctrl RET-03',riskReason:'Deletes production rows. Reversible from sealed pre-state snapshot; non-cascading; no downstream FK dependents.',dryAge:'8 min ago',dryHash:'a3f0…9c1',rollbackRef:'RB-118a',rollback:'Restore the 1,840 deleted rows from the sealed pre-state snapshot (evidence e-8841) into kyc_documents, preserving original primary keys and timestamps.',blastCards:[{v:'1,840',l:'records'},{v:'1',l:'system'},{v:'0',l:'users affected'}],diff:[{sign:'-',text:'kyc_documents: 1,840 rows WHERE created_at < 2021-08-01',style:'padding:6px 12px;background:var(--ember-tint);color:#a03734'},{sign:'',text:'retained rows: 42,110 (unchanged)',style:'padding:6px 12px;color:var(--slate-2)'},{sign:'+',text:'evidence e-8841: pre-state snapshot sealed (WORM)',style:'padding:6px 12px;background:var(--teal-tint);color:#0a6b61'}]},
+    {id:'ACT-02',title:'Deploy purpose-based consent notice v3 (EN + HI)',type:'config.publish',risk:'LOW',target:'cmp.notice_config',blast:1,why:'Notice control fails — current consent notice lacks itemised purposes and a Hindi rendering required at launch.',citation:'DPDP Act §5 · Rule 3 · Ctrl NOT-01',riskReason:'Config publish, no data mutation. Instantly reversible by re-pointing to prior notice version.',dryAge:'8 min ago',dryHash:'7b22…4de',rollbackRef:'RB-118b',rollback:'Re-point cmp.notice_config to notice v2 (previous published version); no principal records touched.',blastCards:[{v:'1',l:'config object'},{v:'0',l:'records'},{v:'all',l:'future consents'}],diff:[{sign:'~',text:'notice.version: v2 → v3',style:'padding:6px 12px;background:var(--amber-tint);color:#8a6d10'},{sign:'+',text:'notice.purposes: +6 itemised purposes',style:'padding:6px 12px;background:var(--teal-tint);color:#0a6b61'},{sign:'+',text:'notice.lang: +hi (Hindi)',style:'padding:6px 12px;background:var(--teal-tint);color:#0a6b61'}]},
+    {id:'ACT-03',title:'Revoke over-broad S3 read grant on pii-exports bucket',type:'iam.scope',risk:'MED',target:'aws.s3 · pii-exports',blast:14,why:'Least-privilege control fails — 14 IAM principals hold read on a bucket containing exported personal data.',citation:'DPDP Act §8(4) · Ctrl SEC-06',riskReason:'Removes access for 14 principals. Some may be legitimate; scoped to a reviewed allowlist. Fully reversible.',dryAge:'9 min ago',dryHash:'c910…22a',rollbackRef:'RB-118c',rollback:'Re-attach the prior bucket policy document (versioned in evidence e-8843) restoring all 14 grants.',blastCards:[{v:'14',l:'IAM principals'},{v:'1',l:'bucket'},{v:'0',l:'objects'}],diff:[{sign:'-',text:'s3:GetObject removed for 11 of 14 principals',style:'padding:6px 12px;background:var(--ember-tint);color:#a03734'},{sign:'',text:'3 principals retained (reviewed allowlist)',style:'padding:6px 12px;color:var(--slate-2)'},{sign:'+',text:'bucket policy prev-version sealed e-8843',style:'padding:6px 12px;background:var(--teal-tint);color:#0a6b61'}]},
+    {id:'ACT-04',title:'Mask PAN column in analytics replica',type:'transform.mask',risk:'LOW',target:'pg.analytics · users.pan',blast:38200,why:'Purpose-limitation control fails — raw PAN is replicated into analytics where it is not required.',citation:'DPDP Act §6 · Ctrl PUR-02',riskReason:'Applies deterministic masking on a replica only; source untouched. Reversible by re-replication from source.',dryAge:'7 min ago',dryHash:'55e1…808',rollbackRef:'RB-118d',rollback:'Trigger a fresh replication of users.pan from the primary, overwriting the masked replica column.',blastCards:[{v:'38,200',l:'rows (replica)'},{v:'1',l:'column'},{v:'0',l:'source rows'}],diff:[{sign:'~',text:'analytics.users.pan → SHA-mask (replica only)',style:'padding:6px 12px;background:var(--amber-tint);color:#8a6d10'},{sign:'',text:'prod.users.pan: unchanged',style:'padding:6px 12px;color:var(--slate-2)'}]},
+    {id:'ACT-05',title:'Enable erasure-on-withdrawal job for marketing consent',type:'job.enable',risk:'HIGH',target:'worker · erasure_pipeline',blast:1204,why:'Rights control fails — withdrawn marketing consents are not propagating to downstream erasure.',citation:'DPDP Act §6(4)·§12 · Ctrl RTS-04',riskReason:'Enables an automated deletion pipeline touching production. High blast potential over time; gated behind per-run blast cap and staged rollout.',dryAge:'6 min ago',dryHash:'e07c…f31',rollbackRef:'RB-118e',rollback:'Disable the erasure job and restore any records deleted in the current run from per-run pre-state snapshots.',blastCards:[{v:'1,204',l:'pending erasures'},{v:'4',l:'downstream systems'},{v:'1,204',l:'principals'}],diff:[{sign:'~',text:'erasure_pipeline.enabled: false → true',style:'padding:6px 12px;background:var(--amber-tint);color:#8a6d10'},{sign:'-',text:'queued: 1,204 withdrawn-consent erasures',style:'padding:6px 12px;background:var(--ember-tint);color:#a03734'},{sign:'+',text:'per-run cap 250 · pre-state snapshot per record',style:'padding:6px 12px;background:var(--teal-tint);color:#0a6b61'}]},
+    {id:'ACT-06',title:'Add retention TTL policy to app server logs',type:'config.retention',risk:'LOW',target:'logs · app_2019+',blast:6,why:'Storage-limitation control fails — application logs containing IP + user IDs kept indefinitely.',citation:'DPDP Act §8(7) · Ctrl RET-05',riskReason:'Sets a forward TTL; no immediate deletion. Reversible by removing the TTL policy.',dryAge:'7 min ago',dryHash:'19aa…6b0',rollbackRef:'RB-118f',rollback:'Remove the TTL policy from the 6 log groups; no data is deleted by enabling it.',blastCards:[{v:'6',l:'log groups'},{v:'0',l:'immediate deletes'},{v:'180d',l:'TTL set'}],diff:[{sign:'+',text:'6 log groups: retention.ttl = 180 days',style:'padding:6px 12px;background:var(--teal-tint);color:#0a6b61'},{sign:'',text:'no immediate deletion (forward-only)',style:'padding:6px 12px;color:var(--slate-2)'}]}
+  ];
+
+  // evidence vault
+  evidenceData = [
+    {id:'e-8841',title:'KYC retention pre-state snapshot',type:'snapshot',agent:'Saakshi',control:'RET-03',date:'10 Aug 2026 · 14:22',hash:'a3f09c1b7d442e18',size:'42.1 MB',seal:'gold',links:['RET-03','PUR-02'],desc:'Pre-execution snapshot of 1,840 kyc_documents rows sealed before deletion under PLAN-118 ACT-01.'},
+    {id:'e-8843',title:'S3 bucket policy — prior version',type:'config',agent:'Saakshi',control:'SEC-06',date:'10 Aug 2026 · 14:20',hash:'c91022a4f6b1093c',size:'4.2 KB',seal:'gold',links:['SEC-06'],desc:'Versioned IAM policy document for pii-exports bucket captured before scope reduction (ACT-03).'},
+    {id:'e-8802',title:'Consent notice v3 render (EN + HI)',type:'document',agent:'Saakshi',control:'NOT-01',date:'9 Aug 2026 · 09:11',hash:'7b224de0a1cc55f2',size:'880 KB',seal:'gold',links:['NOT-01','NOT-04'],desc:'Rendered purpose-based consent notice, English and Hindi, tied to CMP config publish ACT-02.'},
+    {id:'e-8790',title:'Assessment run — 43 control scores',type:'assessment',agent:'Parikshan',control:'ALL',date:'6 Aug 2026 · 03:02',hash:'55e1808f2b9a71d0',size:'118 KB',seal:'gold',links:['ALL'],desc:'Full assessment output for Meridian Pay scored against control library v25.11.2.'},
+    {id:'e-8788',title:'Discovery manifest — pg.prod sweep',type:'discovery',agent:'Drishti',control:'—',date:'6 Aug 2026 · 02:40',hash:'e07cf31099aa16b0',size:'6.4 MB',seal:'gold',links:['RET-03','PUR-02','SEC-06'],desc:'Content-addressed manifest of 47 tables containing personal data across the production estate.'},
+    {id:'e-8781',title:'DSAR-0042 fulfilment package',type:'dsar',agent:'Saakshi',control:'RTS-01',date:'3 Aug 2026 · 16:55',hash:'19aa6b0c8e2233f1',size:'2.1 MB',seal:'gold',links:['RTS-01'],desc:'Sealed access-request fulfilment export for a verified data principal, with delivery receipt.'}
+  ];
+  // audit ledger — a full correlation chain + surrounding entries
+  ledgerEntries = [
+    {seq:48102,corr:'cr-118',type:'ClosureSealed',actor:'Saakshi',actorType:'agent',result:'success',time:'14:24:07',target:'evidence e-8846',chainHead:false},
+    {seq:48101,corr:'cr-118',type:'VerificationPassed',actor:'Parikshan',actorType:'agent',result:'success',time:'14:23:41',target:'ctrl RET-03',chainHead:false},
+    {seq:48100,corr:'cr-118',type:'ExecutionComplete',actor:'Karya',actorType:'agent',result:'success',time:'14:23:02',target:'kyc_documents',chainHead:false},
+    {seq:48099,corr:'cr-118',type:'ApprovalGranted',actor:'Priya Nair',actorType:'human',result:'success',time:'14:22:10',target:'ACT-01',chainHead:false},
+    {seq:48098,corr:'cr-118',type:'DryRunPassed',actor:'Dry-Run Simulator',actorType:'system',result:'success',time:'14:14:55',target:'ACT-01',chainHead:false},
+    {seq:48097,corr:'cr-118',type:'PlanGenerated',actor:'Sudhaar',actorType:'agent',result:'success',time:'14:09:30',target:'PLAN-118',chainHead:false},
+    {seq:48096,corr:'cr-118',type:'GapIdentified',actor:'Parikshan',actorType:'agent',result:'success',time:'03:02:11',target:'ctrl RET-03',chainHead:true},
+    {seq:48095,corr:'cr-201',type:'ConsentWithdrawn',actor:'Consent Engine',actorType:'system',result:'success',time:'11:40:02',target:'principal p-77213',chainHead:true},
+    {seq:48094,corr:'cr-198',type:'DiscoveryCompleted',actor:'Drishti',actorType:'agent',result:'success',time:'02:41:55',target:'pg.prod',chainHead:true}
+  ];
+  chainSteps = [
+    {k:'GapIdentified',agent:'Parikshan',detail:'RET-03 fails — KYC docs held beyond 5-yr statutory limit',model:'claude/assess@1.4',hash:'9c1b…7d44'},
+    {k:'PlanGenerated',agent:'Sudhaar',detail:'ACT-01 typed delete.records, rollback RB-118a generated · no write creds held',model:'claude/plan@1.2',hash:'f0a3…1b7d'},
+    {k:'DryRunPassed',agent:'Dry-Run Simulator',detail:'diff: −1,840 rows; pre-state sealed e-8841; result time-bound',model:'—',hash:'a3f0…9c1'},
+    {k:'ApprovalGranted',agent:'Priya Nair (human)',detail:'signed scope-bound token tok-118a01, single-use, expires 30m',model:'—',hash:'tok-118a01'},
+    {k:'ExecutionComplete',agent:'Karya',detail:'1,840 rows deleted; pre/post state captured; blast within cap',model:'claude/exec@1.1',hash:'2b9a…71d0'},
+    {k:'VerificationPassed',agent:'Parikshan',detail:'RET-03 re-scored: PASS — gap confirmed closed',model:'claude/assess@1.4',hash:'71d0…55e1'},
+    {k:'ClosureSealed',agent:'Saakshi',detail:'closure evidence e-8846 sealed WORM; chain checkpoint written',model:'—',hash:'e-8846'}
+  ];
+
+  // assessment — control scorecard
+  controlScores = [
+    {id:'NOT-01',name:'Notice of processing purposes',domain:'Notice & consent',status:'fail',cite:'§5 · Rule 3',ev:'e-8802',score:0},
+    {id:'NOT-04',name:'Withdrawal as easy as giving consent',domain:'Notice & consent',status:'pass',cite:'§6(4)',ev:'e-8802',score:100},
+    {id:'RTS-01',name:'Right to access information',domain:'Rights of principals',status:'pass',cite:'§11',ev:'e-8781',score:100},
+    {id:'RTS-04',name:'Right to erasure on withdrawal',domain:'Rights of principals',status:'fail',cite:'§12',ev:'—',score:20},
+    {id:'RTS-06',name:'Grievance redressal mechanism',domain:'Rights of principals',status:'partial',cite:'§13',ev:'—',score:60},
+    {id:'RET-03',name:'Erasure after retention period',domain:'Retention & erasure',status:'fail',cite:'§8(7) · Rule 8',ev:'e-8841',score:15},
+    {id:'RET-05',name:'Storage limitation on logs',domain:'Retention & erasure',status:'fail',cite:'§8(7)',ev:'—',score:30},
+    {id:'PUR-02',name:'Purpose limitation in analytics',domain:'Purpose limitation',status:'partial',cite:'§6',ev:'e-8788',score:55},
+    {id:'SEC-06',name:'Least-privilege access to PII',domain:'Security safeguards',status:'partial',cite:'§8(4)',ev:'e-8843',score:70},
+    {id:'SEC-09',name:'Encryption at rest & in transit',domain:'Security safeguards',status:'pass',cite:'§8(5)',ev:'e-8790',score:100},
+    {id:'XBR-01',name:'Cross-border transfer register',domain:'Cross-border transfer',status:'partial',cite:'§16',ev:'—',score:50},
+    {id:'BRC-02',name:'72-hour breach notification readiness',domain:'Breach',status:'pass',cite:'Rule 7',ev:'e-8790',score:100}
+  ];
+  pipelineStages = [
+    {agent:'Drishti',label:'Discovery',hi:'खोज',detail:'sweeping estate for personal data'},
+    {agent:'Vibhaag',label:'Classification',hi:'वर्गीकरण',detail:'categorising fields by DPDPA type'},
+    {agent:'Parikshan',label:'Assessment',hi:'मूल्यांकन',detail:'scoring against control library v25.11.2'},
+    {agent:'Saakshi',label:'Evidence',hi:'साक्ष्य',detail:'sealing supporting artifacts (WORM)'},
+    {agent:'Prativedan',label:'Report',hi:'रिपोर्ट',detail:'generating findings + exposure'}
+  ];
+
+  runAssessment = () => {
+    this.setState({assessStage:0});
+    const step = (i)=>{ if(i>=this.pipelineStages.length){ setTimeout(()=>this.setState({assessStage:-1}),700); return; } this.setState({assessStage:i}); setTimeout(()=>step(i+1),900); };
+    step(0);
+  };
+
+  // DSAR
+  dsarStages = ['Intake','Identity verification','Data location','Fulfilment','Delivered'];
+  dsarData = [
+    {id:'DSAR-0051',principal:'Ananya Krishnan',type:'Access',recv:'8 Aug',slaDays:26,stage:2,systems:4},
+    {id:'DSAR-0050',principal:'Vikram Shetty',type:'Erasure',recv:'7 Aug',slaDays:2,stage:3,systems:6},
+    {id:'DSAR-0049',principal:'Fatima Sheikh',type:'Correction',recv:'5 Aug',slaDays:18,stage:1,systems:2},
+    {id:'DSAR-0048',principal:'Rohan Mehta',type:'Access',recv:'1 Aug',slaDays:0,stage:4,systems:3},
+    {id:'DSAR-0047',principal:'Priya Das',type:'Erasure',recv:'28 Jul',slaDays:0,stage:4,systems:5}
+  ];
+  // Consent
+  consentPurposes = [
+    {id:'p1',en:'Account & KYC verification',hi:'खाता और केवाईसी सत्यापन',required:true,on:true},
+    {id:'p2',en:'Transaction processing',hi:'लेनदेन प्रसंस्करण',required:true,on:true},
+    {id:'p3',en:'Fraud & risk monitoring',hi:'धोखाधड़ी और जोखिम निगरानी',required:true,on:true},
+    {id:'p4',en:'Product marketing & offers',hi:'उत्पाद विपणन और ऑफ़र',required:false,on:false},
+    {id:'p5',en:'Analytics & product improvement',hi:'विश्लेषण और उत्पाद सुधार',required:false,on:true},
+    {id:'p6',en:'Sharing with credit bureaus',hi:'क्रेडिट ब्यूरो के साथ साझा करना',required:false,on:false}
+  ];
+
+  // ---------- handlers ----------
+  go = (r) => this.setState({route:r, tenantsOpen:false});
+  advanceDsar = (id) => { const m={...this.state.dsarProgress}; const cur = m[id]!==undefined?m[id]:this.dsarData.find(d=>d.id===id).stage; m[id]=Math.min(cur+1,4); this.setState({dsarProgress:m, dsarSel:id}); };
+  toggleConsent = (id) => { const p=this.consentPurposes.find(x=>x.id===id); if(p.required) return; const m={...this.state.consentState}; m[id]=!(m[id]!==undefined?m[id]:p.on); this.setState({consentState:m}); };
+  setTenant = (id) => this.setState({tenantId:id, tenantsOpen:false});
+
+  select = (id) => { const s={...this.state.selected}; s[id]=!s[id]; this.setState({selected:s}); };
+  pick = (id) => this.setState({selId:id});
+  toggleSelectAll = () => {
+    const all = this.actionsData.every(a=>this.state.selected[a.id]);
+    const s={}; if(!all) this.actionsData.forEach(a=>{ if((this.state.statuses[a.id]||'pending')==='pending') s[a.id]=true; });
+    this.setState({selected:s});
+  };
+  setStatus = (ids, st) => {
+    const s={...this.state.statuses}; ids.forEach(id=>s[id]=st); this.setState({statuses:s});
+  };
+  runExecution = (ids) => {
+    // approved -> executing -> executed -> verified
+    this.setStatus(ids,'approved');
+    setTimeout(()=>this.setStatus(ids,'executing'),450);
+    setTimeout(()=>this.setStatus(ids,'executed'),1600);
+    setTimeout(()=>{ this.setStatus(ids,'verified'); this.setState({selected:{}}); },2700);
+  };
+  approveSelected = () => { const ids=Object.keys(this.state.selected).filter(id=>this.state.selected[id]); if(ids.length) this.runExecution(ids); };
+  approveAll = () => { const ids=this.actionsData.filter(a=>(this.state.statuses[a.id]||'pending')==='pending').map(a=>a.id); if(ids.length) this.runExecution(ids); };
+  rejectSelected = () => { const ids=Object.keys(this.state.selected).filter(id=>this.state.selected[id]); if(ids.length){ this.setStatus(ids,'rejected'); this.setState({selected:{}}); } };
+  deferSelected = () => { const ids=Object.keys(this.state.selected).filter(id=>this.state.selected[id]); if(ids.length){ this.setStatus(ids,'deferred'); this.setState({selected:{}}); } };
+
+  // ---------- helpers ----------
+  riskStyleFor(r){ return r==='HIGH'?'background:var(--ember-tint);color:var(--ember)':r==='MED'?'background:var(--amber-tint);color:#8a6d10':'background:var(--teal-tint);color:var(--teal-dark)'; }
+  scoreColor(s){ return s>=80?'#0a8d80':s>=70?'var(--amber)':'var(--ember)'; }
+  phaseStyleFor(p,active){
+    if(active) return 'background:rgba(255,255,255,.22);color:#fff';
+    return 'background:rgba(255,255,255,.06);color:#8a97b8';
+  }
+
+  renderVals(){
+    const t = this.tenantsData[this.state.tenantId];
+    const route = this.state.route;
+
+    const navGroups = this.navDef.map(g=>({
+      label:g.label,
+      items:g.items.map(it=>{
+        const active = it.route===route;
+        return {...it,
+          onClick:()=>this.go(it.route),
+          rowStyle:`display:flex;align-items:center;gap:9px;padding:7px 20px;cursor:pointer;border-left:3px solid ${active?'var(--teal)':'transparent'};background:${active?'rgba(15,181,165,.10)':'transparent'}`,
+          dotStyle: active?'background:var(--teal)':'background:#3d4863',
+          textColor: active?'#fff':'#c7cfe0',
+          weight: active?600:450,
+          phaseStyle: this.phaseStyleFor(it.phase,active)
+        };
+      })
+    }));
+
+    const tenants = Object.values(this.tenantsData).map(x=>({
+      ...x, score:x.score, scoreColor:this.scoreColor(x.score),
+      onSelect:()=>this.setTenant(x.id),
+      rowStyle:`display:flex;align-items:center;gap:10px;padding:9px;border-radius:9px;cursor:pointer;background:${x.id===this.state.tenantId?'var(--mist)':'transparent'}`
+    }));
+
+    const tenant = {...t, scorePct:t.score+'%', scoreColor:this.scoreColor(t.score)};
+
+    // dashboard values
+    const kpis = [
+      {label:'Open gaps',value:String(43-t.controlsPassing),sub:'across 8 domains',color:'var(--ember)',tag:'ASSESS',tagStyle:'background:var(--ember-tint);color:var(--ember)',onClick:()=>this.go('assessment')},
+      {label:'Pending approvals',value:'2',sub:'24 actions waiting',color:'var(--amber)',tag:'P3',tagStyle:'background:var(--amber-tint);color:#8a6d10',onClick:()=>this.go('approval')},
+      {label:'Evidence sealed',value:'1,284',sub:'WORM · hash-chained',color:'var(--gold)',tag:'P2',tagStyle:'background:var(--gold-tint);color:#8a6d10',onClick:()=>this.go('evidence')},
+      {label:'Open DSARs',value:'9',sub:'1 nearing SLA',color:'var(--indigo)',tag:'P3',tagStyle:'background:var(--mist);color:var(--slate-2)',onClick:()=>this.go('dsar')},
+      {label:'Consents live',value:'182k',sub:'7-yr retention',color:'var(--teal-dark)',tag:'P3',tagStyle:'background:var(--teal-tint);color:var(--teal-dark)',onClick:()=>this.go('consent')},
+      {label:'Ledger entries',value:'48,102',sub:'✓ integrity verified',color:'var(--indigo)',tag:'P2',tagStyle:'background:var(--mist);color:var(--slate-2)',onClick:()=>this.go('ledger')}
+    ];
+    const gapDomains = [
+      {name:'Notice & consent',open:2,total:9,pct:'22%',color:'var(--amber)'},
+      {name:'Rights of principals',open:3,total:7,pct:'43%',color:'var(--ember)'},
+      {name:'Retention & erasure',open:4,total:6,pct:'67%',color:'var(--ember)'},
+      {name:'Security safeguards',open:1,total:11,pct:'9%',color:'var(--teal)'},
+      {name:'Cross-border transfer',open:1,total:4,pct:'25%',color:'var(--amber)'},
+      {name:'Grievance redressal',open:0,total:6,pct:'0%',color:'var(--teal)'}
+    ];
+    const pendingPlans = [
+      {title:'Retention & erasure remediation',count:6,blast:'≤41k rec',risk:'MED risk',riskStyle:this.riskStyleFor('MED')},
+      {title:'Consent notice rollout (EN+HI)',count:3,blast:'config only',risk:'LOW risk',riskStyle:this.riskStyleFor('LOW')}
+    ];
+    const agentFeed = [
+      {agent:'Drishti',text:'is scanning pg.prod — 8.2M rows swept',dot:'var(--teal)',anim:'animation:pulse 1.6s infinite',time:'live now'},
+      {agent:'Parikshan',text:'re-scored 43 controls after last remediation',dot:'var(--indigo)',anim:'',time:'12 min ago'},
+      {agent:'Saakshi',text:'sealed evidence pack e-8841 (WORM)',dot:'var(--gold)',anim:'',time:'18 min ago'},
+      {agent:'Nazar',text:'flagged SDF-window proposal → 4 controls',dot:'var(--amber)',anim:'',time:'1 hr ago'},
+      {agent:'Lekha',text:'chain integrity re-verified from genesis',dot:'var(--teal)',anim:'',time:'2 hr ago'}
+    ];
+
+    // approval console
+    const statuses = this.state.statuses;
+    const statusMeta = {
+      approved:{l:'APPROVED',s:'background:var(--teal-tint);color:var(--teal-dark)'},
+      executing:{l:'EXECUTING…',s:'background:var(--amber-tint);color:#8a6d10'},
+      executed:{l:'EXECUTED',s:'background:var(--indigo);color:#fff'},
+      verified:{l:'✓ VERIFIED',s:'background:var(--teal);color:#04322d'},
+      rejected:{l:'REJECTED',s:'background:var(--ember-tint);color:var(--ember)'},
+      deferred:{l:'DEFERRED',s:'background:var(--mist);color:var(--slate-2)'}
+    };
+    const actions = this.actionsData.map(a=>{
+      const st = statuses[a.id]||'pending';
+      const isSel = !!this.state.selected[a.id];
+      const isActive = a.id===this.state.selId;
+      const locked = st!=='pending';
+      const sm = statusMeta[st];
+      return {...a,
+        onSelect:()=>this.pick(a.id),
+        onCheck:(e)=>{ if(e&&e.stopPropagation)e.stopPropagation(); if(!locked)this.select(a.id); },
+        rowStyle:`display:flex;gap:11px;padding:12px 15px;border-bottom:1px solid var(--line-2);cursor:pointer;background:${isActive?'var(--mist)':'#fff'};border-left:3px solid ${isActive?'var(--teal)':'transparent'};opacity:${locked&&st!=='verified'&&st!=='executed'?.85:1}`,
+        checkStyle:`width:18px;height:18px;flex:0 0 18px;border-radius:5px;margin-top:2px;display:flex;align-items:center;justify-content:center;font-size:11px;color:#fff;border:1.5px solid ${isSel?'var(--teal)':'#c4ccd8'};background:${isSel?'var(--teal)':'#fff'};cursor:${locked?'not-allowed':'pointer'}`,
+        checkMark:isSel?'✓':'',
+        riskStyle:this.riskStyleFor(a.risk),
+        statusShow: st!=='pending',
+        statusLabel: sm?sm.l:'',
+        statusStyle: sm?sm.s:''
+      };
+    });
+    const sel = this.actionsData.find(a=>a.id===this.state.selId) || this.actionsData[0];
+    const selWithStyle = {...sel, riskStyle:this.riskStyleFor(sel.risk)};
+    const selectedCount = Object.keys(this.state.selected).filter(id=>this.state.selected[id]).length;
+    const approvedCount = this.actionsData.filter(a=>['approved','executing','executed','verified'].includes(statuses[a.id])).length;
+    const allSel = this.actionsData.every(a=>this.state.selected[a.id]);
+
+    const plan = {title:'Retention & Erasure Remediation',id:'PLAN-118',version:'3',gap:'closes 6 gaps across 3 controls',actionsTotal:this.actionsData.length,blastTotal:'≤41,262',envLabel:t.env==='Staging'?'STAGING':'PROD'};
+
+    // assessment
+    const stFor = {pass:{c:'var(--teal-dark)',bg:'var(--teal-tint)',l:'PASS'},fail:{c:'var(--ember)',bg:'var(--ember-tint)',l:'FAIL'},partial:{c:'#8a6d10',bg:'var(--amber-tint)',l:'PARTIAL'}};
+    const controls = this.controlScores.map(c=>({...c, stC:stFor[c.status].c, stBg:stFor[c.status].bg, stL:stFor[c.status].l, barStyle:`height:100%;width:${c.score}%;background:${stFor[c.status].c};border-radius:20px;animation:barGrow 1s ease`, hasEv:c.ev!=='—', noEv:c.ev==='—'}));
+    const passCount = this.controlScores.filter(c=>c.status==='pass').length;
+    const failCount = this.controlScores.filter(c=>c.status==='fail').length;
+    const partialCount = this.controlScores.filter(c=>c.status==='partial').length;
+    const assessStage = this.state.assessStage;
+    const pipeline = this.pipelineStages.map((p,i)=>({...p, done:assessStage>i||assessStage===-1&&false, active:assessStage===i, state: assessStage===-1?'idle':(assessStage>i?'done':assessStage===i?'active':'wait'),
+      dotBg: assessStage>i?'var(--teal)':assessStage===i?'var(--gold)':'rgba(255,255,255,.12)',
+      anim: assessStage===i?'animation:pulse 1s infinite':'',
+      mark: assessStage>i?'✓':String(i+1)
+    }));
+    const assessRunning = assessStage>=0;
+
+    // DSAR
+    const dsar = this.dsarData.map(d=>{
+      const stg = this.state.dsarProgress[d.id]!==undefined?this.state.dsarProgress[d.id]:d.stage;
+      const done = stg>=4;
+      const urgent = d.slaDays>0 && d.slaDays<=3;
+      return {...d, stg, stageLabel:this.dsarStages[stg], done, urgent, principalInitial:d.principal.charAt(0),
+        active:d.id===this.state.dsarSel,
+        slaLabel: done?'fulfilled':d.slaDays+'d to SLA',
+        slaColor: done?'var(--teal-dark)':urgent?'var(--ember)':'var(--slate-2)',
+        typeColor: d.type==='Erasure'?'var(--ember)':d.type==='Access'?'var(--indigo)':'#8a6d10',
+        onClick:()=>this.setState({dsarSel:d.id}),
+        rowStyle:`display:flex;align-items:center;gap:12px;padding:13px 16px;border-bottom:1px solid var(--line-2);cursor:pointer;background:${d.id===this.state.dsarSel?'var(--mist)':'#fff'};border-left:3px solid ${d.id===this.state.dsarSel?'var(--teal)':'transparent'}`};
+    });
+    const dsarSel = dsar.find(d=>d.id===this.state.dsarSel)||dsar[0];
+    const dsarWorkflow = this.dsarStages.map((s,i)=>({label:s, n:i+1, done:i<dsarSel.stg, active:i===dsarSel.stg, notLast:i!==this.dsarStages.length-1,
+      dotBg: i<dsarSel.stg?'var(--teal)':i===dsarSel.stg?'var(--gold)':'var(--line)',
+      dotColor: i<=dsarSel.stg?'#04322d':'var(--slate-3)',
+      titleColor: i<=dsarSel.stg?'var(--slate)':'var(--slate-3)',
+      mark: i<dsarSel.stg?'✓':String(i+1),
+      detail: ['Request logged, deduplicated against open requests','Verifying principal via OTP + govt-ID match','Drishti locates data across '+dsarSel.systems+' systems','Compiling / erasing across located systems','Response delivered; receipt sealed by Saakshi'][i]}));
+    const dsarBtnLabel = dsarSel.stg>=4?'✓ Fulfilled & delivered':'Advance to: '+this.dsarStages[dsarSel.stg+1];
+    const dsarBtnStyle = `margin-top:6px;text-align:center;padding:11px;border-radius:9px;font-size:12.5px;font-weight:600;cursor:${dsarSel.stg>=4?'default':'pointer'};background:${dsarSel.stg>=4?'var(--teal-tint)':'var(--indigo)'};color:${dsarSel.stg>=4?'var(--teal-dark)':'#fff'}`;
+
+    // Breach clock
+    const remMs = Math.max(0, this.breachDeadline - Date.now());
+    const rh = Math.floor(remMs/3600000), rm = Math.floor((remMs%3600000)/60000), rs = Math.floor((remMs%60000)/1000);
+    const pad = (n)=>String(n).padStart(2,'0');
+    const breachClock = pad(rh)+':'+pad(rm)+':'+pad(rs);
+    const breachPct = (72 - rh - rm/60)/72*100;
+    const breachPctStr = breachPct.toFixed(1)+'%';
+    const btRaw = [
+      {t:'T+0:00',label:'Breach detected',detail:'Anomalous export from analytics replica flagged by monitoring',done:true},
+      {t:'T+0:14',label:'Incident opened · INC-0042',detail:'Triage started; forensic logs pulled from warm storage',done:true},
+      {t:'T+2:40',label:'Scope confirmed',detail:'~2,100 principals; PAN + contact exposed; contained',done:true},
+      {t:'T+8:00',label:'DPB notification drafted',detail:'Prativedan generated the §8(6) / Rule 7 notification',done:true},
+      {t:'—',label:'Board & DPO review',detail:'Awaiting approval before DPB submission',done:false},
+      {t:'—',label:'Affected-principal notices',detail:'2,100 notices drafted (EN + HI), ready to send',done:false}
+    ];
+    const breachTimeline = btRaw.map((e,i)=>({...e, notLast:i!==btRaw.length-1,
+      titleColor: e.done?'var(--slate)':'var(--slate-3)',
+      dotStyle:`width:14px;height:14px;flex:0 0 14px;border-radius:50%;margin-top:2px;background:${e.done?'var(--teal)':'#fff'};border:2px solid ${e.done?'var(--teal)':'var(--amber)'}`}));
+
+    // Consent
+    const cLang = this.state.consentLang;
+    const consentPurposes = this.consentPurposes.map(p=>{
+      const on = this.state.consentState[p.id]!==undefined?this.state.consentState[p.id]:p.on;
+      return {...p, on, label:cLang==='hi'?p.hi:p.en, onToggle:()=>this.toggleConsent(p.id),
+        toggleStyle:`width:38px;height:22px;border-radius:20px;flex:0 0 38px;position:relative;cursor:${p.required?'not-allowed':'pointer'};background:${on?'var(--teal)':'#cfd6e0'};opacity:${p.required?.6:1};transition:background .2s`,
+        knobStyle:`position:absolute;top:3px;left:${on?'19px':'3px'};width:16px;height:16px;border-radius:50%;background:#fff;transition:left .2s`,
+        reqLabel:p.required?(cLang==='hi'?'आवश्यक':'Required'):(cLang==='hi'?'वैकल्पिक':'Optional')};
+    });
+    const consentAccepted = consentPurposes.filter(p=>p.on).length;
+    const langTab = (on)=>`padding:4px 11px;border-radius:5px;font-size:11px;font-weight:600;cursor:pointer;color:${on?'var(--indigo)':'#c7cfe0'};background:${on?'#fff':'transparent'}`;
+    const langEnStyle = langTab(cLang==='en');
+    const langHiStyle = langTab(cLang==='hi');
+    const consentHeading = cLang==='hi'?'हम आपके डेटा का उपयोग कैसे करते हैं':'How we use your data';
+    const consentSub = cLang==='hi'?'DPDP अधिनियम के तहत, आप प्रत्येक उद्देश्य के लिए सहमति दे या वापस ले सकते हैं। आवश्यक उद्देश्य सेवा के लिए ज़रूरी हैं।':'Under the DPDP Act you may grant or withdraw consent for each purpose. Required purposes are necessary to provide the service.';
+    const consentBtn = (cLang==='hi'?'सहमति सहेजें · ':'Save consent · ')+consentAccepted+(cLang==='hi'?' उद्देश्य':' purposes');
+
+    const dedicated = ['dashboard','approval','evidence','ledger','assessment','dsar','breach','consent'];
+    const gm = this.genericMeta[route];
+    const isGeneric = !!gm && !dedicated.includes(route);
+    const gen = isGeneric?{...gm, agentShow: gm.agent && gm.agent!=='—', cards:gm.cards}:null;
+
+    // evidence explorer
+    const sealBadge = 'display:inline-flex;align-items:center;gap:5px;font-size:10px;font-weight:600;color:#8a6d10;background:var(--gold-tint);padding:3px 8px;border-radius:20px';
+    const evTypeColor = {snapshot:'var(--indigo)',config:'var(--slate-2)',document:'var(--teal-dark)',assessment:'var(--indigo)',discovery:'var(--teal-dark)',dsar:'var(--gold)'};
+    const evidence = this.evidenceData.map(e=>({...e,
+      onClick:()=>this.setState({evId:e.id}),
+      active:e.id===this.state.evId,
+      cardStyle:`background:#fff;border:1px solid ${e.id===this.state.evId?'var(--gold)':'var(--line)'};border-radius:var(--r);padding:14px 15px;cursor:pointer;box-shadow:${e.id===this.state.evId?'var(--sh-2)':'none'}`,
+      typeColor:evTypeColor[e.type]||'var(--slate-2)'
+    }));
+    const evSel = this.evidenceData.find(e=>e.id===this.state.evId)||this.evidenceData[0];
+
+    // ledger
+    const typeColorL = {GapIdentified:'var(--amber)',PlanGenerated:'var(--indigo)',DryRunPassed:'var(--teal-dark)',ApprovalGranted:'var(--teal)',ExecutionComplete:'var(--indigo)',VerificationPassed:'var(--teal-dark)',ClosureSealed:'var(--gold)',ConsentWithdrawn:'var(--slate-2)',DiscoveryCompleted:'var(--teal-dark)'};
+    const actorBadge = {agent:'background:var(--teal-tint);color:var(--teal-dark)',human:'background:var(--gold-tint);color:#8a6d10',system:'background:var(--mist);color:var(--slate-2)'};
+    const ledger = this.ledgerEntries.map((l,i)=>{
+      const prev = this.ledgerEntries[i+1];
+      return {...l,
+        entryHash:(l.seq*2654435761%0xfffffff).toString(16).padStart(7,'0'),
+        prevHash:prev?(prev.seq*2654435761%0xfffffff).toString(16).padStart(7,'0'):'genesis',
+        onClick:()=>this.setState({chainOpen:l.corr, route:'ledger'}),
+        dot:typeColorL[l.type]||'var(--slate-2)',
+        actorStyle:actorBadge[l.actorType],
+        inChain: l.corr===this.state.chainOpen,
+        rowStyle:`display:flex;align-items:center;gap:12px;padding:11px 16px;border-bottom:1px solid var(--line-2);cursor:pointer;background:${l.corr===this.state.chainOpen?'rgba(15,181,165,.05)':'#fff'}`
+      };
+    });
+    const chainSteps = this.chainSteps.map((s,i)=>({...s, n:i+1, dot:typeColorL[s.k]||'var(--slate-2)', last:i===this.chainSteps.length-1}));
+
+    const titleMap = {dashboard:'Compliance Dashboard',approval:'Approval Console'};
+    const titleFor = {dashboard:'Compliance Dashboard',approval:'Approval Console',evidence:'Evidence Explorer',ledger:'Audit Ledger',assessment:'Assessment',dsar:'DSAR / Rights Requests',breach:'Breach & Incident Ops',consent:'Consent Manager'};
+    const screenTitle = titleFor[route] || (gm?gm.title:'Axiom Proof');
+    const crumbFor = {approval:'Remediate · Sudhaar + Karya',dashboard:'Overview',evidence:'Evidence & Audit · Saakshi + Lekha',ledger:'Evidence & Audit · Saakshi + Lekha',assessment:'Assess · Parikshan',dsar:'Rights & Consent',consent:'Rights & Consent',breach:'Incident'};
+    const crumb = t.name+' · '+(crumbFor[route]||'module');
+
+    return {
+      navGroups, tenants, tenant, tenantsOpen:this.state.tenantsOpen,
+      toggleTenants:()=>this.setState({tenantsOpen:!this.state.tenantsOpen}),
+      killOn:this.state.killOn, toggleKill:()=>this.setState({killOn:!this.state.killOn}),
+      killStyle:`padding:6px 12px;border-radius:9px;font-size:11.5px;font-weight:600;cursor:pointer;border:1px solid ${this.state.killOn?'var(--ember)':'var(--line)'};color:${this.state.killOn?'#fff':'var(--ember)'};background:${this.state.killOn?'var(--ember)':'#fff'}`,
+      crumb, screenTitle,
+      isDashboard: route==='dashboard', isApproval: route==='approval', isGeneric,
+      isEvidence: route==='evidence', isLedger: route==='ledger', isAssessment: route==='assessment',
+      evidence, evSel, sealBadge, ledger, chainSteps, chainOpen:this.state.chainOpen,
+      isDsar: route==='dsar', isBreach: route==='breach', isConsent: route==='consent',
+      dsar, dsarSel, dsarWorkflow, advanceDsar:()=>this.advanceDsar(this.state.dsarSel),
+      breachClock, breachPct, breachPctStr, breachTimeline,
+      dsarBtnLabel, dsarBtnStyle,
+      consentPurposes, consentAccepted, consentLang:cLang,
+      langEnStyle, langHiStyle, consentHeading, consentSub, consentBtn,
+      setLangEn:()=>this.setState({consentLang:'en'}), setLangHi:()=>this.setState({consentLang:'hi'}),
+      controls, passCount, failCount, partialCount, pipeline, assessRunning, assessStage,
+      runAssessment:this.runAssessment,
+      runBtnLabel: assessRunning?'Running…':'▶ Run new assessment',
+      runBtnStyle: `padding:10px 18px;border-radius:9px;font-size:12.5px;font-weight:700;cursor:${assessRunning?'default':'pointer'};background:${assessRunning?'rgba(255,255,255,.15)':'var(--teal)'};color:#fff`,
+      pipelineMsg: assessStage>=0&&assessStage<this.pipelineStages.length?(this.pipelineStages[assessStage].agent+' — '+this.pipelineStages[assessStage].detail):'assessment complete · report generated · every step written to the ledger',
+      kpis, gapDomains, pendingPlans, agentFeed, daysToEnforce:276,
+      goAssessment:()=>this.go('assessment'), goApproval:()=>this.go('approval'), goRegwatch:()=>this.go('regwatch'),
+      // approval
+      plan, actions, sel:selWithStyle, selectedCount, approvedCount,
+      selectAllLabel: allSel?'Clear selection':'Select all pending',
+      toggleSelectAll:this.toggleSelectAll, approveSelected:this.approveSelected, approveAll:this.approveAll,
+      rejectSelected:this.rejectSelected, deferSelected:this.deferSelected,
+      gen
+    };
+  }
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,82 @@
+# Axiom Proof — Complete Strategy & Build Document Set
+### Axiom Minds Private Limited · https://axiomminds.ai
+**Compiled:** August 2026
+
+---
+
+## Document index
+
+| # | Document | Contents | Use it for |
+|---|---|---|---|
+| **00** | `00_README_Document_Index.md` | This file | Orientation |
+| **01** | `01_Product_Naming_Branding_and_GTM.md` | Product name options + recommendation, agent roster, brand guidelines (colour, type, logo, tone), positioning, messaging, 3-channel GTM, launch sequence, materials checklist, objection handling | Naming decision, brand build, website copy, sales conversations |
+| **02** | `02_Phase_Wise_Implementation_Plan.md` | Agentic autonomy ladder (L0–L4), Phases 0–5 with every module and feature, build sequence, 49-module master index, critical path and dependency graph | Build planning, sprint sequencing, what to build next |
+| **03** | `03_BRD_PRD.md` | Business context, objectives, scope, stakeholders, business rules, personas, user journeys, 13 functional requirement groups, non-functional requirements, constraints, risks, acceptance criteria | Handing to a developer/contractor, defining "done", scoping |
+| **04** | `04_Solution_Architecture.md` | 4-layer architecture (Experience / API / Agentic Middle / Data), control plane vs data plane, agent runtime and permissions, execution safety chain, audit ledger schema, tenancy, deployment evolution, 10 ADRs | Technical build, architecture decisions, future engineering hires |
+| **—** | `DPDPA_Axiom_Minds_Strategic_Roadmap.md` | Market sizing (TAM/SAM/SOM), competitive landscape, right-to-win, pricing, cash-flow model, revenue projections, risk register, council deliberation log | Strategic context, investor conversation (if ever), market positioning |
+
+---
+
+## The core idea in one paragraph
+
+**Axiom Proof** is an agentic DPDPA compliance platform from Axiom Minds Private Limited. AI agents discover personal data across a client's systems, classify it, assess it against a versioned control library mapped to the DPDP Act and Rules, collect and seal evidence, generate reports, and propose prioritised remediation plans — each with a dry-run diff preview and a generated rollback plan. **A human reviews and approves**, individually or in batches. Only then do agents execute, with blast-radius caps, per-action approval-token validation, pre/post state capture, post-execution verification, and an append-only hash-chained audit ledger recording every action by both agents and humans. The company is bootstrapped: a solo founder plus agents, with hiring and certifications triggered by realised revenue rather than a funding calendar.
+
+---
+
+## The recommended name
+
+> ### ✅ **Axiom Proof** — *by Axiom Minds*
+> *"Agents do the work. You approve. The proof is automatic."*
+
+Full rationale in Document 01. Backup name: **ProofPlane**. Trademark filing recommended in Phase 0 (Classes 42 and 45, ~₹15–25k).
+
+---
+
+## The agent roster
+
+| Agent | Function |
+|---|---|
+| **Drishti** | Discovery — finds personal data (batch or targeted) |
+| **Vibhaag** | Classification — categorises by DPDPA type and sensitivity |
+| **Parikshan** | Assessment — scores against the control library |
+| **Saakshi** | Evidence — collects, timestamps, seals |
+| **Sudhaar** | Remediation planning — proposes fixes with rollback plans (holds **no** write access) |
+| **Karya** | Execution — executes approved actions only (batch or individual) |
+| **Lekha** | Audit — writes the immutable hash-chained ledger |
+| **Nazar** | Regulatory watch — monitors MeitY/DPB/gazette |
+| **Prativedan** | Reporting — Board, auditor and DPB-ready documents |
+| **Sanket** | Market signal — buying-intent intelligence (internal GTM) |
+
+---
+
+## The non-negotiable safety rules
+
+These appear in every document and must never be relaxed:
+
+1. **No mutating agent action executes without recorded human approval.** Enforced architecturally via signed, scope-bound approval tokens validated per action — not by convention.
+2. **Every executable action must have a completed dry-run with a readable diff preview before approval is even possible.**
+3. **Every action must carry a generated, validated rollback plan, created at planning time.**
+4. **Every action — read or write, agent or human — is written to the append-only, hash-chained audit ledger.**
+5. **The planning agent holds no write credentials.** Separation of duties between proposing and executing.
+6. **Blast-radius caps are enforced pre-flight and in-flight**, with a global kill switch.
+
+---
+
+## Suggested reading order
+
+**If you are deciding the name and brand:** 01
+**If you are about to start building:** 02 → 03 → 04
+**If you are explaining the business to someone:** Strategic Roadmap → 01
+**If you are briefing a contractor or future hire:** 03 → 04 → 02
+
+---
+
+## Immediate next actions (first 30 days)
+
+- [ ] Confirm product name; file trademark for AXIOM PROOF (Classes 42, 45)
+- [ ] Complete incorporation of Axiom Minds Private Limited
+- [ ] Stand up `axiomminds.ai` with positioning, product page and gap-scan waitlist
+- [ ] Build Control Library v0 — decompose DPDPA + Rules into ~43 testable controls
+- [ ] Build Parikshan v0 (assessment) + Prativedan v0 (reporting) + public gap-scan
+- [ ] Begin LinkedIn content cadence
+- [ ] Open 10 first conversations in the founder network

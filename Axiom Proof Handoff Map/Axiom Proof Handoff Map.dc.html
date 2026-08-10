@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;600;700;800&family=Inter:wght@400;450;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --indigo:#1E2A4A; --indigo-700:#243356; --teal:#0FB5A5; --teal-dark:#0a8d80; --teal-tint:#e6f7f5;
+    --gold:#C9A227; --gold-tint:#f7f0d8; --ember:#D9534F; --ember-tint:#fbeceb;
+    --slate:#2F3542; --slate-2:#5b6270; --slate-3:#8a909b; --mist:#F4F6F8; --line:#e4e8ee; --line-2:#eef1f5;
+    --sans:'Inter',system-ui,sans-serif; --head:'Inter Tight',var(--sans); --mono:'JetBrains Mono',monospace;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;font-family:var(--sans);color:var(--slate);background:var(--mist);-webkit-font-smoothing:antialiased}
+  a{color:var(--teal-dark)}
+</style>
+</helmet>
+
+<div style="max-width:1080px;margin:0 auto;padding:44px 40px 90px">
+  <!-- header -->
+  <div style="margin-bottom:12px;display:flex;align-items:center;gap:11px">
+    <div style="width:32px;height:32px;border-radius:8px;background:linear-gradient(150deg,var(--teal),var(--teal-dark));display:flex;align-items:center;justify-content:center"><div style="width:13px;height:13px;border:2.5px solid #fff;border-radius:50%"></div></div>
+    <span style="font-family:var(--head);font-weight:700;font-size:15px;color:var(--indigo);letter-spacing:.02em">AXIOM PROOF</span>
+  </div>
+  <h1 style="font-family:var(--head);font-size:34px;font-weight:800;color:var(--indigo);margin:0;letter-spacing:-.01em">Handoff Map — screens, routes & data model</h1>
+  <p style="font-size:14.5px;color:var(--slate-2);max-width:720px;margin:12px 0 0;line-height:1.6">Implementation reference for the Claude Code build. The prototype delivers the full end-state UI with mock data; this maps each screen to its route, owning agent, phase, and the data entities it reads/writes. Architecture, safety rules and stack follow Docs 03 & 04.</p>
+
+  <!-- deliverables -->
+  <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin:28px 0 40px">
+    <sc-for list="{{ files }}" as="f" hint-placeholder-count="3">
+      <a href="{{ f.href }}" style="text-decoration:none;background:#fff;border:1px solid var(--line);border-radius:12px;padding:18px 20px;display:block">
+        <div style="font-size:11px;color:var(--teal-dark);font-weight:600;letter-spacing:.04em;text-transform:uppercase">{{ f.kind }}</div>
+        <div style="font-family:var(--head);font-size:16px;font-weight:600;color:var(--indigo);margin-top:5px">{{ f.name }}</div>
+        <div style="font-size:12px;color:var(--slate-3);margin-top:5px;line-height:1.45">{{ f.desc }}</div>
+      </a>
+    </sc-for>
+  </div>
+
+  <!-- safety rules -->
+  <div style="background:var(--indigo);border-radius:14px;padding:24px 26px;color:#fff;margin-bottom:40px">
+    <div style="font-family:var(--head);font-size:16px;font-weight:600;margin-bottom:14px">Non-negotiable rules (enforce architecturally, not by convention)</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px 22px">
+      <sc-for list="{{ rules }}" as="r" hint-placeholder-count="6">
+        <div style="display:flex;gap:10px;font-size:12.5px;color:#c7cfe0;line-height:1.45"><span style="color:var(--teal);font-weight:700">{{ r.n }}</span><span>{{ r.t }}</span></div>
+      </sc-for>
+    </div>
+  </div>
+
+  <!-- ROUTE MAP -->
+  <div style="font-family:var(--head);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--slate-3);font-weight:600;margin-bottom:14px">Route map · Axiom Proof App.dc.html (in-app routing, sidebar)</div>
+  <div style="background:#fff;border:1px solid var(--line);border-radius:12px;overflow:hidden;margin-bottom:40px">
+    <div style="display:grid;grid-template-columns:120px 1.4fr 90px 90px 1.3fr;gap:12px;padding:11px 18px;background:var(--mist);border-bottom:1px solid var(--line);font-size:10px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;color:var(--slate-3)"><span>route</span><span>Screen (EN · HI)</span><span>Agent</span><span>Phase</span><span>Key entities</span></div>
+    <sc-for list="{{ routes }}" as="r" hint-placeholder-count="20">
+      <div style="{{ r.rowStyle }}">
+        <span style="font-family:var(--mono);font-size:11px;color:var(--teal-dark)">/{{ r.route }}</span>
+        <div><div style="font-size:12.5px;color:var(--slate);font-weight:500">{{ r.en }}</div><div style="font-size:11px;color:var(--slate-3)">{{ r.hi }} · {{ r.module }}</div></div>
+        <span style="font-size:11.5px;color:var(--slate-2)">{{ r.agent }}</span>
+        <span style="font-size:9px;font-weight:600;padding:2px 6px;border-radius:4px;background:var(--indigo);color:#fff;justify-self:start;height:fit-content">{{ r.phase }}</span>
+        <span style="font-family:var(--mono);font-size:10px;color:var(--slate-3)">{{ r.entities }}</span>
+      </div>
+    </sc-for>
+  </div>
+
+  <!-- DATA MODEL -->
+  <div style="font-family:var(--head);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--slate-3);font-weight:600;margin-bottom:14px">Core data model · PostgreSQL + object store (WORM) + append-only ledger</div>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:24px">
+    <sc-for list="{{ entities }}" as="e" hint-placeholder-count="12">
+      <div style="background:#fff;border:1px solid var(--line);border-radius:12px;padding:15px 17px">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:9px"><span style="font-family:var(--mono);font-size:13px;font-weight:500;color:var(--indigo)">{{ e.name }}</span><span style="font-size:8.5px;font-weight:600;padding:1.5px 6px;border-radius:4px;{{ e.tagStyle }}">{{ e.tag }}</span></div>
+        <div style="font-family:var(--mono);font-size:10.5px;color:var(--slate-2);line-height:1.7">{{ e.fields }}</div>
+        <sc-if value="{{ e.note }}" hint-placeholder-val="{{ false }}"><div style="font-size:10.5px;color:var(--slate-3);margin-top:8px;line-height:1.4;font-style:italic">{{ e.note }}</div></sc-if>
+      </div>
+    </sc-for>
+  </div>
+  <div style="background:var(--gold-tint);border:1px solid #ecdca8;border-radius:12px;padding:14px 18px;margin-bottom:40px;font-size:12px;color:#7a5f10;line-height:1.5"><b>Execution chain (FR-10.3):</b> Finding → Plan → Action → DryRun → Approval(+ApprovalToken) → Execution(pre/post state) → Verification → Evidence(closure) — every hop emits a <span style="font-family:var(--mono)">LedgerEntry</span> sharing one <span style="font-family:var(--mono)">correlation_id</span>, so the whole lifecycle is reconstructable by an independent reviewer.</div>
+
+  <!-- WIRING -->
+  <div style="font-family:var(--head);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--slate-3);font-weight:600;margin-bottom:14px">Cross-screen wiring (implemented in the prototype)</div>
+  <div style="background:#fff;border:1px solid var(--line);border-radius:12px;padding:8px 20px;margin-bottom:40px">
+    <sc-for list="{{ wiring }}" as="w" hint-placeholder-count="6">
+      <div style="display:flex;gap:12px;padding:11px 0;border-bottom:1px solid var(--line-2);font-size:12.5px;color:var(--slate)"><span style="font-family:var(--mono);font-size:11px;color:var(--teal-dark);flex:0 0 190px">{{ w.from }}</span><span>{{ w.to }}</span></div>
+    </sc-for>
+  </div>
+
+  <!-- STACK -->
+  <div style="font-family:var(--head);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--slate-3);font-weight:600;margin-bottom:14px">Target stack (Doc 04) — this prototype is UI-only mock; wire to these</div>
+  <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:10px">
+    <sc-for list="{{ stack }}" as="s" hint-placeholder-count="8">
+      <div style="background:#fff;border:1px solid var(--line);border-radius:10px;padding:13px 16px;display:flex;justify-content:space-between;gap:12px"><span style="font-size:12px;color:var(--slate-2)">{{ s.layer }}</span><span style="font-size:12px;color:var(--indigo);font-weight:600;text-align:right">{{ s.choice }}</span></div>
+    </sc-for>
+  </div>
+
+  <div style="text-align:center;color:var(--slate-3);font-size:11.5px;margin-top:44px">Axiom Minds Private Limited · Prototype delivers full end-state UI + mock data across all phases/modules · logical implementation staged phase-by-phase per Doc 02.</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+class Component extends DCLogic {
+  renderVals(){
+    const R = (route,en,hi,agent,phase,module,entities,alt)=>({route,en,hi,agent,phase,module,entities,
+      rowStyle:`display:grid;grid-template-columns:120px 1.4fr 90px 90px 1.3fr;gap:12px;padding:11px 18px;border-bottom:1px solid var(--line-2);align-items:center;background:${alt?'#fcfcfd':'#fff'}`});
+    let i=0; const alt=()=>i++%2===1;
+    const routes=[
+      R('dashboard','Compliance Dashboard','डैशबोर्ड','—','P0','Overview','Tenant, Finding, Approval, LedgerEntry',false),
+      R('discovery','Data Discovery','डेटा खोज','Drishti','P1','M2.2','Connector, DiscoveryRun, DataAsset',true),
+      R('classification','Classification','वर्गीकरण','Vibhaag','P1','M2.3','DataAsset, Classification',false),
+      R('datamap','Data Map & RoPA','डेटा मानचित्र','Vibhaag','P1','M1.3','ProcessingActivity, DataFlow',true),
+      R('assessment','Assessment','मूल्यांकन','Parikshan','P0','M0.3','Control, Finding, AssessmentRun',false),
+      R('controls','Control Library','नियंत्रण संग्रह','Parikshan','P0','M0.2','Control (versioned)',true),
+      R('remediation','Remediation Plans','सुधार योजना','Sudhaar','P3','M3.1','Plan, Action, RollbackPlan',false),
+      R('approval','Approval Console ★','अनुमोदन कंसोल','Sudhaar+Karya','P3','M3.3','Plan, Action, DryRun, Approval, ApprovalToken',true),
+      R('execution','Execution & Rollback','निष्पादन','Karya','P3','M3.4','Execution, Rollback, BlastRadius',false),
+      R('evidence','Evidence Explorer','साक्ष्य','Saakshi','P2','M2.4','Evidence (WORM), EvidencePack',true),
+      R('ledger','Audit Ledger','अंकेक्षण बही','Lekha','P2','M2.5','LedgerEntry (hash-chained)',false),
+      R('dsar','DSAR / Rights','अधिकार अनुरोध','—','P3','M2.8','DsarRequest, IdentityCheck',true),
+      R('consent','Consent Manager','सहमति प्रबंधन','—','P3','M3.8','ConsentRecord, Purpose, Withdrawal',false),
+      R('breach','Breach & Incident','उल्लंघन','—','P3','M3.9','Incident, DpbNotification',true),
+      R('monitoring','Continuous Monitoring','सतत निगरानी','Drishti+Parikshan','P3','M3.10','Schedule, DriftAlert',false),
+      R('regwatch','Regulatory Watch','नियामक निगरानी','Nazar','P2','M2.9','RegSignal, ControlImpact',true),
+      R('reports','Reports','रिपोर्ट','Prativedan','P2','M2.7','Report, ReportTemplate',false),
+      R('workbench','Agent Workbench','एजेंट कार्यक्षेत्र','all','P0','M0.6','AgentRun, PromptVersion, ModelConfig',true),
+      R('partner','Partner Portal','भागीदार पोर्टल','—','P4','M4.7','Partner, ManagedClient, Brand',false),
+      R('connectors','Connectors','कनेक्टर','—','P2','M2.1','Connector, CredentialGrant',true),
+      R('policies','Standing Policies','स्थायी नीतियाँ','Policy Engine','P4','M4.1','StandingPolicy, Escalation',false)
+    ];
+
+    const tagStyle={core:'background:var(--teal-tint);color:var(--teal-dark)',ledger:'background:var(--gold-tint);color:#8a6d10',ref:'background:var(--mist);color:var(--slate-2)'};
+    const E=(name,tag,fields,note)=>({name,tag,fields,note,tagStyle:tagStyle[tag]});
+    const entities=[
+      E('Tenant','core','id · name · sector · residency=IN · encryptionKeyId · postureScore','Row-Level Security; per-tenant KMS key (NFR-2).'),
+      E('Engagement','core','id · tenantId · type(vDPO|assessment) · state · libVersion','Durable state machine: discovery→…→closure.'),
+      E('Control','ref','id · code · title · actSection · rule · evidenceType · remediationPattern · version','Versioned; assessments record the version used (FR-3.5).'),
+      E('Finding','core','id · engagementId · controlId · status(pass|partial|fail) · score · exposure',''),
+      E('Plan','core','id · engagementId · version · state · correlationId',''),
+      E('Action','core','id · planId · type(typed) · params · riskScore · blastRadius · deps[] · rollbackPlanId','Typed from a vetted catalogue — never free-text (FR-5.1).'),
+      E('DryRun','core','id · actionId · diff · resultHash · expiresAt','Mandatory before approval; stale runs invalid (FR-6.3).'),
+      E('Approval','core','id · planId · actionIds[] · approverId · scope · reason · expiresAt',''),
+      E('ApprovalToken','core','id · signature · planVersion · actionSet · approverId · singleUse · expiry','Validated per-action by Execution Engine (ADR-2).'),
+      E('Execution','core','id · actionId · tokenId · preStateRef · postStateRef · result',''),
+      E('Evidence','ledger','id · type · sourceRef · collectingAgent · contentHash · sealedAt · controlIds[]','Immutable WORM; corrections appended (BR-5).'),
+      E('LedgerEntry','ledger','seq · correlationId · actorType · actorId · agentVersion · modelId · promptHash · approvalTokenId · prevHash · entryHash','INSERT-only by DB role (ADR-5).'),
+      E('DsarRequest','core','id · principal · type · stage · slaClock · identityVerified',''),
+      E('ConsentRecord','ledger','id · principalId · purposes[] · noticeVersion · lang · grantedAt · withdrawnAt','7-yr retention (FR-4.5).'),
+      E('Incident','core','id · detectedAt · scope · affectedPrincipals · dpbClock · status',''),
+      E('Connector','ref','id · type · scope(read|write) · credentialGrant · expiresAt','Read-only by default; write is scoped, time-bound, revocable (AP-8).')
+    ];
+
+    const wiring=[
+      {from:'Dashboard → Approval',to:'"Pending your approval" cards + Karya-waiting KPI open the Approval Console'},
+      {from:'Approval → Execution',to:'Approve selected/all issues a token → actions animate approved → executing → executed → ✓ verified'},
+      {from:'Assessment → run pipeline',to:'"Run new assessment" animates Drishti → Vibhaag → Parikshan → Saakshi → Prativedan'},
+      {from:'Assessment → Evidence',to:'Each control links to its sealed evidence artifact (✦ e-xxxx)'},
+      {from:'Ledger → chain drill-down',to:'Click any entry → reconstructs finding → … → closure by correlation_id'},
+      {from:'Consent → EN/HI toggle',to:'Live notice preview + purpose toggles switch language; writes to consent ledger'},
+      {from:'DSAR → workflow advance',to:'"Advance stage" steps intake → identity → locate → fulfil → delivered'},
+      {from:'Tenant switcher',to:'Meridian Pay (fintech) · Aarogya Health (healthcare) · Streamline SaaS — rescopes all screens'},
+      {from:'Kill switch',to:'Global banner halts all in-flight execution (FR-8.6)'}
+    ];
+
+    const stack=[
+      {layer:'Frontend',choice:'Next.js + TypeScript + Tailwind (brand tokens)'},
+      {layer:'API',choice:'Node/TS · REST + GraphQL · WS for agent progress'},
+      {layer:'Agent runtime',choice:'Python · MCP tools · sandboxed, allowlisted'},
+      {layer:'Orchestration',choice:'Durable workflow (Temporal-class) / PG state machine'},
+      {layer:'Datastore',choice:'PostgreSQL 16 + pgvector · RLS tenancy'},
+      {layer:'Evidence',choice:'S3-compatible, India region, object-lock WORM'},
+      {layer:'Model access',choice:'Model Gateway only — PII redaction, cost, prompt hash'},
+      {layer:'Deploy',choice:'Modular monolith → split-plane (P5), India region'}
+    ];
+
+    return {
+      files:[
+        {kind:'Product app',name:'Axiom Proof App.dc.html',href:'Axiom Proof App.dc.html',desc:'21 modular screens, in-app routing, 3 demo tenants, all wired flows.'},
+        {kind:'Public',name:'Axiom Proof Site.dc.html',href:'Axiom Proof Site.dc.html',desc:'Marketing site + interactive free gap-scan → generated report.'},
+        {kind:'Design system',name:'Axiom Proof Design System.dc.html',href:'Axiom Proof Design System.dc.html',desc:'Tokens, type, components, agent identity, voice & tone.'}
+      ],
+      rules:[
+        {n:'1',t:'No mutating agent action executes without a recorded human approval (signed, scope-bound token, validated per action).'},
+        {n:'2',t:'Every executable action needs a completed dry-run with readable diff before approval is possible.'},
+        {n:'3',t:'Every action carries a generated, validated rollback plan created at planning time.'},
+        {n:'4',t:'Every action — read or write, agent or human — is written to the append-only, hash-chained ledger.'},
+        {n:'5',t:'The planning agent (Sudhaar) holds no write credentials. Separation of duties.'},
+        {n:'6',t:'Blast-radius caps enforced pre-flight and in-flight, with a global kill switch.'}
+      ],
+      routes, entities, wiring, stack
+    };
+  }
+}
+</script>
+</body>
+</html>
