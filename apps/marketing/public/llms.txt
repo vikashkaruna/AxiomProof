@@ -1,0 +1,44 @@
+# Axiom Proof
+
+> Agentic DPDPA compliance platform for Indian mid-market enterprises. AI agents discover your personal data, assess your gaps, and — after you approve — execute the fix. Every action is sealed into a verifiable, hash-chained audit trail.
+
+## What we do
+- Automated DPDPA + DPDP Rules 2025 gap assessment against 43 versioned controls
+- AI agent discovery of personal data across systems (Phase 2 live connectors; Phase 1 interview-driven)
+- Typed remediation plans with dry-run diffs, blast-radius caps, and generated rollback plans
+- Approval-gated execution: no mutating action runs without a signed, scope-bound human approval token, validated per action
+- Append-only, hash-chained audit ledger for every action — agent or human
+- Continuous evidence vault (S3 Object Lock Compliance mode, India region)
+- Board, auditor, and DPB-ready reports
+
+## Who we serve
+- Indian mid-market enterprises: 200 to 1,000 employees, ₹50 to 500 crore revenue
+- Companies facing real DPDPA penalty exposure (up to ₹250 crore per contravention) without a privacy team and without the budget for enterprise compliance suites
+- CA / CS / law / DPO firms looking for a white-label delivery partner
+
+## The non-negotiable safety rules
+1. No mutating agent action executes without recorded human approval
+2. Every executable action needs a completed dry-run with a readable diff
+3. Every action carries a generated, validated rollback plan
+4. Every action — read or write, agent or human — is written to the hash-chained ledger
+5. The planning agent holds no write credentials (separation of duties)
+6. Blast-radius caps enforced pre-flight and in-flight, with a global kill switch
+
+## Key links
+- [Homepage](https://axiomminds.ai)
+- [Free gap-scan](https://axiomminds.ai/#gap-scan)
+- [Agent roster](https://axiomminds.ai/agents)
+- [Pricing](https://axiomminds.ai/pricing)
+- [About](https://axiomminds.ai/about)
+- [Contact](https://axiomminds.ai/contact)
+- [Product app](https://app.axiomminds.ai)
+
+## Company
+Axiom Minds Private Limited · https://axiomminds.ai
+Data residency: ap-south-1 (Mumbai, India)
+DPDP Act, 2023 + DPDP Rules 2025 are the primary regulatory anchors.
+Penalties up to ₹250 crore per contravention. Full enforcement 13/14 May 2027.
+
+## Contact
+- General: hello@axiomminds.ai
+- Privacy: privacy@axiomminds.ai

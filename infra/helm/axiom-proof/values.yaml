@@ -1,0 +1,150 @@
+# Default values for axiom-proof.
+# This is a YAML-formatted file.
+# Override per-environment in values-prod.yaml, values-staging.yaml, etc.
+
+image:
+  registry: ghcr.io/axiom-minds
+  tag: 0.1.0
+  pullPolicy: IfNotPresent
+
+imagePullSecrets:
+  - name: ghcr-axiom-minds
+
+# Global labels
+labels:
+  app.kubernetes.io/part-of: axiom-proof
+  app.kubernetes.io/managed-by: helm
+
+# ─── Service-to-service settings ────────────────────────────────────
+config:
+  # All India-residency by default
+  awsRegion: ap-south-1
+  supabaseUrl: ""
+  supabaseAnonKey: ""
+  supabaseServiceKey: ""
+  s3EvidenceBucket: axiom-proof-evidence
+  bffPublicUrl: ""
+  modelGatewayUrl: http://axiom-model-gateway:8001
+  temporalAddress: ap-south-1.aws.api.temporal.io:7233
+  temporalNamespace: axiom-proof
+  # Agent runtime → BFF internal token
+  internalToken: ""
+
+# ─── Web (Next.js product app) ──────────────────────────────────────
+web:
+  enabled: true
+  replicaCount: 2
+  resources:
+    requests:
+      cpu: 250m
+      memory: 256Mi
+    limits:
+      cpu: 1000m
+      memory: 1Gi
+  service:
+    type: ClusterIP
+    port: 3000
+  ingress:
+    enabled: true
+    className: nginx
+    host: app.axiomminds.ai
+    tls:
+      enabled: true
+      secretName: axiom-app-tls
+  env:
+    NEXT_PUBLIC_SUPABASE_URL: ""
+    NEXT_PUBLIC_SUPABASE_ANON_KEY: ""
+    BFF_PUBLIC_URL: "http://axiom-bff:4000"
+
+# ─── Marketing (Next.js public site) ───────────────────────────────
+marketing:
+  enabled: true
+  replicaCount: 2
+  resources:
+    requests:
+      cpu: 200m
+      memory: 192Mi
+    limits:
+      cpu: 500m
+      memory: 512Mi
+  service:
+    type: ClusterIP
+    port: 3000
+  ingress:
+    enabled: true
+    className: nginx
+    host: axiomminds.ai
+    tls:
+      enabled: true
+      secretName: axiom-marketing-tls
+
+# ─── BFF (Node/TypeScript) ──────────────────────────────────────────
+bff:
+  enabled: true
+  replicaCount: 2
+  resources:
+    requests:
+      cpu: 250m
+      memory: 256Mi
+    limits:
+      cpu: 1000m
+      memory: 1Gi
+  service:
+    type: ClusterIP
+    port: 4000
+  autoscaling:
+    enabled: true
+    minReplicas: 2
+    maxReplicas: 10
+    targetCPUUtilizationPercentage: 70
+
+# ─── Agent runtime (Python) ────────────────────────────────────────
+agentRuntime:
+  enabled: true
+  replicaCount: 2
+  resources:
+    requests:
+      cpu: 500m
+      memory: 512Mi
+    limits:
+      cpu: 2000m
+      memory: 2Gi
+  service:
+    type: ClusterIP
+    port: 8000
+  autoscaling:
+    enabled: true
+    minReplicas: 2
+    maxReplicas: 20
+    targetCPUUtilizationPercentage: 70
+
+# ─── Model gateway (Python) ────────────────────────────────────────
+modelGateway:
+  enabled: true
+  replicaCount: 2
+  resources:
+    requests:
+      cpu: 500m
+      memory: 512Mi
+    limits:
+      cpu: 2000m
+      memory: 2Gi
+  service:
+    type: ClusterIP
+    port: 8001
+  env:
+    piiRedactionEnabled: "true"
+    selfHostedBaseUrl: ""  # filled in values-prod.yaml with the vLLM service URL
+    selfHostedModel: "Qwen/Qwen2.5-32B-Instruct-AWQ"
+
+# ─── Temporal worker (Python) ──────────────────────────────────────
+temporalWorker:
+  enabled: true
+  replicaCount: 1
+  resources:
+    requests:
+      cpu: 250m
+      memory: 256Mi
+    limits:
+      cpu: 1000m
+      memory: 1Gi

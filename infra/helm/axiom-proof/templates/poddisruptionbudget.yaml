@@ -1,0 +1,38 @@
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: {{ include "axiom-proof.fullname" . }}-bff
+  labels:
+    {{- include "axiom-proof.labels" . | nindent 4 }}
+spec:
+  minAvailable: 1
+  selector:
+    matchLabels:
+      {{- include "axiom-proof.selectorLabels" . | nindent 6 }}
+      app.kubernetes.io/component: bff
+---
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: {{ include "axiom-proof.fullname" . }}-agent-runtime
+  labels:
+    {{- include "axiom-proof.labels" . | nindent 4 }}
+spec:
+  minAvailable: 1
+  selector:
+    matchLabels:
+      {{- include "axiom-proof.selectorLabels" . | nindent 6 }}
+      app.kubernetes.io/component: agent-runtime
+---
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: {{ include "axiom-proof.fullname" . }}-model-gateway
+  labels:
+    {{- include "axiom-proof.labels" . | nindent 4 }}
+spec:
+  minAvailable: 1
+  selector:
+    matchLabels:
+      {{- include "axiom-proof.selectorLabels" . | nindent 6 }}
+      app.kubernetes.io/component: model-gateway

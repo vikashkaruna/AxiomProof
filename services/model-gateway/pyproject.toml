@@ -1,0 +1,46 @@
+[project]
+name = "axiom-model-gateway"
+version = "0.1.0"
+description = "Axiom Proof Model Gateway — self-hosted LLM routing with PII redaction, token accounting, and prompt-version registry."
+authors = [{ name = "Axiom Minds Private Limited" }]
+requires-python = ">=3.11"
+license = { text = "Proprietary" }
+
+dependencies = [
+  "fastapi>=0.115.0",
+  "uvicorn[standard]>=0.30.6",
+  "pydantic>=2.8.0",
+  "pydantic-settings>=2.5.0",
+  "httpx>=0.27.2",
+  "litellm>=1.50.0",
+  "presidio-analyzer>=2.2.0",
+  "presidio-anonymizer>=2.2.0",
+  "structlog>=24.4.0",
+  "redis>=5.0.0",
+  "cachetools>=5.5.0",
+]
+
+[project.optional-dependencies]
+dev = [
+  "pytest>=8.3.0",
+  "pytest-asyncio>=0.24.0",
+  "pytest-mock>=3.14.0",
+  "respx>=0.21.0",
+  "ruff>=0.6.0",
+  "mypy>=1.11.0",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+testpaths = ["tests"]

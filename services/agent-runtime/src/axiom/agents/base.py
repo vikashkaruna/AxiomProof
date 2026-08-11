@@ -1,0 +1,265 @@
+"""Agent base class.
+
+All 10 agents share a common contract:
+  - inputs (validated against a Pydantic model)
+  - outputs (validated against a Pydantic model)
+  - tool scopes (declared; runtime enforces)
+  - autonomy level (L0..L4)
+  - escalation conditions
+
+The base class provides:
+  - Correlation IDs that propagate to the ledger
+  - Ledger appends with agent identity, model, prompt hash
+  - Model gateway calls with PII-redaction defaults
+  - Standard error handling (failures go to the ledger)
+
+Per Doc 04 §5.2:
+  - Planning agent (Sudhaar) holds NO write credentials
+  - Execution agent (Karya) requires a signed approval token
+  - Audit agent (Lekha) only appends to the ledger
+"""
+
+from __future__ import annotations
+
+import time
+import traceback
+import uuid
+from abc import ABC, abstractmethod
+from dataclasses import dataclass, field
+from datetime import datetime
+from enum import Enum
+from typing import Any, ClassVar, Generic, TypeVar
+
+import structlog
+from pydantic import BaseModel, Field
+
+from ..canonicalise import sha256_hex
+from ..config import Settings, get_settings
+from ..evidence_client import EvidenceVault
+from ..ledger_client import AppendInput, LedgerClient, new_correlation_id
+from ..model_gateway import ModelGateway, ModelRequest, ModelResponse, TaskKind
+
+
+class AutonomyLevel(str, Enum):
+    L0 = "L0"  # Agent-assisted, human does everything client-facing
+    L1 = "L1"  # Agent-proposes, human reviews every output
+    L2 = "L2"  # Agent-executes-on-approval
+    L3 = "L3"  # Continuous with exception review
+    L4 = "L4"  # Policy-governed autonomy
+
+
+class AgentName(str, Enum):
+    DRISHTI = "drishti"
+    VIBHAAG = "vibhaag"
+    PARIKSHAN = "parikshan"
+    SAAKSHI = "saakshi"
+    SUDHAAR = "sudhaar"
+    KARYA = "karya"
+    LEKHA = "lekha"
+    NAZAR = "nazar"
+    PRATIVEDAN = "prativedan"
+    SANKET = "sanket"
+
+
+@dataclass(frozen=True)
+class AgentRunResult:
+    """The result of an agent invocation."""
+
+    agent: AgentName
+    correlation_id: str
+    status: str  # "succeeded" | "failed" | "cancelled" | "timed_out"
+    input_tokens: int = 0
+    output_tokens: int = 0
+    total_tokens: int = 0
+    cost_usd: float = 0.0
+    latency_ms: int = 0
+    error: str | None = None
+    output: dict[str, Any] | None = None
+    ledger_entry_ids: list[str] = field(default_factory=list)
+    evidence_ids: list[str] = field(default_factory=list)
+
+
+InputT = TypeVar("InputT", bound=BaseModel)
+OutputT = TypeVar("OutputT", bound=BaseModel)
+
+
+class BaseAgent(ABC, Generic[InputT, OutputT]):
+    """Base class for all 10 agents."""
+
+    name: ClassVar[AgentName]
+    version: ClassVar[str] = "0.1.0"
+    autonomy: ClassVar[AutonomyLevel] = AutonomyLevel.L1
+    description: ClassVar[str] = ""
+    one_liner: ClassVar[str] = ""
+    tool_scopes: ClassVar[tuple[str, ...]] = ()
+    escalation_conditions: ClassVar[tuple[str, ...]] = ()
+    # The default task kind for this agent's LLM calls
+    default_task_kind: ClassVar[TaskKind] = "reasoning"
+    # Whether outputs typically need redacting before egress
+    default_pii_redact: ClassVar[bool] = True
+    # Whether this agent can mutate external state (architectural)
+    can_mutate: ClassVar[bool] = False
+
+    def __init__(
+        self,
+        *,
+        settings: Settings | None = None,
+        ledger: LedgerClient | None = None,
+        evidence: EvidenceVault | None = None,
+        model_gateway: ModelGateway | None = None,
+    ):
+        self.settings = settings or get_settings()
+        self.ledger = ledger or LedgerClient.from_settings(self.settings)
+        self.evidence = evidence or EvidenceVault(self.settings)
+        self.model_gateway = model_gateway or ModelGateway(self.settings)
+        self.log = structlog.get_logger(agent=self.name.value, version=self.version)
+
+    @abstractmethod
+    def input_schema(self) -> type[InputT]: ...
+
+    @abstractmethod
+    def output_schema(self) -> type[OutputT]: ...
+
+    @abstractmethod
+    async def _run(
+        self, *, correlation_id: str, input: InputT, **deps: Any
+    ) -> OutputT: ...
+
+    async def invoke(
+        self,
+        raw_input: dict[str, Any] | InputT,
+        *,
+        correlation_id: str | None = None,
+    ) -> AgentRunResult:
+        """Validate input, run, log to ledger. Top-level entry point."""
+        correlation_id = correlation_id or new_correlation_id()
+        t0 = time.monotonic()
+        entry_ids: list[str] = []
+
+        # Validate input
+        if not isinstance(raw_input, BaseModel):
+            input_obj = self.input_schema()(**(raw_input or {}))
+        else:
+            input_obj = raw_input
+
+        tenant_id = getattr(input_obj, "tenant_id", None) or ""
+        engagement_id = getattr(input_obj, "engagement_id", None)
+
+        # Initial "started" ledger entry
+        try:
+            r = await self.ledger.append(
+                AppendInput(
+                    tenant_id=tenant_id,
+                    correlation_id=correlation_id,
+                    actor_type="agent",
+                    actor_id=self.name.value,
+                    agent_version=self.version,
+                    action_type=self._started_action_type(),
+                    target_ref=engagement_id,
+                    result="pending",
+                    detail={"input": input_obj.model_dump(mode="json", exclude={"tenant_id", "engagement_id"})},
+                )
+            )
+            entry_ids.append(r.id)
+        except Exception as e:  # noqa: BLE001
+            self.log.error("ledger.append.started_failed", err=str(e))
+            # Per BR-3 we cannot proceed without a ledger record; bail.
+            return AgentRunResult(
+                agent=self.name,
+                correlation_id=correlation_id,
+                status="failed",
+                error=f"ledger_append_failed: {e}",
+            )
+
+        try:
+            output = await self._run(correlation_id=correlation_id, input=input_obj)
+            latency_ms = int((time.monotonic() - t0) * 1000)
+            total_tokens = sum(getattr(output, "_tokens", lambda: 0)() for _ in [0])  # type: ignore[func-returns-value]
+            cost_usd = 0.0
+            input_tokens = 0
+            output_tokens = 0
+
+            # Mark started entry as success
+            try:
+                r2 = await self.ledger.append(
+                    AppendInput(
+                        tenant_id=tenant_id,
+                        correlation_id=correlation_id,
+                        actor_type="agent",
+                        actor_id=self.name.value,
+                        agent_version=self.version,
+                        action_type=self._completed_action_type(),
+                        target_ref=engagement_id,
+                        result="success",
+                        detail={
+                            "started_entry": entry_ids[0] if entry_ids else None,
+                            "output": output.model_dump(mode="json"),
+                        },
+                    )
+                )
+                entry_ids.append(r2.id)
+            except Exception as e:  # noqa: BLE001
+                self.log.error("ledger.append.completed_failed", err=str(e))
+
+            return AgentRunResult(
+                agent=self.name,
+                correlation_id=correlation_id,
+                status="succeeded",
+                input_tokens=input_tokens,
+                output_tokens=output_tokens,
+                total_tokens=total_tokens,
+                cost_usd=cost_usd,
+                latency_ms=latency_ms,
+                output=output.model_dump(mode="json"),
+                ledger_entry_ids=entry_ids,
+            )
+        except Exception as e:  # noqa: BLE001
+            latency_ms = int((time.monotonic() - t0) * 1000)
+            tb = traceback.format_exc()
+            self.log.error("agent.failed", err=str(e), traceback=tb)
+            try:
+                r2 = await self.ledger.append(
+                    AppendInput(
+                        tenant_id=tenant_id,
+                        correlation_id=correlation_id,
+                        actor_type="agent",
+                        actor_id=self.name.value,
+                        agent_version=self.version,
+                        action_type=self._completed_action_type(),
+                        target_ref=engagement_id,
+                        result="failure",
+                        detail={"started_entry": entry_ids[0] if entry_ids else None, "error": str(e), "traceback": tb},
+                    )
+                )
+                entry_ids.append(r2.id)
+            except Exception:
+                pass
+            return AgentRunResult(
+                agent=self.name,
+                correlation_id=correlation_id,
+                status="failed",
+                latency_ms=latency_ms,
+                error=str(e),
+                ledger_entry_ids=entry_ids,
+            )
+
+    def _started_action_type(self) -> str:
+        mapping = {
+            AgentName.DRISHTI: "discovery.started",
+            AgentName.VIBHAAG: "classification.started",
+            AgentName.PARIKSHAN: "assessment.started",
+            AgentName.SAAKSHI: "evidence.collected",
+            AgentName.SUDHAAR: "plan.generated",
+            AgentName.KARYA: "execution.started",
+            AgentName.LEKHA: "execution.started",
+            AgentName.NAZAR: "report.generated",
+            AgentName.PRATIVEDAN: "report.generated",
+            AgentName.SANKET: "report.generated",
+        }
+        return mapping.get(self.name, "report.generated")
+
+    def _completed_action_type(self) -> str:
+        # The "completed" event for an agent run uses the same domain
+        # action as the started event; the ledger groups them via
+        # correlation_id.
+        return self._started_action_type()

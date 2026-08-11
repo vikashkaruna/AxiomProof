@@ -1,0 +1,89 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "axiom-proof.fullname" . }}-web
+  labels:
+    {{- include "axiom-proof.labels" . | nindent 4 }}
+    app.kubernetes.io/component: web
+spec:
+  type: {{ .Values.web.service.type }}
+  ports:
+    - port: {{ .Values.web.service.port }}
+      targetPort: http
+      protocol: TCP
+      name: http
+  selector:
+    {{- include "axiom-proof.selectorLabels" . | nindent 4 }}
+    app.kubernetes.io/component: web
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "axiom-proof.fullname" . }}-marketing
+  labels:
+    {{- include "axiom-proof.labels" . | nindent 4 }}
+    app.kubernetes.io/component: marketing
+spec:
+  type: {{ .Values.marketing.service.type }}
+  ports:
+    - port: {{ .Values.marketing.service.port }}
+      targetPort: http
+      protocol: TCP
+      name: http
+  selector:
+    {{- include "axiom-proof.selectorLabels" . | nindent 4 }}
+    app.kubernetes.io/component: marketing
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "axiom-proof.fullname" . }}-bff
+  labels:
+    {{- include "axiom-proof.labels" . | nindent 4 }}
+    app.kubernetes.io/component: bff
+spec:
+  type: {{ .Values.bff.service.type }}
+  ports:
+    - port: {{ .Values.bff.service.port }}
+      targetPort: http
+      protocol: TCP
+      name: http
+  selector:
+    {{- include "axiom-proof.selectorLabels" . | nindent 4 }}
+    app.kubernetes.io/component: bff
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "axiom-proof.fullname" . }}-agent-runtime
+  labels:
+    {{- include "axiom-proof.labels" . | nindent 4 }}
+    app.kubernetes.io/component: agent-runtime
+spec:
+  type: {{ .Values.agentRuntime.service.type }}
+  ports:
+    - port: {{ .Values.agentRuntime.service.port }}
+      targetPort: http
+      protocol: TCP
+      name: http
+  selector:
+    {{- include "axiom-proof.selectorLabels" . | nindent 4 }}
+    app.kubernetes.io/component: agent-runtime
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "axiom-proof.fullname" . }}-model-gateway
+  labels:
+    {{- include "axiom-proof.labels" . | nindent 4 }}
+    app.kubernetes.io/component: model-gateway
+spec:
+  type: {{ .Values.modelGateway.service.type }}
+  ports:
+    - port: {{ .Values.modelGateway.service.port }}
+      targetPort: http
+      protocol: TCP
+      name: http
+  selector:
+    {{- include "axiom-proof.selectorLabels" . | nindent 4 }}
+    app.kubernetes.io/component: model-gateway

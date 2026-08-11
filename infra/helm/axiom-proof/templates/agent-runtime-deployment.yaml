@@ -1,0 +1,93 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "axiom-proof.fullname" . }}-agent-runtime
+  labels:
+    {{- include "axiom-proof.labels" . | nindent 4 }}
+    app.kubernetes.io/component: agent-runtime
+spec:
+  {{- if not .Values.agentRuntime.autoscaling.enabled }}
+  replicas: {{ .Values.agentRuntime.replicaCount }}
+  {{- end }}
+  selector:
+    matchLabels:
+      {{- include "axiom-proof.selectorLabels" . | nindent 6 }}
+      app.kubernetes.io/component: agent-runtime
+  template:
+    metadata:
+      labels:
+        {{- include "axiom-proof.selectorLabels" . | nindent 8 }}
+        app.kubernetes.io/component: agent-runtime
+    spec:
+      imagePullSecrets:
+        {{- toYaml .Values.imagePullSecrets | nindent 8 }}
+      serviceAccountName: {{ include "axiom-proof.serviceAccountName" . }}
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+        fsGroup: 1000
+      containers:
+        - name: agent-runtime
+          image: "{{ .Values.image.registry }}/axiom-agent-runtime:{{ .Values.image.tag }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          ports:
+            - name: http
+              containerPort: 8000
+          env:
+            - name: ENVIRONMENT
+              value: production
+            - name: SUPABASE_URL
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "axiom-proof.fullname" . }}-supabase
+                  key: url
+            - name: SUPABASE_SERVICE_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "axiom-proof.fullname" . }}-supabase
+                  key: service-key
+            - name: AWS_REGION
+              value: {{ .Values.config.awsRegion }}
+            - name: S3_EVIDENCE_BUCKET
+              value: {{ .Values.config.s3EvidenceBucket }}
+            - name: MODEL_GATEWAY_URL
+              value: {{ .Values.config.modelGatewayUrl }}
+            - name: AGENT_RUNTIME_INTERNAL_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "axiom-proof.fullname" . }}-internal
+                  key: agent-runtime-token
+            - name: APPROVAL_SIGNING_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "axiom-proof.fullname" . }}-internal
+                  key: approval-key
+            - name: TEMPORAL_ADDRESS
+              value: {{ .Values.config.temporalAddress }}
+            - name: TEMPORAL_NAMESPACE
+              value: {{ .Values.config.temporalNamespace }}
+            - name: TEMPORAL_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "axiom-proof.fullname" . }}-temporal
+                  key: api-key
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: http
+            initialDelaySeconds: 15
+            periodSeconds: 20
+          readinessProbe:
+            httpGet:
+              path: /ready
+              port: http
+            initialDelaySeconds: 10
+            periodSeconds: 10
+          resources:
+            {{- toYaml .Values.agentRuntime.resources | nindent 12 }}
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop:
+                - ALL

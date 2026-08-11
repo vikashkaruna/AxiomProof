@@ -1,0 +1,39 @@
+# Production values for axiom-proof.
+# Copy to values-prod.yaml and fill in real secrets.
+#
+# IMPORTANT: secrets are NEVER committed. Mount via:
+#   - External Secrets Operator pulling from AWS Secrets Manager
+#   - Sealed Secrets (Bitnami)
+#   - Or `--set secret.XXX` from a CI secret store
+
+image:
+  registry: ghcr.io/axiom-minds
+  tag: 0.1.0
+  pullPolicy: Always
+
+config:
+  supabaseUrl: "https://YOUR-PROJECT.supabase.co"
+  s3EvidenceBucket: "axiom-proof-evidence-ap-south-1"
+  bffPublicUrl: "https://app.axiomminds.ai"
+  internalToken: "REPLACE_FROM_SECRETS_MANAGER"
+
+web:
+  env:
+    NEXT_PUBLIC_SUPABASE_URL: "https://YOUR-PROJECT.supabase.co"
+
+marketing: {}
+
+bff: {}
+
+agentRuntime: {}
+
+modelGateway:
+  env:
+    selfHostedBaseUrl: "http://vllm.axiom-proof:8000"
+    selfHostedModel: "Qwen/Qwen2.5-32B-Instruct-AWQ"
+
+temporalWorker:
+  env:
+    TEMPORAL_ADDRESS: "ap-south-1.aws.api.temporal.io:7233"
+    TEMPORAL_NAMESPACE: "axiom-proof"
+    # TEMPORAL_API_KEY is mounted from secrets

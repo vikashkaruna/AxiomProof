@@ -1,0 +1,259 @@
+import { z } from 'zod';
+import { ActionType, ActorType, LedgerResult } from './enums.js';
+
+/**
+ * REST API contract shared by the BFF and the Next.js apps.
+ *
+ * Every mutating endpoint requires:
+ *   - An Idempotency-Key header (UUID v4)
+ *   - A signed, tenant-scoped Authorization bearer (Supabase JWT)
+ *
+ * The execution-gate endpoint (`POST /v1/plans/:id/execute`) additionally
+ * requires an ApprovalToken in the body — see the schema below.
+ */
+
+// ─── Common ──────────────────────────────────────────────────────────
+
+export const PaginationSchema = z.object({
+  page: z.number().int().positive().default(1),
+  pageSize: z.number().int().positive().max(100).default(25),
+});
+export type Pagination = z.infer<typeof PaginationSchema>;
+
+export const ErrorResponseSchema = z.object({
+  error: z.object({
+    code: z.string(),
+    message: z.string(),
+    details: z.record(z.unknown()).optional(),
+    traceId: z.string().optional(),
+  }),
+});
+export type ErrorResponse = z.infer<typeof ErrorResponseSchema>;
+
+// ─── Auth ────────────────────────────────────────────────────────────
+
+export const SessionSchema = z.object({
+  userId: z.string().uuid(),
+  email: z.string().email(),
+  fullName: z.string().nullable(),
+  isAxiomInternal: z.boolean(),
+  tenants: z.array(
+    z.object({
+      tenantId: z.string().uuid(),
+      slug: z.string(),
+      name: z.string(),
+      role: z.string(),
+    }),
+  ),
+  activeTenantId: z.string().uuid().nullable(),
+  expiresAt: z.string().datetime(),
+});
+export type Session = z.infer<typeof SessionSchema>;
+
+// ─── Gap scan (public) ───────────────────────────────────────────────
+
+export const GapScanSubmitSchema = z.object({
+  sessionId: z.string().min(8).max(128),
+  sector: z.string().max(100).optional(),
+  employeeBand: z.enum(['1-50', '51-200', '201-500', '501-1000', '1001-5000', '5000+']).optional(),
+  processesChildrenData: z.boolean().optional(),
+  isSdf: z.boolean().optional(),
+  answers: z.record(z.union([z.boolean(), z.string(), z.number(), z.array(z.string())])),
+  contactName: z.string().min(2).max(120).optional(),
+  contactEmail: z.string().email().optional(),
+  contactCompany: z.string().max(200).optional(),
+  followUpRequested: z.boolean().default(false),
+  marketingConsent: z.boolean().default(false),
+  source: z.string().max(100).optional(),
+});
+export type GapScanSubmit = z.infer<typeof GapScanSubmitSchema>;
+
+// ─── Engagements ─────────────────────────────────────────────────────
+
+export const CreateEngagementSchema = z.object({
+  tenantId: z.string().uuid(),
+  libraryVersion: z.string(),
+  title: z.string().min(3).max(200),
+  leadReviewerId: z.string().uuid().optional(),
+});
+export type CreateEngagementRequest = z.infer<typeof CreateEngagementSchema>;
+
+export const UpdateEngagementStatusSchema = z.object({
+  status: z.enum([
+    'intake', 'discovery', 'classification', 'assessment', 'planning',
+    'review', 'dry_run', 'awaiting_approval', 'executing', 'verifying',
+    'closure', 'completed', 'paused', 'cancelled',
+  ]),
+  note: z.string().max(1000).optional(),
+});
+export type UpdateEngagementStatusRequest = z.infer<typeof UpdateEngagementStatusSchema>;
+
+// ─── Evidence ────────────────────────────────────────────────────────
+
+export const SealedEvidenceMetadataSchema = z.object({
+  tenantId: z.string().uuid(),
+  engagementId: z.string().uuid().optional(),
+  evidenceType: z.enum([
+    'document', 'config', 'screenshot', 'log',
+    'attestation', 'interview', 'inventory', 'report',
+  ]),
+  description: z.string().max(2000).optional(),
+  collectedByAgent: z.string(),
+  demonstratesControlIds: z.array(z.string()).default([]),
+  filename: z.string().max(512).optional(),
+  mimeType: z.string().max(200).optional(),
+  byteSize: z.number().int().nonnegative().optional(),
+  wormLockUntil: z.string().datetime().optional(),
+});
+export type SealedEvidenceMetadata = z.infer<typeof SealedEvidenceMetadataSchema>;
+
+// ─── Plans / Actions / Approvals (the execution gate) ───────────────
+
+export const GeneratePlanRequestSchema = z.object({
+  engagementId: z.string().uuid(),
+  libraryVersion: z.string(),
+  findingIds: z.array(z.string().uuid()).min(1).max(100),
+  title: z.string().min(3).max(200),
+  description: z.string().max(2000).optional(),
+});
+export type GeneratePlanRequest = z.infer<typeof GeneratePlanRequestSchema>;
+
+export const RunDryRunRequestSchema = z.object({
+  actionIds: z.array(z.string().uuid()).min(1).max(100),
+  // The dry-run engine returns results async via the agent runtime;
+  // the BFF returns a job ID and the result is published to the
+  // ledger + WebSocket channel.
+  waitForCompletion: z.boolean().default(false),
+  waitTimeoutSeconds: z.number().int().positive().max(300).default(60),
+});
+export type RunDryRunRequest = z.infer<typeof RunDryRunRequestSchema>;
+
+export const IssueApprovalRequestSchema = z.object({
+  planId: z.string().uuid(),
+  actionIds: z.array(z.string().uuid()).min(1).max(100),
+  mode: z.enum(['batch', 'individual']).default('batch'),
+  concurrency: z.number().int().positive().max(20).default(1),
+  stopOnFailure: z.boolean().default(true),
+  expiresInMinutes: z.number().int().positive().max(7 * 24 * 60).default(60),
+  reason: z.string().max(2000).optional(),
+  conditions: z.record(z.unknown()).default({}),
+});
+export type IssueApprovalRequest = z.infer<typeof IssueApprovalRequestSchema>;
+
+export const RevokeApprovalRequestSchema = z.object({
+  reason: z.string().max(2000).optional(),
+});
+export type RevokeApprovalRequest = z.infer<typeof RevokeApprovalRequestSchema>;
+
+// THE EXECUTION GATE — the single most security-critical contract in the system.
+// Per ADR-2 / BR-1, the ApprovalToken in the body is the gate that makes
+// unapproved execution architecturally impossible.
+export const ExecutePlanRequestSchema = z.object({
+  planId: z.string().uuid(),
+  approvalToken: z.string(), // the signed token string
+  mode: z.enum(['batch', 'individual']).default('batch'),
+  actionIds: z.array(z.string().uuid()).min(1), // subset for partial approval
+  concurrency: z.number().int().positive().max(20).default(1),
+  stopOnFailure: z.boolean().default(true),
+});
+export type ExecutePlanRequest = z.infer<typeof ExecutePlanRequestSchema>;
+
+export const ExecutePlanResponseSchema = z.object({
+  executionId: z.string().uuid(),
+  correlationId: z.string().uuid(),
+  acceptedActionIds: z.array(z.string().uuid()),
+  rejectedActionIds: z.array(
+    z.object({
+      actionId: z.string().uuid(),
+      reason: z.string(),
+    }),
+  ),
+  status: z.enum(['accepted', 'partial', 'rejected']),
+  startedAt: z.string().datetime(),
+});
+export type ExecutePlanResponse = z.infer<typeof ExecutePlanResponseSchema>;
+
+// ─── Agent invocation (internal) ────────────────────────────────────
+
+export const AgentInvocationRequestSchema = z.object({
+  agent: z.string(),
+  tenantId: z.string().uuid(),
+  engagementId: z.string().uuid().optional(),
+  planId: z.string().uuid().optional(),
+  promptHandle: z.string(),
+  inputs: z.record(z.unknown()),
+  // If the agent is structural-only (e.g. Drishti, Vibhaag), set this
+  // true so the model gateway skips PII redaction of row values.
+  structuralOnly: z.boolean().default(false),
+});
+export type AgentInvocationRequest = z.infer<typeof AgentInvocationRequestSchema>;
+
+// ─── Ledger query ────────────────────────────────────────────────────
+
+export const LedgerQuerySchema = z.object({
+  tenantId: z.string().uuid(),
+  fromSequence: z.number().int().positive().optional(),
+  toSequence: z.number().int().positive().optional(),
+  fromTime: z.string().datetime().optional(),
+  toTime: z.string().datetime().optional(),
+  actorType: z.nativeEnum(ActorType).optional(),
+  actorId: z.string().optional(),
+  actionType: z.string().optional(),
+  correlationId: z.string().uuid().optional(),
+  result: z.nativeEnum(LedgerResult).optional(),
+  limit: z.number().int().positive().max(1000).default(100),
+  offset: z.number().int().nonnegative().default(0),
+});
+export type LedgerQuery = z.infer<typeof LedgerQuerySchema>;
+
+// ─── WebSocket events (server → client) ─────────────────────────────
+
+export const AgentProgressEventSchema = z.object({
+  type: z.literal('agent.progress'),
+  agent: z.string(),
+  correlationId: z.string().uuid(),
+  runId: z.string().uuid().nullable(),
+  step: z.string(),
+  progress: z.number().min(0).max(1),
+  message: z.string().optional(),
+  occurredAt: z.string().datetime(),
+});
+export type AgentProgressEvent = z.infer<typeof AgentProgressEventSchema>;
+
+export const LedgerAppendedEventSchema = z.object({
+  type: z.literal('ledger.appended'),
+  tenantId: z.string().uuid(),
+  sequenceNo: z.number().int().positive(),
+  actionType: z.string(),
+  correlationId: z.string().uuid(),
+  occurredAt: z.string().datetime(),
+});
+export type LedgerAppendedEvent = z.infer<typeof LedgerAppendedEventSchema>;
+
+export const ApprovalPendingEventSchema = z.object({
+  type: z.literal('approval.pending'),
+  planId: z.string().uuid(),
+  actionIds: z.array(z.string().uuid()),
+  correlationId: z.string().uuid(),
+  occurredAt: z.string().datetime(),
+});
+export type ApprovalPendingEvent = z.infer<typeof ApprovalPendingEventSchema>;
+
+export const ExecutionProgressEventSchema = z.object({
+  type: z.literal('execution.progress'),
+  executionId: z.string().uuid(),
+  planId: z.string().uuid(),
+  actionId: z.string().uuid(),
+  status: z.string(),
+  result: z.string().nullable(),
+  occurredAt: z.string().datetime(),
+});
+export type ExecutionProgressEvent = z.infer<typeof ExecutionProgressEventSchema>;
+
+export const RealtimeEventSchema = z.discriminatedUnion('type', [
+  AgentProgressEventSchema,
+  LedgerAppendedEventSchema,
+  ApprovalPendingEventSchema,
+  ExecutionProgressEventSchema,
+]);
+export type RealtimeEvent = z.infer<typeof RealtimeEventSchema>;

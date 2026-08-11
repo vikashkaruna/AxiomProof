@@ -1,0 +1,7 @@
+# uv-managed Python workspace. `uv` is the recommended tool.
+# See https://github.com/astral-sh/uv for installation.
+
+[tool.uv]
+managed = true
+package = true
+dev-dependencies = []

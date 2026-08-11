@@ -1,0 +1,40 @@
+{
+  "name": "axiom-proof",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Axiom Proof — agentic DPDPA compliance platform · Axiom Minds Private Limited",
+  "packageManager": "pnpm@9.12.0",
+  "engines": {
+    "node": ">=20.11.0",
+    "pnpm": ">=9.12.0"
+  },
+  "scripts": {
+    "build": "turbo run build",
+    "dev": "turbo run dev",
+    "lint": "turbo run lint",
+    "typecheck": "turbo run typecheck",
+    "test": "turbo run test",
+    "test:e2e": "turbo run test:e2e",
+    "format": "prettier --write \"**/*.{ts,tsx,js,jsx,md,json,yaml,yml}\" --ignore-path .gitignore",
+    "format:check": "prettier --check \"**/*.{ts,tsx,js,jsx,md,json,yaml,yml}\" --ignore-path .gitignore",
+    "clean": "turbo run clean && rm -rf node_modules .turbo",
+    "prepare": "husky || true",
+    "seed:controls": "tsx packages/control-library/scripts/seed.ts",
+    "infra:plan": "cd infra/terraform/envs/prod && terraform plan",
+    "infra:apply": "cd infra/terraform/envs/prod && terraform apply",
+    "db:migrate": "supabase db push --db-url $SUPABASE_DB_URL",
+    "db:reset": "supabase db reset",
+    "agents:test": "cd services/agent-runtime && uv run pytest"
+  },
+  "devDependencies": {
+    "@types/node": "^20.14.10",
+    "husky": "^9.1.6",
+    "prettier": "^3.3.3",
+    "turbo": "^2.1.1",
+    "typescript": "^5.5.4"
+  },
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ]
+}

@@ -1,0 +1,18 @@
+apiVersion: v2
+name: axiom-proof
+description: |
+  Axiom Proof — agentic DPDPA compliance platform. Phase 0/1 deployment.
+  Bundles: web (Next.js), marketing (Next.js), bff (Hono), agent-runtime (FastAPI),
+  model-gateway (FastAPI), temporal-worker (Python).
+type: application
+version: 0.1.0
+appVersion: "0.1.0"
+keywords:
+  - compliance
+  - dpdpa
+  - india
+  - agentic
+  - ai
+maintainers:
+  - name: Axiom Minds
+    email: ops@axiomminds.ai

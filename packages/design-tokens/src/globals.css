@@ -1,0 +1,141 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Axiom Proof global styles — applied after Tailwind base. */
+
+@layer base {
+  :root {
+    --axiom-color-bg: theme(colors.mist.100);
+    --axiom-color-surface: theme(colors.white);
+    --axiom-color-fg: theme(colors.slate.700);
+    --axiom-color-fg-muted: theme(colors.slate.500);
+    --axiom-color-border: theme(colors.slate.200);
+    --axiom-color-primary: theme(colors.indigo.500);
+    --axiom-color-accent: theme(colors.teal.500);
+    --axiom-color-proof: theme(colors.gold.500);
+    --axiom-color-alert: theme(colors.ember.500);
+
+    /* role-based */
+    --axiom-shadow-sm: theme(boxShadow.sm);
+    --axiom-shadow-md: theme(boxShadow.md);
+    --axiom-shadow-lg: theme(boxShadow.lg);
+
+    --axiom-radius-md: 0.375rem;
+    --axiom-radius-lg: 0.5rem;
+    --axiom-radius-xl: 0.75rem;
+  }
+
+  html {
+    font-family: theme(fontFamily.body);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+  }
+
+  body {
+    background-color: var(--axiom-color-bg);
+    color: var(--axiom-color-fg);
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    font-family: theme(fontFamily.heading);
+    font-weight: theme(fontWeight.semibold);
+    letter-spacing: -0.011em;
+    color: theme(colors.indigo.500);
+  }
+
+  code, pre, kbd, samp {
+    font-family: theme(fontFamily.mono);
+  }
+
+  /* Focus ring: brand teal for interactive elements, never gold (gold is for proof only) */
+  :focus-visible {
+    outline: 2px solid theme(colors.teal.500);
+    outline-offset: 2px;
+  }
+
+  /* Selection */
+  ::selection {
+    background-color: theme(colors.teal.200);
+    color: theme(colors.indigo.700);
+  }
+}
+
+@layer components {
+  /* Proof seal component — the visual mark of a sealed, attested artifact. */
+  .axiom-proof-seal {
+    @apply inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 font-mono text-xs font-medium;
+    border-color: theme(colors.gold.500);
+    color: theme(colors.gold.700);
+    background-color: theme(colors.gold.50);
+  }
+
+  .axiom-proof-seal::before {
+    content: '';
+    width: 0.5rem;
+    height: 0.5rem;
+    border-radius: 9999px;
+    background-color: theme(colors.gold.500);
+    box-shadow: 0 0 0 2px theme(colors.gold.100);
+  }
+
+  /* Severity chips */
+  .axiom-chip {
+    @apply inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium;
+  }
+
+  .axiom-chip--critical {
+    background-color: theme(colors.ember.50);
+    color: theme(colors.ember.700);
+  }
+
+  .axiom-chip--high {
+    background-color: theme(colors.gold.50);
+    color: theme(colors.gold.700);
+  }
+
+  .axiom-chip--medium {
+    background-color: theme(colors.mist.200);
+    color: theme(colors.slate.700);
+  }
+
+  .axiom-chip--low {
+    background-color: theme(colors.teal.50);
+    color: theme(colors.teal.700);
+  }
+
+  /* Surfaces */
+  .axiom-card {
+    @apply rounded-xl border bg-white p-6 shadow-sm;
+    border-color: var(--axiom-color-border);
+  }
+
+  .axiom-card--elevated {
+    box-shadow: var(--axiom-shadow-md);
+  }
+
+  /* Audit-trail monospace block (used in Evidence Explorer) */
+  .axiom-mono-block {
+    @apply rounded-md border bg-mist-50 p-3 font-mono text-xs leading-relaxed;
+    border-color: var(--axiom-color-border);
+  }
+}
+
+@layer utilities {
+  .text-proof {
+    color: theme(colors.gold.700);
+  }
+  .bg-proof {
+    background-color: theme(colors.gold.50);
+  }
+  .border-proof {
+    border-color: theme(colors.gold.500);
+  }
+
+  /* Hairline divider for dense compliance content */
+  .axiom-divider {
+    @apply h-px w-full;
+    background-color: theme(colors.slate.200);
+  }
+}

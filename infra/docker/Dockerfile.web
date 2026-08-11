@@ -1,0 +1,44 @@
+# Axiom Proof — Next.js Web app Dockerfile (standalone output)
+
+FROM node:20-alpine AS base
+WORKDIR /app
+RUN apk add --no-cache libc6-compat
+ENV PNPM_HOME="/pnpm"
+ENV PATH="$PNPM_HOME:$PATH"
+RUN corepack enable && corepack prepare pnpm@9.12.0 --activate
+
+FROM base AS deps
+COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
+COPY apps/web/package.json ./apps/web/
+COPY packages/approval-engine/package.json ./packages/approval-engine/
+COPY packages/config/package.json ./packages/config/
+COPY packages/control-library/package.json ./packages/control-library/
+COPY packages/evidence/package.json ./packages/evidence/
+COPY packages/ledger/package.json ./packages/ledger/
+COPY packages/supabase/package.json ./packages/supabase/
+COPY packages/types/package.json ./packages/types/
+COPY packages/ui/package.json ./packages/ui/
+COPY packages/design-tokens/package.json ./packages/design-tokens/
+RUN pnpm install --frozen-lockfile --filter @axiom/web...
+
+FROM base AS build
+COPY --from=deps /app /app
+COPY tsconfig.base.json ./
+COPY apps/web ./apps/web
+COPY packages ./packages
+ENV NEXT_TELEMETRY_DISABLED=1
+RUN pnpm --filter @axiom/web build
+
+FROM base AS runtime
+WORKDIR /app
+ENV NODE_ENV=production
+ENV NEXT_TELEMETRY_DISABLED=1
+ENV PORT=3000
+ENV HOSTNAME=0.0.0.0
+RUN apk add --no-cache tini
+COPY --from=build /app /app
+WORKDIR /app/apps/web
+EXPOSE 3000
+USER node
+ENTRYPOINT ["/sbin/tini", "--"]
+CMD ["node", "server.js"]

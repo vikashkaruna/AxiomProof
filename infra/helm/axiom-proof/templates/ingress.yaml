@@ -1,0 +1,44 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: {{ include "axiom-proof.fullname" . }}
+  labels:
+    {{- include "axiom-proof.labels" . | nindent 4 }}
+  annotations:
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
+    cert-manager.io/cluster-issuer: letsencrypt-prod
+spec:
+  ingressClassName: nginx
+  tls:
+    {{- range .Values.web.ingress.tls.enabled }}
+    - hosts:
+        - {{ $.Values.web.ingress.host | quote }}
+      secretName: {{ $.Values.web.ingress.tls.secretName | quote }}
+    {{- end }}
+    {{- if .Values.marketing.ingress.tls.enabled }}
+    - hosts:
+        - {{ .Values.marketing.ingress.host | quote }}
+      secretName: {{ .Values.marketing.ingress.tls.secretName | quote }}
+    {{- end }}
+  rules:
+    - host: {{ .Values.web.ingress.host | quote }}
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: {{ include "axiom-proof.fullname" . }}-web
+                port:
+                  number: 3000
+    - host: {{ .Values.marketing.ingress.host | quote }}
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: {{ include "axiom-proof.fullname" . }}-marketing
+                port:
+                  number: 3000

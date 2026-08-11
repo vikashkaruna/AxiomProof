@@ -1,0 +1,8 @@
+# CODEOWNERS — automatic review assignment
+# https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/about-code-owners
+
+# Default: the founder reviews everything
+*       @vikashkaruna
+
+# Security-sensitive paths require a second reviewer from the security team
+# (Phase 2+ — for now, the founder is the only reviewer)

@@ -1,31 +1,64 @@
-# macOS
-.DS_Store
-
-# Node / Next.js
+# Dependencies
 node_modules/
+.pnpm-store/
+
+# Build outputs
 .next/
 out/
 dist/
 build/
 *.tsbuildinfo
+.turbo/
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# Environment & secrets
 .env
 .env.local
 .env.*.local
+!.env.example
+*.pem
+*.key
+*.crt
+secrets/
+
+# Logs
+*.log
 npm-debug.log*
+pnpm-debug.log*
 yarn-debug.log*
-yarn-error.log*
-.pnpm-debug.log*
+logs/
 
-# Python (agent runtime)
-__pycache__/
-*.py[cod]
-.venv/
-venv/
-*.egg-info/
-
-# Editors
+# IDE
 .vscode/
 .idea/
+.DS_Store
+*.swp
+*.swo
 
-# Claude Code local settings
-.claude/settings.local.json
+# Coverage & test artifacts
+coverage/
+.nyc_output/
+playwright-report/
+test-results/
+playwright/.cache/
+
+# Terraform / Helm
+.terraform/
+.terraform.lock.hcl
+*.tfstate
+*.tfstate.backup
+*.tfvars
+!example.tfvars
+charts/*/charts/
+
+# Docker
+.dockerignore-tmp
