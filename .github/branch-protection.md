@@ -6,22 +6,23 @@ repository's Settings → Branches → Branch protection rules.
 
 ## Current enforcement status — verified 2026-08-16
 
-The authenticated repository settings currently enforce pull requests, zero
-required approvals, all five required CI checks, strict/up-to-date branches,
-linear history, conversation resolution, and no force-pushes or branch
-deletions. PR #9 passed all five checks and merged without an approval gate.
+The authenticated repository settings currently enforce the baseline rules
+below on `main`: one approving review, CODEOWNERS review, all five required CI
+checks, strict/up-to-date branches, linear history, conversation resolution,
+and no force-pushes or branch deletions. PR #9 demonstrated this state: all
+five checks passed, but GitHub kept the PR in `REVIEW_REQUIRED`.
 
 Classic branch protection does not support path-specific approval counts. The
-two-approval rule below remains a policy target and is not enforced. No
-approval from one or two users is required. To add approvals later, configure
-GitHub rulesets or an external review workflow that evaluates changed paths.
+two-approval rule below is therefore a policy target, not fully automated
+enforcement. To enforce it, configure GitHub rulesets or an external review
+workflow that evaluates changed paths.
 
 ## `main` branch
 
 - **Require a pull request before merging** — ON
-- **Require approvals:** 0
-- **Dismiss stale pull request approvals when new commits are pushed** — OFF
-- **Require review from Code Owners** — OFF
+- **Require approvals:** 1 (minimum)
+- **Dismiss stale pull request approvals when new commits are pushed** — ON
+- **Require review from Code Owners** — ON (see `CODEOWNERS`)
 - **Restrict who can dismiss pull request reviews** — Repository admins
 - **Require status checks to pass before merging** — ON
   - Required checks:
@@ -38,9 +39,8 @@ GitHub rulesets or an external review workflow that evaluates changed paths.
 
 ## Special: security-sensitive paths (policy target)
 
-PRs that touch any of these paths are security-sensitive and should receive
-**TWO** approvals, one of which must be the founder (`@vikashkaruna`), when
-human review is enabled. This is currently documented policy only:
+PRs that touch any of these paths require **TWO** approvals, one of
+which must be the founder (`@vikashkaruna`):
 
 - `packages/approval-engine/**`
 - `services/bff/src/routes/v1.ts` (the approval / execution gate)
