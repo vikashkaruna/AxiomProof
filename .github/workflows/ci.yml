@@ -56,9 +56,10 @@ jobs:
         with:
           python-version: '3.11'
       - uses: astral-sh/setup-uv@v3
-      - working-directory: services/agent-runtime
       - run: uv sync
+        working-directory: services/agent-runtime
       - run: uv run pytest --cov --cov-report=xml
+        working-directory: services/agent-runtime
       - uses: actions/upload-artifact@v4
         with:
           name: coverage-agent-runtime
@@ -74,9 +75,10 @@ jobs:
         with:
           python-version: '3.11'
       - uses: astral-sh/setup-uv@v3
-      - working-directory: services/model-gateway
       - run: uv sync
+        working-directory: services/model-gateway
       - run: uv run pytest --cov --cov-report=xml
+        working-directory: services/model-gateway
 
   # ─── Security scanning ──────────────────────────────────────────
   security:
