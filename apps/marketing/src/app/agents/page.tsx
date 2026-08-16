@@ -1,5 +1,6 @@
 import { BRAND } from '@axiom/config';
 import { CONTROL_LIBRARY_COUNT } from '@axiom/control-library';
+import type { AgentName } from '@axiom/types';
 import {
   AgentPill,
   Card,
@@ -12,7 +13,14 @@ import {
 
 export const metadata = { title: 'Agents' };
 
-const AGENTS = [
+const AGENTS: Array<{
+  name: AgentName;
+  persona: string;
+  one: string;
+  long: string;
+  autonomy: string;
+  scopes: string[];
+}> = [
   {
     name: 'drishti',
     persona: 'Discovery',
@@ -113,7 +121,7 @@ export default function AgentsPage() {
           <Card key={a.name}>
             <CardHeader>
               <div className="flex items-center gap-2">
-                <AgentPill agent={a.name as any} />
+                <AgentPill agent={a.name} />
                 <Badge variant="indigo">{a.autonomy}</Badge>
               </div>
               <CardDescription className="text-base text-slate-700">{a.one}</CardDescription>

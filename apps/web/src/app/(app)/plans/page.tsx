@@ -11,8 +11,20 @@ import {
 } from '@axiom/ui';
 import { formatDate, formatPercent } from '@axiom/ui';
 import { createSupabaseServerClient } from '@axiom/supabase';
+import type { StatusKind } from '@axiom/ui';
 
 export const dynamic = 'force-dynamic';
+
+interface PlanListRow {
+  id: string;
+  title: string;
+  status: string;
+  version: number;
+  created_at: string;
+  tenant_id: string;
+  engagement_id: string;
+  library_version: string;
+}
 
 export default async function PlansListPage() {
   const supabase = await createSupabaseServerClient();
@@ -26,10 +38,11 @@ export default async function PlansListPage() {
     .select('id, title, status, version, created_at, tenant_id, engagement_id, library_version')
     .order('created_at', { ascending: false });
 
-  const pending = (plans ?? []).filter((p: any) =>
+  const planRows = (plans ?? []) as PlanListRow[];
+  const pending = planRows.filter((p) =>
     ['draft', 'review', 'approved', 'executing'].includes(p.status),
   );
-  const closed = (plans ?? []).filter((p: any) =>
+  const closed = planRows.filter((p) =>
     ['completed', 'rolled_back', 'cancelled', 'partial_failure'].includes(p.status),
   );
 
@@ -68,7 +81,7 @@ export default async function PlansListPage() {
   );
 }
 
-function PlansTable({ plans }: { plans: any[] }) {
+function PlansTable({ plans }: { plans: PlanListRow[] }) {
   return (
     <div className="overflow-hidden rounded-md border border-slate-200">
       <table className="w-full text-sm">
@@ -87,7 +100,7 @@ function PlansTable({ plans }: { plans: any[] }) {
             <tr key={p.id} className="hover:bg-mist-50">
               <td className="px-4 py-2 font-medium text-slate-700">{p.title}</td>
               <td className="px-4 py-2">
-                <StatusBadge status={p.status} />
+                <StatusBadge status={p.status as StatusKind} />
               </td>
               <td className="px-4 py-2 font-mono text-xs text-slate-500">v{p.version}</td>
               <td className="px-4 py-2 font-mono text-xs text-slate-500">{p.library_version}</td>

@@ -1,5 +1,5 @@
 import { redirect } from 'next/navigation';
-import { createSupabaseServerClient, createSupabaseAdmin } from '@axiom/supabase';
+import { createSupabaseServerClient } from '@axiom/supabase';
 import { PageHeader, Card, CardContent, StatusBadge, Badge } from '@axiom/ui';
 import { formatDateTime } from '@axiom/ui';
 
@@ -12,8 +12,7 @@ export default async function DsarPage() {
   } = await supabase.auth.getUser();
   if (!user) redirect('/login');
 
-  const admin = createSupabaseAdmin();
-  const { data: dsars } = await admin
+  const { data: dsars } = await supabase
     .from('dsars')
     .select('*')
     .order('received_at', { ascending: false });
@@ -34,7 +33,7 @@ export default async function DsarPage() {
             </CardContent>
           </Card>
         )}
-        {(dsars ?? []).map((d: any) => (
+        {(dsars ?? []).map((d) => (
           <Card key={d.id}>
             <CardContent className="p-4">
               <div className="flex items-start justify-between gap-3">

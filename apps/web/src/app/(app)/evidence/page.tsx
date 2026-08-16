@@ -1,5 +1,5 @@
 import { redirect } from 'next/navigation';
-import { createSupabaseServerClient, createSupabaseAdmin } from '@axiom/supabase';
+import { createSupabaseServerClient } from '@axiom/supabase';
 import { PageHeader, Card, CardContent, ProofSeal, Badge } from '@axiom/ui';
 import { formatDateTime, truncateHash } from '@axiom/ui';
 
@@ -8,7 +8,7 @@ export const dynamic = 'force-dynamic';
 export default async function EvidenceExplorerPage({
   searchParams,
 }: {
-  searchParams: Promise<{ q?: string; tenant?: string }>;
+  searchParams: Promise<{ q?: string }>;
 }) {
   const resolvedSearchParams = await searchParams;
   const supabase = await createSupabaseServerClient();
@@ -17,8 +17,7 @@ export default async function EvidenceExplorerPage({
   } = await supabase.auth.getUser();
   if (!user) redirect('/login');
 
-  const admin = createSupabaseAdmin();
-  let query = admin
+  let query = supabase
     .from('evidence')
     .select(
       'id, content_hash, storage_uri, evidence_type, description, collected_by_agent, collected_at, filename, byte_size, demonstrates_control_ids',
@@ -63,7 +62,7 @@ export default async function EvidenceExplorerPage({
             </CardContent>
           </Card>
         )}
-        {(evidence ?? []).map((e: any) => (
+        {(evidence ?? []).map((e) => (
           <Card key={e.id}>
             <CardContent className="flex flex-col gap-2 p-4">
               <div className="flex items-start justify-between gap-3">

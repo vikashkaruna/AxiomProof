@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import { notFound, redirect } from 'next/navigation';
-import { createSupabaseServerClient, createSupabaseAdmin } from '@axiom/supabase';
+import { createSupabaseServerClient } from '@axiom/supabase';
 import {
   PageHeader,
   Card,
@@ -29,8 +29,7 @@ export default async function EngagementDetailPage({
   } = await supabase.auth.getUser();
   if (!user) redirect('/login');
 
-  const admin = createSupabaseAdmin();
-  const { data: engagement } = await admin
+  const { data: engagement } = await supabase
     .from('engagements')
     .select('*, tenants:tenant_id(name, slug)')
     .eq('id', id)
@@ -38,13 +37,13 @@ export default async function EngagementDetailPage({
 
   if (!engagement) notFound();
 
-  const { data: findings } = await admin
+  const { data: findings } = await supabase
     .from('findings')
     .select('id, control_id, status, score, risk_points, rationale, library_version')
     .eq('engagement_id', id)
     .order('risk_points', { ascending: false });
 
-  const { data: plans } = await admin
+  const { data: plans } = await supabase
     .from('remediation_plans')
     .select('id, title, status, version, created_at')
     .eq('engagement_id', id);
@@ -53,7 +52,7 @@ export default async function EngagementDetailPage({
     <div className="flex flex-col gap-6">
       <PageHeader
         title={engagement.title}
-        description={`Engagement for ${(engagement as any).tenants?.name} using library v${engagement.library_version}.`}
+        description={`Engagement for ${engagement.tenants?.name ?? 'tenant'} using library v${engagement.library_version}.`}
         actions={
           <Link
             href="/engagements"
@@ -95,7 +94,7 @@ export default async function EngagementDetailPage({
               </p>
             ) : (
               <ul className="flex flex-col gap-2">
-                {(plans ?? []).map((p: any) => (
+                {(plans ?? []).map((p) => (
                   <li key={p.id}>
                     <Link
                       href={`/plans/${p.id}`}
@@ -131,7 +130,7 @@ export default async function EngagementDetailPage({
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-200">
-              {(findings ?? []).map((f: any) => (
+              {(findings ?? []).map((f) => (
                 <tr key={f.id} className="hover:bg-mist-50">
                   <td className="px-4 py-2">
                     <code className="font-mono text-xs text-indigo-700">{f.control_id}</code>

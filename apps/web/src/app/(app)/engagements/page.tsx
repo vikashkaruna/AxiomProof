@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import { redirect } from 'next/navigation';
-import { createSupabaseServerClient, createSupabaseAdmin } from '@axiom/supabase';
+import { createSupabaseServerClient } from '@axiom/supabase';
 import {
   PageHeader,
   Card,
@@ -21,8 +21,7 @@ export default async function EngagementsListPage() {
   } = await supabase.auth.getUser();
   if (!user) redirect('/login');
 
-  const admin = createSupabaseAdmin();
-  const { data: engagements } = await admin
+  const { data: engagements } = await supabase
     .from('engagements')
     .select(
       'id, title, status, posture_score, estimated_exposure_inr, started_at, completed_at, tenant_id, library_version, tenants:tenant_id(name)',
@@ -58,10 +57,10 @@ export default async function EngagementsListPage() {
                   </td>
                 </tr>
               )}
-              {(engagements ?? []).map((e: any) => (
+              {(engagements ?? []).map((e) => (
                 <tr key={e.id} className="hover:bg-mist-50">
                   <td className="px-4 py-2 font-medium text-slate-700">{e.title}</td>
-                  <td className="px-4 py-2 text-slate-600">{e.tenants?.name ?? '—'}</td>
+                  <td className="px-4 py-2 text-slate-600">{e.tenants?.[0]?.name ?? '—'}</td>
                   <td className="px-4 py-2">
                     <StatusBadge status={e.status} />
                   </td>

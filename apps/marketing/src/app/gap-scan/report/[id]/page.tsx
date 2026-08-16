@@ -11,10 +11,11 @@ import {
   Badge,
   PostureScore,
   SeverityChip,
+  Button,
 } from '@axiom/ui';
+import { GapScanReportSchema } from '@axiom/types';
 import { BRAND } from '@axiom/config';
 import { CONTROL_LIBRARY_COUNT } from '@axiom/control-library';
-import { formatINR } from '@axiom/ui';
 
 export const dynamic = 'force-dynamic';
 
@@ -33,7 +34,9 @@ export default async function GapScanReportPage({ params }: { params: Promise<{ 
 
   if (!scan) notFound();
 
-  const report = scan.report_snapshot as any;
+  const reportResult = GapScanReportSchema.safeParse(scan.report_snapshot);
+  if (!reportResult.success) notFound();
+  const report = reportResult.data;
 
   return (
     <div className="mx-auto flex min-h-screen max-w-4xl flex-col gap-8 px-4 py-12 sm:px-6">
@@ -73,7 +76,7 @@ export default async function GapScanReportPage({ params }: { params: Promise<{ 
           </CardHeader>
           <CardContent>
             <ol className="flex flex-col gap-3">
-              {report.recommendations.map((r: any) => (
+              {report.recommendations.map((r) => (
                 <li
                   key={r.priority}
                   className="flex items-start gap-3 rounded-md border border-slate-200 p-3"
@@ -108,7 +111,7 @@ export default async function GapScanReportPage({ params }: { params: Promise<{ 
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-200">
-              {(report.findings ?? []).map((f: any) => (
+              {report.findings.map((f) => (
                 <tr key={f.controlId}>
                   <td className="px-4 py-2">
                     <code className="rounded bg-mist-100 px-1 font-mono text-xs text-indigo-700">
@@ -161,5 +164,3 @@ export default async function GapScanReportPage({ params }: { params: Promise<{ 
     </div>
   );
 }
-
-import { Button } from '@axiom/ui';

@@ -68,6 +68,31 @@ export const GapScanSubmitSchema = z.object({
 });
 export type GapScanSubmit = z.infer<typeof GapScanSubmitSchema>;
 
+export const GapScanReportSchema = z.object({
+  postureScore: z.number().min(0).max(100),
+  estimatedExposureInr: z.number().nonnegative(),
+  findings: z.array(
+    z.object({
+      controlId: z.string(),
+      title: z.string(),
+      domain: z.string(),
+      severity: z.enum(['critical', 'high', 'medium', 'low']),
+      score: z.number().min(0).max(100),
+      riskPoints: z.number().nonnegative(),
+      rationale: z.string(),
+    }),
+  ),
+  recommendations: z.array(
+    z.object({
+      priority: z.number().int().positive(),
+      title: z.string(),
+      effort: z.string(),
+    }),
+  ),
+  libraryVersion: z.string(),
+});
+export type GapScanReport = z.infer<typeof GapScanReportSchema>;
+
 // ─── Engagements ─────────────────────────────────────────────────────
 
 export const CreateEngagementSchema = z.object({

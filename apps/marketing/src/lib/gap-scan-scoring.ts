@@ -1,20 +1,5 @@
 import { controls } from '@axiom/control-library';
-
-export interface GapScanReport {
-  postureScore: number; // 0-100
-  estimatedExposureInr: number;
-  findings: Array<{
-    controlId: string;
-    title: string;
-    domain: string;
-    severity: string;
-    score: number; // 0-100
-    riskPoints: number;
-    rationale: string;
-  }>;
-  recommendations: Array<{ priority: number; title: string; effort: string }>;
-  libraryVersion: string;
-}
+import type { GapScanReport } from '@axiom/types';
 
 /**
  * Score a 12-question gap-scan against the v0.1.0 control library.

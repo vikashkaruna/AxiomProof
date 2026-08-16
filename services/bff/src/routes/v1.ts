@@ -174,7 +174,7 @@ export function v1Routes(deps: Deps) {
         concurrency: input.concurrency,
         stop_on_failure: input.stopOnFailure,
         signature: signed.signature,
-        signed_payload: signed.spec as any,
+        signed_payload: signed.spec,
         nonce: signed.spec.nonce,
         expires_at: expiresAt,
         reason: input.reason ?? null,
