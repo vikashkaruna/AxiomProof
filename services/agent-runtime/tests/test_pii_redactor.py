@@ -26,8 +26,8 @@ def test_redacts_phone():
 
 
 def test_passes_through_clean_text():
-    r = redact_text("The control library covers 43 DPDPA controls.")
-    assert r.redacted_text == "The control library covers 43 DPDPA controls."
+    r = redact_text("The control library covers 46 DPDPA controls.")
+    assert r.redacted_text == "The control library covers 46 DPDPA controls."
     assert r.redactions == []
 
 

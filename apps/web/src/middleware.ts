@@ -24,6 +24,12 @@ export async function middleware(request: NextRequest) {
     return NextResponse.next();
   }
 
+  // Playwright exercises protected UI routes without a real Supabase project.
+  // Keep this escape hatch development-only and never honor it in production.
+  if (process.env.NODE_ENV !== 'production' && process.env.AXIOM_E2E_BYPASS_AUTH === 'true') {
+    return NextResponse.next();
+  }
+
   let response = NextResponse.next({ request });
 
   const supabase = createServerClient(

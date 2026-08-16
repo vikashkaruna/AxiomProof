@@ -1,6 +1,6 @@
 import { type HTMLAttributes } from 'react';
-import { cn } from '../utils.js';
-import { Badge } from './Badge.js';
+import { cn } from '../utils';
+import { Badge } from './Badge';
 
 export type Severity = 'critical' | 'high' | 'medium' | 'low';
 

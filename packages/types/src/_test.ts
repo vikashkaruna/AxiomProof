@@ -4,5 +4,5 @@ const S = z.object({
   b: z.array(z.string()).optional().default([]),
 });
 type T = z.infer<typeof S>;
-const x: T = { a: 'hi' };
+const x: T = S.parse({ a: 'hi' });
 console.log(x);

@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { canonicalJson, sha256 } from './canonicalise.js';
+import { canonicalJson, sha256 } from './canonicalise';
 
 describe('canonicalJson', () => {
   it('sorts object keys', () => {

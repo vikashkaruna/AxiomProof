@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { contentKey } from './index.js';
+import { contentKey } from './index';
 
 describe('contentKey', () => {
   it('builds a tenant-scoped key without engagement', () => {

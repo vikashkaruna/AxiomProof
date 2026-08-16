@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { CONTROL_LIBRARY_COUNT } from '@axiom/control-library';
 import { Button, Input, Label, Textarea } from '@axiom/ui';
 
 const QUESTIONS = [
@@ -385,9 +386,9 @@ export function GapScanForm() {
             </ul>
           </div>
           <p className="text-xs text-slate-500">
-            On submit, your answers are scored against library v0.1.0 (43 DPDPA controls) and a
-            prioritised report is generated in &lt; 30 seconds. You can save the report as PDF from
-            the result page.
+            On submit, your answers are scored against library v0.1.0 ({CONTROL_LIBRARY_COUNT} DPDPA
+            controls) and a prioritised report is generated in &lt; 30 seconds. You can save the
+            report as PDF from the result page.
           </p>
           <div className="flex justify-between">
             <Button variant="ghost" onClick={() => setStep(2)}>

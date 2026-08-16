@@ -1,5 +1,5 @@
 import { type HTMLAttributes } from 'react';
-import { cn, truncateHash } from '../utils.js';
+import { cn, truncateHash } from '../utils';
 
 export interface ProofSealProps extends HTMLAttributes<HTMLSpanElement> {
   /** The content hash (sha256 hex, 64 chars). If absent, displays "Unsealed". */

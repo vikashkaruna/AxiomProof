@@ -1,12 +1,15 @@
 import { createServerClient, type CookieOptions } from '@supabase/ssr';
 import { cookies } from 'next/headers';
 import { loadEnv } from '@axiom/config';
+import { createE2ESupabaseClient, isE2EBypassEnabled } from './e2e';
 
 /**
  * Create a Supabase client for use in Next.js Server Components,
  * Route Handlers, and Server Actions. Reads/writes session cookies.
  */
 export function createSupabaseServerClient() {
+  if (isE2EBypassEnabled()) return createE2ESupabaseClient();
+
   const env = loadEnv();
   const cookieStore = cookies();
 

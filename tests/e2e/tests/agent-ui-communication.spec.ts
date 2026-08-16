@@ -15,10 +15,11 @@ test.describe('Agent ↔ UI communication', () => {
     await page.goto('/workbench');
 
     // The workbench should show the agent roster regardless of data state
-    await expect(page.getByText('Drishti')).toBeVisible();
-    await expect(page.getByText('Parikshan')).toBeVisible();
-    await expect(page.getByText('Sudhaar')).toBeVisible();
-    await expect(page.getByText('Karya')).toBeVisible();
+    const main = page.getByRole('main');
+    await expect(main.getByText(/^Drishti$/i)).toBeVisible();
+    await expect(main.getByText(/^Parikshan$/i)).toBeVisible();
+    await expect(main.getByText(/^Sudhaar$/i)).toBeVisible();
+    await expect(main.getByText(/^Karya$/i)).toBeVisible();
   });
 
   test('the workbench renders the autonomy badges', async ({ page }) => {

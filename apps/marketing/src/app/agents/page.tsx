@@ -1,4 +1,5 @@
 import { BRAND } from '@axiom/config';
+import { CONTROL_LIBRARY_COUNT } from '@axiom/control-library';
 import {
   AgentPill,
   Card,
@@ -32,7 +33,7 @@ const AGENTS = [
     name: 'parikshan',
     persona: 'Assessment',
     one: 'I measure you against the law.',
-    long: 'Parikshan runs the gap assessment against the versioned control library (43 controls in v0.1.0). It scores each control, weights the risk, and produces a posture score and an estimated statutory exposure. It also produces SDF self-assessments.',
+    long: `Parikshan runs the gap assessment against the versioned control library (${CONTROL_LIBRARY_COUNT} controls in v0.1.0). It scores each control, weights the risk, and produces a posture score and an estimated statutory exposure. It also produces SDF self-assessments.`,
     autonomy: 'L1',
     scopes: ['control_library.read', 'findings.write'],
   },

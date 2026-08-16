@@ -1,7 +1,7 @@
 import { redirect } from 'next/navigation';
 import { createSupabaseServerClient, createSupabaseAdmin } from '@axiom/supabase';
 import { PageHeader, Card, CardContent, Badge, SeverityChip } from '@axiom/ui';
-import { controls as controlLib } from '@axiom/control-library';
+import { controls as controlLib, CONTROL_LIBRARY_COUNT } from '@axiom/control-library';
 
 export const dynamic = 'force-dynamic';
 
@@ -31,7 +31,7 @@ export default async function ControlLibraryPage({
     <div className="flex flex-col gap-6">
       <PageHeader
         title="Control library"
-        description="The 43 controls derived from the DPDP Act 2023 and DPDP Rules 2025. Each control is versioned, citable, and mapped to a remediation pattern. Library v0.1.0 — published 11 Aug 2026."
+        description={`The ${CONTROL_LIBRARY_COUNT} controls derived from the DPDP Act 2023 and DPDP Rules 2025. Each control is versioned, citable, and mapped to a remediation pattern. Library v0.1.0 — published 11 Aug 2026.`}
         meta={
           <>
             <Badge variant="proof">v{controlLib[0]?.introducedInVersion}</Badge>

@@ -1,6 +1,6 @@
 import { type HTMLAttributes } from 'react';
-import { cn } from '../utils.js';
-import { Badge } from '../primitives/Badge.js';
+import { cn } from '../utils';
+import { Badge } from '../primitives/Badge';
 
 export type StatusKind =
   | 'draft'

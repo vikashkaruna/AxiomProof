@@ -36,7 +36,7 @@ def parse(ts_source: str) -> dict:
     Rather than fully type-checking TS, we extract the literal object
     between `export const controls: Control[] = [` and the closing `]`.
     We then use a hand-rolled JSON-coercion pass. For the v0.1.0
-    library (43 controls) this is robust; for future versions a
+    library (46 controls) this is robust; for future versions a
     proper TS parser (e.g. via the `typescript` PyPI package or a
     ts-to-json step) is recommended.
     """

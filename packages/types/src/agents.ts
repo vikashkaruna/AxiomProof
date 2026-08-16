@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { AgentName } from './enums.js';
+import { AgentName } from './enums';
 
 /**
  * Per-agent contracts. Each agent declares:

@@ -11,20 +11,22 @@
 
 import { test, expect } from '@playwright/test';
 
+const marketingUrl = 'http://localhost:3000';
+
 test.describe('Public gap-scan funnel', () => {
   test('the marketing site loads with the gap-scan CTA', async ({ page }) => {
-    await page.goto('/');
+    await page.goto(`${marketingUrl}/`);
     await expect(page.getByRole('heading', { name: /Agents do the work/i })).toBeVisible();
     await expect(page.getByText(/Run the free 5-min gap-scan/i)).toBeVisible();
   });
 
   test('the gap-scan section is reachable', async ({ page }) => {
-    await page.goto('/#gap-scan');
+    await page.goto(`${marketingUrl}/#gap-scan`);
     await expect(page.getByText(/Free 5-minute DPDPA gap-scan/i)).toBeVisible();
   });
 
   test('the agents page lists all 10 named agents', async ({ page }) => {
-    await page.goto('/agents');
+    await page.goto(`${marketingUrl}/agents`);
     const agents = [
       'Drishti',
       'Vibhaag',

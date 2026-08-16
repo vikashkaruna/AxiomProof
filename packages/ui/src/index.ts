@@ -1,3 +1,3 @@
-export * from './primitives/index.js';
-export * from './components/index.js';
-export * from './utils.js';
+export * from './primitives/index';
+export * from './components/index';
+export * from './utils';

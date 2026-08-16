@@ -62,7 +62,7 @@ and [`docs/07_SECURITY_REVIEW.md`](./docs/07_SECURITY_REVIEW.md)):
 │   ├── design-tokens/                 # Brand tokens, Tailwind preset
 │   ├── ui/                            # React UI primitives
 │   ├── types/                         # Shared TypeScript types (mirror DB schema)
-│   ├── control-library/               # 43 DPDPA controls, versioned data
+│   ├── control-library/               # 46 DPDPA controls, versioned data
 │   ├── ledger/                        # Append-only audit ledger client (TS)
 │   ├── evidence/                      # S3 Object Lock client (TS)
 │   ├── approval-engine/               # HMAC-SHA-256 signed approval tokens (TS)

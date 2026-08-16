@@ -76,6 +76,13 @@ export class ApprovalEngine {
     );
   }
 
+  private canonicalSpec(spec: ApprovalTokenSpec): ApprovalTokenSpec {
+    return {
+      ...spec,
+      actionIds: [...spec.actionIds].sort(),
+    };
+  }
+
   /**
    * Issue a new signed approval token. Returns the spec and signature
    * for storage in approval_tokens; the verifier uses the spec to
@@ -99,7 +106,7 @@ export class ApprovalEngine {
    * Sign a spec. Pure function — exposed for testing.
    */
   async sign(tenantId: string, spec: ApprovalTokenSpec): Promise<string> {
-    const payload = canonicalJson(spec as unknown as Record<string, unknown>);
+    const payload = canonicalJson(this.canonicalSpec(spec) as unknown as Record<string, unknown>);
     const secret = this.getSecret(tenantId);
     return createHmac('sha256', secret).update(payload).digest('hex');
   }
@@ -156,7 +163,9 @@ export class ApprovalEngine {
    * Compute the canonical hash of a token spec (for ledger entry).
    */
   async tokenHash(token: SignedApprovalToken): Promise<string> {
-    return sha256(canonicalJson({ spec: token.spec, signature: token.signature }));
+    return sha256(
+      canonicalJson({ spec: this.canonicalSpec(token.spec), signature: token.signature }),
+    );
   }
 }
 

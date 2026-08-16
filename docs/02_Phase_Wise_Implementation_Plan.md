@@ -32,14 +32,14 @@ Every phase of this plan is defined by _how much the agents do unsupervised_, no
 
 ### Modules built
 
-| #    | Module                              | Features                                                                                                                                                           | Sequence |
-| ---- | ----------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------ | -------- |
-| M0.1 | **Corporate & Digital Foundation**  | Incorporation of Axiom Minds Pvt Ltd; PAN/TAN/GST; bank + invoicing; `axiomminds.ai` live; trademark filing for AXIOM PROOF                                        | 1        |
-| M0.2 | **Control Library v0**              | DPDPA Act + DPDP Rules 2025 decomposed into ~43 discrete, testable controls; each mapped to section/rule citation, evidence type required, and remediation pattern | 2        |
-| M0.3 | **Parikshan — Assessment Agent v0** | Structured questionnaire engine; control-mapped scoring; risk weighting; penalty-exposure calculator                                                               | 3        |
-| M0.4 | **Prativedan — Report Agent v0**    | Templated report generation (findings, prioritised gaps, exposure estimate); branded PDF output                                                                    | 4        |
-| M0.5 | **Free Gap-Scan (public)**          | Lightweight self-serve questionnaire → auto-generated summary report → consultation CTA                                                                            | 5        |
-| M0.6 | **Agent Workbench (internal)**      | Founder's private console for running agents, reviewing outputs, managing prompt/version registry                                                                  | 6        |
+| #    | Module                              | Features                                                                                                                                                          | Sequence |
+| ---- | ----------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------- |
+| M0.1 | **Corporate & Digital Foundation**  | Incorporation of Axiom Minds Pvt Ltd; PAN/TAN/GST; bank + invoicing; `axiomminds.ai` live; trademark filing for AXIOM PROOF                                       | 1        |
+| M0.2 | **Control Library v0**              | DPDPA Act + DPDP Rules 2025 decomposed into 46 discrete, testable controls; each mapped to section/rule citation, evidence type required, and remediation pattern | 2        |
+| M0.3 | **Parikshan — Assessment Agent v0** | Structured questionnaire engine; control-mapped scoring; risk weighting; penalty-exposure calculator                                                              | 3        |
+| M0.4 | **Prativedan — Report Agent v0**    | Templated report generation (findings, prioritised gaps, exposure estimate); branded PDF output                                                                   | 4        |
+| M0.5 | **Free Gap-Scan (public)**          | Lightweight self-serve questionnaire → auto-generated summary report → consultation CTA                                                                           | 5        |
+| M0.6 | **Agent Workbench (internal)**      | Founder's private console for running agents, reviewing outputs, managing prompt/version registry                                                                 | 6        |
 
 ### Exit criteria
 

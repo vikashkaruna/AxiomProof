@@ -11,6 +11,8 @@
 
 import { test, expect } from '@playwright/test';
 
+const marketingUrl = 'http://localhost:3000';
+
 test.describe('Security headers', () => {
   test('the app applies the security headers', async ({ request }) => {
     const res = await request.get('/');
@@ -23,7 +25,7 @@ test.describe('Security headers', () => {
   });
 
   test('the marketing site applies the security headers', async ({ request }) => {
-    const res = await request.get('/', { headers: { host: 'axiomminds.ai' } });
+    const res = await request.get(`${marketingUrl}/`, { headers: { host: 'axiomminds.ai' } });
     expect(res.status()).toBeLessThan(500);
     const headers = res.headers();
     expect(headers['x-frame-options']).toBe('DENY');

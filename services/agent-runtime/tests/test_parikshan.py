@@ -30,7 +30,7 @@ async def test_parikshan_full_compliance():
     # average should be 30 with a small discount for unverified self-attestation.
     assert 0 <= output.posture_score <= 50
     # At least one finding is produced (the placeholder library has
-    # at least one control; the real v0.1.0 library has 43).
+    # at least one control; the real v0.1.0 library has 46).
     assert len(output.findings) >= 1
     assert isinstance(output.findings[0], FindingOut)
 

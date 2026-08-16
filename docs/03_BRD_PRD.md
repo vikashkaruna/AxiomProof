@@ -89,7 +89,7 @@ The unsolved problem is not _knowing_ what's wrong. Roughly forty vendors will r
 
 1. Client onboards; Drishti runs discovery (interview-driven in Phase 1, live-connector in Phase 2), in **batch** across the estate or **targeted** at one system.
 2. Vibhaag classifies discovered data by DPDPA category, flagging children's data, sensitive categories and cross-border flows.
-3. Parikshan assesses findings against the control library, scoring each of ~43 controls.
+3. Parikshan assesses findings against the control library, scoring each of 46 controls.
 4. Saakshi seals supporting evidence with timestamp and hash.
 5. Prativedan generates the report; Lekha records every step.
 6. **Human reviews and approves the report** before it reaches the client.

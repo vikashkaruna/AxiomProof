@@ -217,7 +217,7 @@ cd <repo-root>
 pnpm seed:controls
 ```
 
-This inserts the v0.1.0 library (43 controls) into the `controls`
+This inserts the v0.1.0 library (46 controls) into the `controls`
 and `control_libraries` tables.
 
 ### 4.4 Configure auth

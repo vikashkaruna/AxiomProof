@@ -12,6 +12,7 @@ import {
   SeverityChip,
 } from '@axiom/ui';
 import { BRAND } from '@axiom/config';
+import { CONTROL_LIBRARY_COUNT } from '@axiom/control-library';
 import { formatINR } from '@axiom/ui';
 
 export const dynamic = 'force-dynamic';
@@ -40,7 +41,8 @@ export default async function GapScanReportPage({ params }: { params: { id: stri
           Your DPDPA readiness report
         </h1>
         <p className="mt-2 text-slate-600">
-          Scored against 43 controls from {BRAND.name} Control Library v{scan.library_version}.
+          Scored against {CONTROL_LIBRARY_COUNT} controls from {BRAND.name} Control Library v
+          {scan.library_version}.
         </p>
       </div>
 

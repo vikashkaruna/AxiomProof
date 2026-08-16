@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { ActionType, ActorType, LedgerResult } from './enums.js';
+import { ActionType, ActorType, LedgerResult } from './enums';
 
 /**
  * REST API contract shared by the BFF and the Next.js apps.

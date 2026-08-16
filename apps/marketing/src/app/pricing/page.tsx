@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import { CONTROL_LIBRARY_COUNT } from '@axiom/control-library';
 import {
   Card,
   CardContent,
@@ -50,7 +51,7 @@ export default function PricingPage() {
           <CardContent>
             <ul className="flex flex-col gap-2 text-sm text-slate-600">
               <li>· Discovery + classification (Drishti + Vibhaag)</li>
-              <li>· Scored against 43 controls (Parikshan)</li>
+              <li>· Scored against {CONTROL_LIBRARY_COUNT} controls (Parikshan)</li>
               <li>· Estimated statutory exposure</li>
               <li>· Remediation roadmap with effort estimates</li>
               <li>· Branded report + evidence pack (Prativedan)</li>

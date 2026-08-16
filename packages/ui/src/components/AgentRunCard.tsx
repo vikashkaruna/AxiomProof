@@ -1,7 +1,7 @@
 import { type ReactNode } from 'react';
-import { cn, relativeTime } from '../utils.js';
-import { AgentPill } from './AgentPill.js';
-import { StatusBadge, type StatusKind } from './StatusBadge.js';
+import { cn, relativeTime } from '../utils';
+import { AgentPill } from './AgentPill';
+import { StatusBadge, type StatusKind } from './StatusBadge';
 import type { AgentName } from '@axiom/design-tokens';
 
 export interface AgentRunCardProps {

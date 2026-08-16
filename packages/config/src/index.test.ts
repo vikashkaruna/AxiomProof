@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { loadEnv, resetEnvCache, BRAND } from './index.js';
+import { loadEnv, resetEnvCache, BRAND } from './index';
 
 describe('loadEnv', () => {
   it('loads valid env', () => {

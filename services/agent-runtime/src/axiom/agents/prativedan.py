@@ -114,7 +114,7 @@ class PrativedanAgent(BaseAgent[PrativedanInput, PrativedanOutput]):
         library_section = {
             "type": "library",
             "title": "Control library",
-            "body": f"Scored against the Axiom Proof Control Library v{input.library_version} (43 controls).",
+            "body": f"Scored against the Axiom Proof Control Library v{input.library_version} (46 controls).",
         }
 
         # Section: agent attribution + human reviewer

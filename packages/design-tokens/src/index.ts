@@ -1,5 +1,5 @@
-export * from './colors.js';
-export * from './typography.js';
-export * from './spacing.js';
-export { axiomPreset } from './tailwind.js';
-export { default } from './tailwind.js';
+export * from './colors';
+export * from './typography';
+export * from './spacing';
+export { axiomPreset } from './tailwind';
+export { default } from './tailwind';

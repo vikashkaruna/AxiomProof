@@ -1,6 +1,6 @@
 # Axiom Proof — Repository Audit & Code Review Plan
 
-> Status: **Part A complete; Part B pending Phase 0 baseline.**
+> Status: **Part A complete; Part B Phase 0 complete; Phase 1 pending sign-off.**
 > Author: prepared for Vikash Karuna · Axiom Minds
 > Date: 2026-08-16
 > Repo: https://github.com/vikashkaruna/AxiomProof.git
@@ -226,8 +226,8 @@ themselves.** The 11 docs are 2,960 lines of specification. The code should
 be derivable from them. Where it isn't — the code contradicts a doc — that
 is the highest-priority finding, because it means the spec or the
 implementation has drifted. (Example to check: does `packages/control-library`
-contain 43 controls as the commit message says? Does `docs/04 §3.2` say the
-same? If one says 43 and the other says 40, that's a P0 finding.)
+contain 46 controls as the implementation now says? Does `docs/04 §3.2` say
+the same? If one source disagrees, that is a P0 finding.)
 
 ## B.2 Scope inventory — what is being reviewed
 
@@ -241,7 +241,7 @@ services/temporal-workers/     (Python — durable workflow orchestration)
 packages/design-tokens/        (Tailwind preset, brand colour system)
 packages/ui/                   (React primitives: Button, Card, Badge, ProofSeal, AgentPill, PostureScore, …)
 packages/types/                (Zod schemas mirroring the DB)
-packages/control-library/      (43 DPDPA controls, versioned)
+packages/control-library/      (46 DPDPA controls, versioned)
 packages/ledger/               (append-only hash-chained audit ledger client — TS)
 packages/evidence/             (S3 Object Lock Compliance client — TS)
 packages/approval-engine/      (HMAC-SHA-256 signed approval tokens — TS)
@@ -322,7 +322,7 @@ in the commit message), and identify stubs that need follow-up work.
 | #    | Module (from Phase plan)          | Where it should live                                    | Where it actually lives         | Coverage                |
 | ---- | --------------------------------- | ------------------------------------------------------- | ------------------------------- | ----------------------- |
 | M0.1 | Corporate & Digital Foundation    | n/a (corp setup)                                        | `apps/marketing/`               | UI only, not corp setup |
-| M0.2 | Control Library v0 (43 controls)  | `packages/control-library`                              | `packages/control-library/src/` | TBD                     |
+| M0.2 | Control Library v0 (46 controls)  | `packages/control-library`                              | `packages/control-library/src/` | TBD                     |
 | M0.3 | Parikshan (Assessment Agent v0)   | `services/agent-runtime/src/axiom/agents/parikshan.py`  | TBD                             | TBD                     |
 | M0.4 | Prativedan (Report Agent v0)      | `services/agent-runtime/src/axiom/agents/prativedan.py` | TBD                             | TBD                     |
 | M0.5 | Free Gap-Scan (public)            | `apps/marketing/src/app/gap-scan/`                      | TBD                             | TBD                     |
@@ -352,7 +352,7 @@ code reuse, dead code, mutation-test sentinels, and the **fifth lens**
 | #   | Task                                                                                                                                                                                            | Acceptance       |
 | --- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------- |
 | 3.1 | Cross-doc consistency check: do `docs/01..09` + `DPDPA_Axiom_Minds_Strategic_Roadmap.md` + `AGENTS.md` + `README.md` agree on agent count, control count, phase definitions, framework choices? | diff report      |
-| 3.2 | Code-vs-doc consistency: e.g. does Control Library contain 43 controls (commit message) and 43 (Doc 02 M0.2)?                                                                                   | count check      |
+| 3.2 | Code-vs-doc consistency: does the Control Library count match the source-of-truth constant and every published reference?                                                                       | count check      |
 | 3.3 | Dead-code scan: `knip` or similar across TS packages; `vulture` for Python                                                                                                                      | dead-code report |
 | 3.4 | Type-safety audit: any `any`, untyped `as`, missing Zod validation at API boundaries                                                                                                            | finding list     |
 | 3.5 | Test coverage: 4 vitest + 4 Playwright against 14 modules. Is the approval engine (the most security-critical component) covered by a test?                                                     | coverage map     |

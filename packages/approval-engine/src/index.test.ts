@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach } from 'vitest';
-import { ApprovalEngine, generateTestSecret } from './index.js';
+import { ApprovalEngine, generateTestSecret } from './index';
 
 describe('ApprovalEngine', () => {
   let engine: ApprovalEngine;

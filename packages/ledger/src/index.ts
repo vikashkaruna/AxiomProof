@@ -1,2 +1,2 @@
-export * from './canonicalise.js';
-export * from './append.js';
+export * from './canonicalise';
+export * from './append';

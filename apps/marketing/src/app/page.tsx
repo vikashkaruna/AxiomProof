@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import { BRAND } from '@axiom/config';
+import { CONTROL_LIBRARY_COUNT } from '@axiom/control-library';
 import { Button, Card, CardContent, Badge, AgentPill } from '@axiom/ui';
 import { SubmitButton } from './gap-scan/submit-button';
 import { GapScanForm } from './gap-scan/form';
@@ -38,8 +39,8 @@ export default function HomePage() {
                   </Button>
                 </div>
                 <p className="mt-3 text-sm text-slate-500">
-                  No live data connectors. No credit card. Real assessment against 43 DPDPA controls
-                  in 5 minutes.
+                  No live data connectors. No credit card. Real assessment against{' '}
+                  {CONTROL_LIBRARY_COUNT} DPDPA controls in 5 minutes.
                 </p>
               </div>
 
@@ -70,7 +71,12 @@ export default function HomePage() {
                 desc: 'Find personal data across your systems',
               },
               { n: 2, label: 'Classify', agent: 'vibhaag', desc: 'Categorise by DPDPA type' },
-              { n: 3, label: 'Assess', agent: 'parikshan', desc: 'Score against 43 controls' },
+              {
+                n: 3,
+                label: 'Assess',
+                agent: 'parikshan',
+                desc: `Score against ${CONTROL_LIBRARY_COUNT} controls`,
+              },
               { n: 4, label: 'Plan', agent: 'sudhaar', desc: 'Typed actions with rollback' },
               { n: 5, label: 'Approve', agent: null, desc: 'You sign. Then execute.' },
             ].map((s) => (
@@ -148,8 +154,9 @@ export default function HomePage() {
               Free 5-minute DPDPA gap-scan
             </h2>
             <p className="mt-3 text-lg text-slate-600">
-              Answer 12 questions. Get a prioritised report against the same 43-control library a
-              paid engagement uses. No live data connectors — your inputs stay on this page.
+              Answer 12 questions. Get a prioritised report against the same {CONTROL_LIBRARY_COUNT}
+              -control library a paid engagement uses. No live data connectors — your inputs stay on
+              this page.
             </p>
           </div>
 
@@ -310,7 +317,7 @@ function HeroVisual() {
         {[
           { a: 'drishti', s: 'Found 17 systems holding personal data' },
           { a: 'vibhaag', s: 'Classified 1,284 fields' },
-          { a: 'parikshan', s: '38 of 43 controls assessed' },
+          { a: 'parikshan', s: `38 of ${CONTROL_LIBRARY_COUNT} controls assessed` },
           { a: 'saakshi', s: 'Sealed 14 evidence artifacts' },
           { a: 'sudhaar', s: 'Generated 7-action plan' },
         ].map((row, i) => (

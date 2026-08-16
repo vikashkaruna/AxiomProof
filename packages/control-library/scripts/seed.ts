@@ -7,7 +7,7 @@
  */
 
 import { createClient } from '@supabase/supabase-js';
-import { buildLibrarySeed, validateLibrary } from '../src/index.js';
+import { buildLibrarySeed, validateLibrary } from '../src/index';
 
 async function main() {
   const url = process.env.SUPABASE_URL;

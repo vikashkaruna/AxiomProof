@@ -4,7 +4,7 @@ version = "0.1.0"
 description = "Axiom Proof agent runtime — 10 named agents that discover, classify, assess, collect evidence, plan, execute, audit, watch, report, and signal."
 authors = [{ name = "Axiom Minds Private Limited" }]
 readme = "README.md"
-requires-python = ">=3.11"
+requires-python = ">=3.11,<3.14"
 license = { text = "Proprietary" }
 
 dependencies = [
@@ -42,7 +42,6 @@ dev = [
   "mypy>=1.11.0",
   "freezegun>=1.5.0",
   "respx>=0.21.0",
-  "httpx-mock>=0.1.0",
 ]
 
 [build-system]
@@ -68,6 +67,7 @@ ignore_missing_imports = true
 [tool.pytest.ini_options]
 asyncio_mode = "auto"
 testpaths = ["tests"]
+pythonpath = ["src"]
 addopts = "-v --tb=short --strict-markers"
 markers = [
   "security: security-sensitive tests (approval engine, RBAC, ledger)",

@@ -1,5 +1,6 @@
 import { createClient, type SupabaseClient } from '@supabase/supabase-js';
 import { loadEnv } from '@axiom/config';
+import { createE2ESupabaseClient, isE2EBypassEnabled } from './e2e';
 
 let cached: SupabaseClient | null = null;
 
@@ -12,6 +13,8 @@ let cached: SupabaseClient | null = null;
  * rely on RLS to enforce tenancy.
  */
 export function createSupabaseAdmin(): SupabaseClient {
+  if (isE2EBypassEnabled()) return createE2ESupabaseClient();
+
   if (cached) return cached;
   const env = loadEnv();
   cached = createClient(env.SUPABASE_URL, env.SUPABASE_SERVICE_KEY, {

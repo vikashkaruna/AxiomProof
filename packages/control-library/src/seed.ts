@@ -4,12 +4,13 @@
  */
 
 import {
+  CONTROL_LIBRARY_COUNT,
   controls,
   LIBRARY_VERSION,
   LIBRARY_PUBLISHED_AT,
   LIBRARY_PUBLISHER,
   LIBRARY_CHANGELOG,
-} from './controls.js';
+} from './controls';
 
 export function buildLibrarySeed() {
   return {
@@ -48,8 +49,8 @@ const validation = (() => {
     if (seen.has(c.id)) errors.push(`Duplicate control id: ${c.id}`);
     seen.add(c.id);
   }
-  if (controls.length !== 43) {
-    errors.push(`Expected 43 controls, found ${controls.length}`);
+  if (controls.length !== CONTROL_LIBRARY_COUNT) {
+    errors.push(`Expected ${CONTROL_LIBRARY_COUNT} controls, found ${controls.length}`);
   }
   return errors;
 })();

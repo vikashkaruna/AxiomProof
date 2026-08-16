@@ -16,7 +16,7 @@
 import { createClient, type SupabaseClient } from '@supabase/supabase-js';
 import { z } from 'zod';
 import { ActorType, LedgerActionType, LedgerResult } from '@axiom/types';
-import { canonicalJson, sha256 } from './canonicalise.js';
+import { canonicalJson, sha256 } from './canonicalise';
 
 export interface AppendLedgerInput {
   tenantId: string;

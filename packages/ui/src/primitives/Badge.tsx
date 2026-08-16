@@ -1,6 +1,6 @@
 import { type HTMLAttributes, forwardRef } from 'react';
 import { cva, type VariantProps } from 'class-variance-authority';
-import { cn } from '../utils.js';
+import { cn } from '../utils';
 import { agentAccents, type AgentName } from '@axiom/design-tokens';
 
 const badgeVariants = cva(

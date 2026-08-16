@@ -15,7 +15,7 @@ import {
   PlanStatus,
   TenantTier,
   UserRole,
-} from './enums.js';
+} from './enums';
 
 // ─── Branded IDs ─────────────────────────────────────────────────────
 // The BFF and apps work with opaque IDs. Branded types prevent

@@ -1,5 +1,5 @@
-import { cn } from '../utils.js';
-import { ProgressBar } from '../primitives/Progress.js';
+import { cn } from '../utils';
+import { ProgressBar } from '../primitives/Progress';
 
 export interface PostureScoreProps {
   /** 0-100 */

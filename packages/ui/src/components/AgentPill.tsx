@@ -1,5 +1,5 @@
 import { agentAccents, type AgentName } from '@axiom/design-tokens';
-import { cn } from '../utils.js';
+import { cn } from '../utils';
 
 const AGENT_PERSONAS: Record<AgentName, { persona: string; emoji: string }> = {
   drishti: { persona: 'Discovery', emoji: '◎' },

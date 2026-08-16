@@ -1,9 +1,9 @@
-import type { Control } from './types.js';
+import type { Control } from './types';
 
 /**
  * Axiom Proof — Control Library v0.1.0
  *
- * 43 controls covering the Digital Personal Data Protection Act, 2023
+ * 46 controls covering the Digital Personal Data Protection Act, 2023
  * and the Digital Personal Data Protection Rules, 2025 (notified
  * 14 November 2025, full substantive enforcement 13/14 May 2027).
  *
@@ -23,7 +23,7 @@ import type { Control } from './types.js';
 export const LIBRARY_VERSION = '0.1.0';
 export const LIBRARY_PUBLISHED_AT = '2026-08-11';
 export const LIBRARY_PUBLISHER = 'Axiom Minds · Founder';
-export const LIBRARY_CHANGELOG = `Initial v0.1.0: 43 controls across 13 domains. Maps the DPDP Act 2023
+export const LIBRARY_CHANGELOG = `Initial v0.1.0: 46 controls across 13 domains. Maps the DPDP Act 2023
 sections 4–17 and DPDP Rules 2025 rules 5–24. Penalty values align with
 Section 33 tiering (₹50–250 Cr). Children's-data controls follow Rules
 9–10. SDF controls follow Rules 11–12.`;
@@ -1637,6 +1637,8 @@ export const controls: Control[] = [
   },
 ];
 
+export const CONTROL_LIBRARY_COUNT = 46;
+
 /**
  * Sanity: ensure the totals are correct and the library is self-consistent.
  * Throw at module load if invariants are violated — better to catch at build
@@ -1656,8 +1658,8 @@ export function validateLibrary(): { ok: true } | { ok: false; errors: string[] 
     totalWeight += c.scoring.weight;
   }
 
-  if (controls.length !== 43) {
-    errors.push(`Expected 43 controls, found ${controls.length}`);
+  if (controls.length !== CONTROL_LIBRARY_COUNT) {
+    errors.push(`Expected ${CONTROL_LIBRARY_COUNT} controls, found ${controls.length}`);
   }
 
   // Domain weight check (each domain should sum to 1, allowing minor float)

@@ -3,7 +3,7 @@
 > Agentic DPDPA compliance platform for Indian mid-market enterprises. AI agents discover your personal data, assess your gaps, and — after you approve — execute the fix. Every action is sealed into a verifiable, hash-chained audit trail.
 
 ## What we do
-- Automated DPDPA + DPDP Rules 2025 gap assessment against 43 versioned controls
+- Automated DPDPA + DPDP Rules 2025 gap assessment against 46 versioned controls
 - AI agent discovery of personal data across systems (Phase 2 live connectors; Phase 1 interview-driven)
 - Typed remediation plans with dry-run diffs, blast-radius caps, and generated rollback plans
 - Approval-gated execution: no mutating action runs without a signed, scope-bound human approval token, validated per action

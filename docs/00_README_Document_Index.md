@@ -81,7 +81,7 @@ These appear in every document and must never be relaxed:
 - [ ] Confirm product name; file trademark for AXIOM PROOF (Classes 42, 45)
 - [ ] Complete incorporation of Axiom Minds Private Limited
 - [ ] Stand up `axiomminds.ai` with positioning, product page and gap-scan waitlist
-- [ ] Build Control Library v0 — decompose DPDPA + Rules into ~43 testable controls
+- [ ] Build Control Library v0 — decompose DPDPA + Rules into 46 testable controls
 - [ ] Build Parikshan v0 (assessment) + Prativedan v0 (reporting) + public gap-scan
 - [ ] Begin LinkedIn content cadence
 - [ ] Open 10 first conversations in the founder network

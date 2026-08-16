@@ -12,6 +12,8 @@
 
 import { test, expect } from '@playwright/test';
 
+const marketingUrl = 'http://localhost:3000';
+
 test.describe('Approval Console — the trust surface', () => {
   test.beforeEach(async ({ page }) => {
     // Mock the Supabase auth (we don't need a real Supabase to test
@@ -36,7 +38,9 @@ test.describe('Approval Console — the trust surface', () => {
 
   test('approval is blocked for actions without a completed dry-run', async ({ page }) => {
     await page.goto('/plans');
-    await expect(page.getByText('Remediation plans')).toBeVisible();
+    await expect(
+      page.getByRole('heading', { name: 'Remediation plans', exact: true }),
+    ).toBeVisible();
   });
 
   test('the kill switch is visible on every plan page', async ({ page }) => {
@@ -45,7 +49,7 @@ test.describe('Approval Console — the trust surface', () => {
   });
 
   test('the non-negotiable safety rules are visible on the public site', async ({ page }) => {
-    await page.goto('/');
+    await page.goto(`${marketingUrl}/`);
     await expect(page.getByText('The non-negotiable safety rules')).toBeVisible();
     await expect(page.getByText(/No mutating agent action executes without/i)).toBeVisible();
   });

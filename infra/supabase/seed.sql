@@ -14,8 +14,8 @@ values (
   '0.1.0',
   '2026-08-11T00:00:00Z',
   'Axiom Minds · Founder',
-  'Initial v0.1.0: 43 controls across 13 domains.',
-  43,
+  'Initial v0.1.0: 46 controls across 13 domains.',
+  46,
   true
 )
 on conflict (version) do nothing;

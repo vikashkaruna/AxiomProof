@@ -7,9 +7,9 @@
  */
 
 import type { Config } from 'tailwindcss';
-import { colors, agentAccents } from './colors.js';
-import { fontFamily, fontSize, fontWeight } from './typography.js';
-import { borderRadius, boxShadow, spacing, motion } from './spacing.js';
+import { colors, agentAccents } from './colors';
+import { fontFamily, fontSize, fontWeight } from './typography';
+import { borderRadius, boxShadow, spacing, motion } from './spacing';
 
 export const axiomPreset: Partial<Config> = {
   theme: {

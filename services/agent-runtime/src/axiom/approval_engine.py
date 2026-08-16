@@ -35,7 +35,7 @@ class ApprovalTokenSpec:
     def to_canonical(self) -> dict[str, Any]:
         d: dict[str, Any] = {
             "planId": self.plan_id,
-            "actionIds": list(self.action_ids),  # already sorted at construction
+            "actionIds": sorted(self.action_ids),
             "approverId": self.approver_id,
             "mode": self.mode,
             "concurrency": self.concurrency,

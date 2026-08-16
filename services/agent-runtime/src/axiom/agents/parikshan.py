@@ -3,12 +3,12 @@
 "I measure you against the law."
 
 Parikshan runs the gap assessment against the versioned control
-library (43 controls in v0.1.0). It scores each control, weights
+library (46 controls in v0.1.0). It scores each control, weights
 the risk, and produces a posture score and an estimated statutory
 exposure. It also produces SDF self-assessments.
 
 In Phase 0, the agent produces a structured scoring against the
-43 controls. The reasoning model is used to generate the rationale
+46 controls. The reasoning model is used to generate the rationale
 for each finding. The structural classification of "what control
 applies to what evidence" is deterministic.
 """
