@@ -62,9 +62,10 @@ prototype bundles are intentionally outside the production audit scope.
 ### GitHub verification — 2026-08-16
 
 The repository settings were checked through the authenticated GitHub session.
-`main` now has branch protection enabled with strict/up-to-date required
-checks, one approving review, CODEOWNERS review, linear history, conversation
-resolution, and force-push/deletion disabled. The required checks are:
+`main` now has branch protection enabled with pull requests required, zero
+required approvals, strict/up-to-date required checks, linear history,
+conversation resolution, and force-push/deletion disabled. The required checks
+are:
 
 - `Lint + typecheck`
 - `TS unit tests`
@@ -73,13 +74,9 @@ resolution, and force-push/deletion disabled. The required checks are:
 - `Security scan`
 
 PR #9 (`fix(ci): run Phase 0 checks in GitHub Actions`) completed all five
-required checks successfully. GitHub reports it as mergeable but
-`REVIEW_REQUIRED`, which confirms the protection rule is gating the PR. A
-second human reviewer is still required; the repository owner cannot satisfy
-the approval requirement by approving their own PR. The documented
-path-specific two-approval rule remains a policy limitation of classic branch
-protection and needs CODEOWNERS/rulesets or an external reviewer workflow if
-it must be enforced automatically.
+required checks successfully and merged into `main` without requiring an
+approval. The documented path-specific two-approval rule remains a policy
+limitation and is not enforced by the current settings.
 
 ## Failed test details
 
