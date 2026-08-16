@@ -21,11 +21,12 @@ import { KillSwitchButton } from './kill-switch-button';
 export const dynamic = 'force-dynamic';
 
 interface PageProps {
-  params: { id: string };
+  params: Promise<{ id: string }>;
 }
 
 export default async function PlanDetailPage({ params }: PageProps) {
-  const supabase = createSupabaseServerClient();
+  const { id } = await params;
+  const supabase = await createSupabaseServerClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
@@ -41,7 +42,7 @@ export default async function PlanDetailPage({ params }: PageProps) {
       tenants:tenant_id (id, name, slug)
     `,
     )
-    .eq('id', params.id)
+    .eq('id', id)
     .single();
 
   if (error || !plan) notFound();

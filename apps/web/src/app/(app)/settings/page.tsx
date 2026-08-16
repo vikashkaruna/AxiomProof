@@ -14,7 +14,7 @@ import { BRAND } from '@axiom/config';
 export const dynamic = 'force-dynamic';
 
 export default async function SettingsPage() {
-  const supabase = createSupabaseServerClient();
+  const supabase = await createSupabaseServerClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();

@@ -15,7 +15,7 @@ import { formatDate, formatINR } from '@axiom/ui';
 export const dynamic = 'force-dynamic';
 
 export default async function EngagementsListPage() {
-  const supabase = createSupabaseServerClient();
+  const supabase = await createSupabaseServerClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();

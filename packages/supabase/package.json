@@ -20,7 +20,7 @@
     "@axiom/config": "workspace:*",
     "@supabase/ssr": "^0.5.1",
     "@supabase/supabase-js": "^2.45.4",
-    "next": "^14.2.10",
+    "next": "^15.5.21",
     "zod": "^3.23.8"
   },
   "devDependencies": {
@@ -29,6 +29,6 @@
     "vitest": "^2.0.5"
   },
   "peerDependencies": {
-    "next": "^14.0.0"
+    "next": "^15.0.0"
   }
 }

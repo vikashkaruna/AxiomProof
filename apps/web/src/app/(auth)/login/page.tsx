@@ -10,18 +10,19 @@ export const dynamic = 'force-dynamic';
 export default async function LoginPage({
   searchParams,
 }: {
-  searchParams: { mode?: 'signup' | 'login'; error?: string; redirect?: string };
+  searchParams: Promise<{ mode?: 'signup' | 'login'; error?: string; redirect?: string }>;
 }) {
-  const supabase = createSupabaseServerClient();
+  const resolvedSearchParams = await searchParams;
+  const supabase = await createSupabaseServerClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
 
   if (user) {
-    redirect(searchParams.redirect || '/workbench');
+    redirect(resolvedSearchParams.redirect || '/workbench');
   }
 
-  const isSignup = searchParams.mode === 'signup';
+  const isSignup = resolvedSearchParams.mode === 'signup';
 
   return (
     <div className="flex min-h-screen flex-col items-center justify-center bg-mist-100 p-4">
@@ -40,9 +41,9 @@ export default async function LoginPage({
               : 'Welcome back. Sign in to continue.'}
           </p>
 
-          {searchParams.error && (
+          {resolvedSearchParams.error && (
             <div className="mt-4 rounded-md border border-ember-500 bg-ember-50 p-3 text-sm text-ember-700">
-              {searchParams.error}
+              {resolvedSearchParams.error}
             </div>
           )}
 

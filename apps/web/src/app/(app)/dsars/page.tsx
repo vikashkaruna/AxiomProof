@@ -6,7 +6,7 @@ import { formatDateTime } from '@axiom/ui';
 export const dynamic = 'force-dynamic';
 
 export default async function DsarPage() {
-  const supabase = createSupabaseServerClient();
+  const supabase = await createSupabaseServerClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();

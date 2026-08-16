@@ -8,20 +8,21 @@ export const dynamic = 'force-dynamic';
 export default async function ControlLibraryPage({
   searchParams,
 }: {
-  searchParams: { domain?: string; severity?: string };
+  searchParams: Promise<{ domain?: string; severity?: string }>;
 }) {
-  const supabase = createSupabaseServerClient();
+  const resolvedSearchParams = await searchParams;
+  const supabase = await createSupabaseServerClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
   if (!user) redirect('/login');
 
   let filtered = controlLib;
-  if (searchParams.domain) {
-    filtered = filtered.filter((c) => c.domain === searchParams.domain);
+  if (resolvedSearchParams.domain) {
+    filtered = filtered.filter((c) => c.domain === resolvedSearchParams.domain);
   }
-  if (searchParams.severity) {
-    filtered = filtered.filter((c) => c.severity === searchParams.severity);
+  if (resolvedSearchParams.severity) {
+    filtered = filtered.filter((c) => c.severity === resolvedSearchParams.severity);
   }
 
   const domains = Array.from(new Set(controlLib.map((c) => c.domain))).sort();
@@ -44,7 +45,7 @@ export default async function ControlLibraryPage({
       <form action="/controls" method="GET" className="flex flex-wrap items-center gap-2">
         <select
           name="domain"
-          defaultValue={searchParams.domain ?? ''}
+          defaultValue={resolvedSearchParams.domain ?? ''}
           className="h-10 rounded-md border border-slate-300 bg-white px-3 text-sm"
         >
           <option value="">All domains</option>
@@ -56,7 +57,7 @@ export default async function ControlLibraryPage({
         </select>
         <select
           name="severity"
-          defaultValue={searchParams.severity ?? ''}
+          defaultValue={resolvedSearchParams.severity ?? ''}
           className="h-10 rounded-md border border-slate-300 bg-white px-3 text-sm"
         >
           <option value="">All severities</option>
