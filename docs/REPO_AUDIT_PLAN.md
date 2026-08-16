@@ -127,6 +127,24 @@ the current "single 21,405-line commit" shape?*
    exercise them with a no-op PR to confirm they're configured correctly in
    the GitHub repo settings.
 
+   **DISCOVERY (2026-08-16, during Part A execution):** The repo is on the
+   **GitHub Free plan** (private repo, no plan field on the user account).
+   Branch protection is **not available** on the Free plan for private
+   repos — `GET /repos/.../branches/main/protection` returns 403. So
+   `.github/branch-protection.md` is documentation only; nothing it says is
+   actually enforced. Implications for Part A:
+   - The 5 dependabot PRs were not being held to any bar.
+   - The PR we opened for the plan doc also has no checks gating it.
+   - Admin-merge is available to the owner for any PR, with no approval or
+     CI requirement.
+   - For the merge-into-main of dependency bumps, the question becomes not
+     "does CI pass" but "is the dependency bump safe to apply blind." Until
+     CI is fixed, we cannot answer that question and the bumps should NOT
+     be merged. **Updated Part A plan: tighten config + close stale PRs +
+     delete branches, do NOT merge regenerated bumps until Phase 0 makes
+     CI green.** The regenerated PRs will also be closed (they will fail
+     CI for the same reason as the originals — missing `pnpm-lock.yaml`).
+
 5. **The 5 dependabot branches are stale relative to the 21,405-line commit.**
    They were created before the big commit existed, so their diffs do not
    reflect the current `package.json` / `pnpm-lock.yaml` shape. Merging them
