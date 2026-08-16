@@ -18,6 +18,8 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: pnpm/action-setup@v4
+        with:
+          version: 9
       - uses: actions/setup-node@v4
         with:
           node-version: 20
@@ -35,6 +37,8 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: pnpm/action-setup@v4
+        with:
+          version: 9
       - uses: actions/setup-node@v4
         with:
           node-version: 20
@@ -52,7 +56,7 @@ jobs:
         with:
           python-version: '3.11'
       - uses: astral-sh/setup-uv@v3
-      - run: uv sync --extra dev
+      - run: uv sync
         working-directory: services/agent-runtime
       - run: uv run pytest --cov --cov-report=xml
         working-directory: services/agent-runtime
@@ -71,7 +75,7 @@ jobs:
         with:
           python-version: '3.11'
       - uses: astral-sh/setup-uv@v3
-      - run: uv sync --extra dev
+      - run: uv sync
         working-directory: services/model-gateway
       - run: uv run pytest --cov --cov-report=xml
         working-directory: services/model-gateway
@@ -83,12 +87,6 @@ jobs:
     needs: lint-and-typecheck
     steps:
       - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-      - uses: pnpm/action-setup@v4
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 20
       - name: Run Trivy vulnerability scanner
         uses: aquasecurity/trivy-action@master
         with:
