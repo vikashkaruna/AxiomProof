@@ -4,5 +4,5 @@
 # Default: the founder reviews everything
 *       @vikashkaruna
 
-# Security-sensitive paths require a second reviewer from the security team
-# (Phase 2+ — for now, the founder is the only reviewer)
+# Security-sensitive paths use the same single-review policy; no second
+# reviewer or two-person approval rule is enforced.

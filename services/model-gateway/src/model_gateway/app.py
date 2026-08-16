@@ -104,23 +104,25 @@ async def complete(req: CompleteRequest, request: Request):
         if provided != settings.api_key:
             raise HTTPException(status_code=401, detail="invalid api key")
 
-    # PII redaction — applied to the prompt and to all variables.
+    # PII redaction — applied to the prompt and to all variables. Hosted
+    # routes are always redacted even if a caller asks for pii_redact=false;
+    # raw personal data must never cross the gateway boundary.
     redactions: dict[str, int] = {}
     pii_redacted = False
     redacted_prompt = req.prompt
     redacted_variables = req.variables
-    if req.pii_redact and settings.pii_redaction_enabled:
+    decision = decide_route(req.task, req.model, settings)
+    must_redact = decision.provider != "self_hosted"
+    if settings.pii_redaction_enabled and (req.pii_redact or must_redact):
         r = redact(req.prompt)
         redacted_prompt = r.redacted_text
-        pii_redacted = bool(r.redactions)
+        pii_redacted = True
         for k, v in r.redactions.items():
             redactions[k] = redactions.get(k, 0) + v
         redacted_variables, var_red = redact_variables(req.variables)
         for k, v in var_red.items():
             redactions[k] = redactions.get(k, 0) + v
 
-    # Decide route
-    decision = decide_route(req.task, req.model, settings)
     log.info(
         "model_gateway.route_decision",
         task=req.task,

@@ -114,7 +114,9 @@ class SudhaarAgent(BaseAgent[SudhaarInput, SudhaarOutput]):
     name: ClassVar[AgentName] = AgentName.SUDHAAR
     description: ClassVar[str] = "Generate a typed remediation plan with rollback definitions."
     one_liner: ClassVar[str] = "I propose the fix. You decide."
-    tool_scopes: ClassVar[tuple[str, ...]] = ("findings.read", "control_library.read", "plan.write")
+    # A plan proposal is returned to the caller; Sudhaar has no persistence
+    # scope and cannot mutate a tenant's plan or any external system.
+    tool_scopes: ClassVar[tuple[str, ...]] = ("findings.read", "control_library.read", "plan.propose")
     autonomy: ClassVar[AutonomyLevel] = AutonomyLevel.L1
     # Per ADR-3, Sudhaar holds NO write credentials
     can_mutate: ClassVar[bool] = False

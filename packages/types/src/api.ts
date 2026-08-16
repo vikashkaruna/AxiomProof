@@ -145,21 +145,31 @@ export const RunDryRunRequestSchema = z.object({
 });
 export type RunDryRunRequest = z.infer<typeof RunDryRunRequestSchema>;
 
-export const IssueApprovalRequestSchema = z.object({
-  planId: z.string().uuid(),
-  actionIds: z.array(z.string().uuid()).min(1).max(100),
-  mode: z.enum(['batch', 'individual']).default('batch'),
-  concurrency: z.number().int().positive().max(20).default(1),
-  stopOnFailure: z.boolean().default(true),
-  expiresInMinutes: z
-    .number()
-    .int()
-    .positive()
-    .max(7 * 24 * 60)
-    .default(60),
-  reason: z.string().max(2000).optional(),
-  conditions: z.record(z.unknown()).default({}),
-});
+export const IssueApprovalRequestSchema = z
+  .object({
+    planId: z.string().uuid(),
+    actionIds: z.array(z.string().uuid()).min(1).max(100),
+    mode: z.enum(['batch', 'individual']).default('batch'),
+    concurrency: z.number().int().positive().max(20).default(1),
+    stopOnFailure: z.boolean().default(true),
+    expiresInMinutes: z
+      .number()
+      .int()
+      .positive()
+      .max(7 * 24 * 60)
+      .default(60),
+    reason: z.string().max(2000).optional(),
+    conditions: z.record(z.unknown()).default({}),
+  })
+  .superRefine((value, ctx) => {
+    if (new Set(value.actionIds).size !== value.actionIds.length) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ['actionIds'],
+        message: 'actionIds must not contain duplicates',
+      });
+    }
+  });
 export type IssueApprovalRequest = z.infer<typeof IssueApprovalRequestSchema>;
 
 export const RevokeApprovalRequestSchema = z.object({
@@ -170,14 +180,24 @@ export type RevokeApprovalRequest = z.infer<typeof RevokeApprovalRequestSchema>;
 // THE EXECUTION GATE — the single most security-critical contract in the system.
 // Per ADR-2 / BR-1, the ApprovalToken in the body is the gate that makes
 // unapproved execution architecturally impossible.
-export const ExecutePlanRequestSchema = z.object({
-  planId: z.string().uuid(),
-  approvalToken: z.string(), // the signed token string
-  mode: z.enum(['batch', 'individual']).default('batch'),
-  actionIds: z.array(z.string().uuid()).min(1), // subset for partial approval
-  concurrency: z.number().int().positive().max(20).default(1),
-  stopOnFailure: z.boolean().default(true),
-});
+export const ExecutePlanRequestSchema = z
+  .object({
+    planId: z.string().uuid(),
+    approvalToken: z.string(), // the signed token string
+    mode: z.enum(['batch', 'individual']).default('batch'),
+    actionIds: z.array(z.string().uuid()).min(1), // subset for partial approval
+    concurrency: z.number().int().positive().max(20).default(1),
+    stopOnFailure: z.boolean().default(true),
+  })
+  .superRefine((value, ctx) => {
+    if (new Set(value.actionIds).size !== value.actionIds.length) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ['actionIds'],
+        message: 'actionIds must not contain duplicates',
+      });
+    }
+  });
 export type ExecutePlanRequest = z.infer<typeof ExecutePlanRequestSchema>;
 
 export const ExecutePlanResponseSchema = z.object({

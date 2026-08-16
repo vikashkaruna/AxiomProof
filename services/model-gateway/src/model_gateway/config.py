@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from typing import Literal
 
-from pydantic import Field
+from pydantic import Field, model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -56,6 +56,17 @@ class Settings(BaseSettings):
 
     # Observability
     otel_exporter_otlp_endpoint: str | None = None
+
+    @model_validator(mode="after")
+    def validate_production_security(self) -> "Settings":
+        if self.environment == "production":
+            if self.aws_region != "ap-south-1":
+                raise ValueError("Production model gateway must run in ap-south-1")
+            if not self.api_key:
+                raise ValueError("API_KEY is required in production")
+            if not self.pii_redaction_enabled:
+                raise ValueError("PII redaction cannot be disabled in production")
+        return self
 
 
 def get_settings() -> Settings:

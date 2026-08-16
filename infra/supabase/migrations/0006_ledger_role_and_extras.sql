@@ -20,6 +20,7 @@ end$$;
 
 grant usage on schema public to ledger_writer;
 grant insert on public.audit_ledger to ledger_writer;
+revoke all on public.audit_ledger from public, anon, authenticated;
 -- Explicitly REVOKE any future grant
 revoke update, delete, truncate on public.audit_ledger from ledger_writer;
 revoke update, delete, truncate on public.audit_ledger from public;

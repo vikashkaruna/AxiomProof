@@ -60,9 +60,10 @@ load-bearing.
 - **No commit is merged without at least one review.** This is
   enforced by GitHub branch protection rules (`.github/branch-protection.md`).
 - **The approval engine, the audit ledger, and the model gateway
-  redaction code require TWO approvals** (one of which must be the
-  founder). This is the most security-sensitive code; one person
-  cannot ship a change that affects the trust model.
+  redaction code use the same single-review policy as the rest of the
+  repository.** Sensitive paths receive CODEOWNERS routing, but the
+  repository does not enforce two different reviewers or a founder-plus-
+  second-reviewer rule.
 - **Prompts are versioned artifacts**, not free-form strings. A change
   to a prompt is a code change. It goes through the same review as
   application code and the new prompt version is hashed and recorded

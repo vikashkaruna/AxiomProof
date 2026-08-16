@@ -1,6 +1,6 @@
 # Axiom Proof — Repository Audit & Code Review Plan
 
-> Status: **Part A complete; Part B Phase 0 complete; Phase 1 pending sign-off.**
+> Status: **Part A complete; Part B Phase 0 and Phase 1 complete; Phase 1 external TODOs pending.**
 > Author: prepared for Vikash Karuna · Axiom Minds
 > Date: 2026-08-16
 > Repo: https://github.com/vikashkaruna/AxiomProof.git
@@ -126,9 +126,8 @@ install` has happened, no test has been executed, no lint, no typecheck.
    approving review, CODEOWNERS review, linear history, conversation
    resolution, and disabled force-pushes/deletions. PR #9 subsequently passed
    all five required checks and was correctly held in `REVIEW_REQUIRED`.
-   A second human reviewer is still needed before the CI fixes can merge.
-   Classic branch protection cannot express the documented path-specific
-   two-approval rule; that requires rulesets or an external review workflow.
+   The configured single approving review is the repository policy. No
+   path-specific two-approval rule is required.
 
 5. **The 5 dependabot branches are stale relative to the 21,405-line commit.**
    They were created before the big commit existed, so their diffs do not
@@ -297,6 +296,18 @@ in code, not just claimed in docs.
 
 **Deliverable:** `docs/audits/01-security.md` — every claim from Doc 07 mapped
 to a code-trace result, with P0/P1/P2 severity for any gaps.
+
+### Phase 1 execution result — 2026-08-16
+
+`docs/audits/01-security.md` is complete. Locally actionable findings were
+fixed, including approval scope/replay enforcement, tenant-aware kill-switch
+behavior, production secret and residency validation, Object Lock provisioning,
+UPI/Presidio redaction coverage, and Karya plan/action binding. The remaining
+Supabase privilege verification, AWS apply/API verification, GitHub branch-
+protection/no-op-PR check, production secret population, and Presidio model
+readiness steps are explicit external TODOs in that report. The repository
+continues to require one approving review and does not enforce two different
+reviewers.
 
 ### Phase 2 — BRD/PRD module coverage (the 14 modules)
 

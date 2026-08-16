@@ -12,10 +12,8 @@ checks, strict/up-to-date branches, linear history, conversation resolution,
 and no force-pushes or branch deletions. PR #9 demonstrated this state: all
 five checks passed, but GitHub kept the PR in `REVIEW_REQUIRED`.
 
-Classic branch protection does not support path-specific approval counts. The
-two-approval rule below is therefore a policy target, not fully automated
-enforcement. To enforce it, configure GitHub rulesets or an external review
-workflow that evaluates changed paths.
+The repository intentionally uses one approving review for every path. There
+is no path-specific requirement for two different reviewers.
 
 ## `main` branch
 
@@ -37,17 +35,7 @@ workflow that evaluates changed paths.
 - **Allow force pushes** — OFF
 - **Allow deletions** — OFF
 
-## Special: security-sensitive paths (policy target)
+## Security-sensitive paths
 
-PRs that touch any of these paths require **TWO** approvals, one of
-which must be the founder (`@vikashkaruna`):
-
-- `packages/approval-engine/**`
-- `services/bff/src/routes/v1.ts` (the approval / execution gate)
-- `infra/supabase/migrations/0005_approvals_ledger.sql` (the ledger)
-- `infra/terraform/envs/prod/s3.tf` (the evidence vault)
-- `services/model-gateway/src/model_gateway/redaction.py` (PII redaction)
-- `services/agent-runtime/src/axiom/approval_engine.py` (Python mirror)
-- `services/agent-runtime/src/axiom/agents/sudhaar.py` (planning agent)
-- `services/agent-runtime/src/axiom/agents/karya.py` (execution agent)
-- `docs/07_SECURITY_REVIEW.md`
+The paths above remain security-sensitive and are covered by the normal
+CODEOWNERS review routing. They do not require two different approving users.

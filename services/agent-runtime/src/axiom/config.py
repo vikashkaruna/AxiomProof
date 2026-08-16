@@ -7,7 +7,7 @@ import os
 from functools import lru_cache
 from typing import Literal
 
-from pydantic import Field
+from pydantic import Field, model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -74,6 +74,19 @@ class Settings(BaseSettings):
     # ─── Observability ─────────────────────────────────────────────
     otel_exporter_otlp_endpoint: str | None = None
     sentry_dsn: str | None = None
+
+    @model_validator(mode="after")
+    def validate_production_security(self) -> "Settings":
+        if self.environment == "production":
+            if self.aws_region != "ap-south-1":
+                raise ValueError("Production data-plane services must run in ap-south-1")
+            if not self.internal_token:
+                raise ValueError("INTERNAL_TOKEN is required in production")
+            if not self.approval_signing_key:
+                raise ValueError("APPROVAL_SIGNING_KEY is required in production")
+            if not self.model_gateway_api_key:
+                raise ValueError("MODEL_GATEWAY_API_KEY is required in production")
+        return self
 
 
 @lru_cache

@@ -195,6 +195,7 @@ create or replace function public.append_ledger(
 ) returns bigint
 language plpgsql
 security definer
+set search_path = public, pg_temp
 as $$
 declare
   v_seq bigint;
@@ -264,6 +265,18 @@ begin
   return v_id;
 end;
 $$;
+
+-- The RPC is the only sanctioned ledger write path. Do not leave the
+-- default PUBLIC EXECUTE privilege in place: otherwise an anonymous caller
+-- could invoke this SECURITY DEFINER function directly.
+revoke all on function public.append_ledger(
+  uuid, uuid, actor_type, text, text, text, text, ledger_action_type,
+  text, text, text, uuid, uuid, text, text, ledger_result, jsonb
+) from public, anon, authenticated;
+grant execute on function public.append_ledger(
+  uuid, uuid, actor_type, text, text, text, text, ledger_action_type,
+  text, text, text, uuid, uuid, text, text, ledger_result, jsonb
+) to service_role;
 
 -- Verification function: walk the chain and recompute hashes.
 -- Returns the first failing sequence_no (or NULL if intact).

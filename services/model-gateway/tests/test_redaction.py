@@ -25,6 +25,12 @@ def test_redacts_email():
     assert "vikash@axiomminds.ai" not in r.redacted_text
 
 
+def test_redacts_upi_id():
+    r = redact("Pay to vikash@ybl")
+    assert "vikash@ybl" not in r.redacted_text
+    assert r.redactions.get("UPI") == 1
+
+
 def test_redacts_indian_phone():
     r = redact("Phone: +91 98765 43210")
     assert "98765 43210" not in r.redacted_text

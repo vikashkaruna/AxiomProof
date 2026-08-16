@@ -74,12 +74,9 @@ resolution, and force-push/deletion disabled. The required checks are:
 
 PR #9 (`fix(ci): run Phase 0 checks in GitHub Actions`) completed all five
 required checks successfully. GitHub reports it as mergeable but
-`REVIEW_REQUIRED`, which confirms the protection rule is gating the PR. A
-second human reviewer is still required; the repository owner cannot satisfy
-the approval requirement by approving their own PR. The documented
-path-specific two-approval rule remains a policy limitation of classic branch
-protection and needs CODEOWNERS/rulesets or an external reviewer workflow if
-it must be enforced automatically.
+`REVIEW_REQUIRED`, which confirms the protection rule is gating the PR until
+the configured single approving review is present. No path-specific two-user
+approval rule is required or pending.
 
 ## Failed test details
 

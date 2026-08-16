@@ -25,6 +25,7 @@ config:
   s3EvidenceBucket: axiom-proof-evidence
   bffPublicUrl: ""
   modelGatewayUrl: http://axiom-model-gateway:8001
+  agentRuntimeUrl: http://axiom-agent-runtime:8000
   temporalAddress: ap-south-1.aws.api.temporal.io:7233
   temporalNamespace: axiom-proof
   # Agent runtime → BFF internal token

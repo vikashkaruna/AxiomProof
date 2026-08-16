@@ -19,7 +19,7 @@ interface KillSwitchState {
  * deployments, the in-process flag is sufficient.
  */
 export interface KillSwitchService {
-  isActive(): boolean;
+  isActive(tenantId?: string): boolean;
   engage(opts: {
     tenantId?: string;
     userId: string;
@@ -43,8 +43,7 @@ export function createKillSwitchService(): KillSwitchService {
     isActive() {
       if (!state.engaged) return false;
       if (state.scope === 'global') return true;
-      // Tenant-scoped: the middleware checks the tenant id
-      return true;
+      return Boolean(tenantId && state.tenantId === tenantId);
     },
     engage({ tenantId, userId, reason, scope }) {
       state.engaged = true;
