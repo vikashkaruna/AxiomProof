@@ -1,12 +1,7 @@
-node_modules
-.next
-.turbo
-dist
-build
-coverage
-*.log
-pnpm-lock.yaml
-# Helm charts contain Go template directives ({{ ... }}) that
-# confuse Prettier's YAML parser. Helm `helm template` is the
-# formatter of record; Prettier should not try to reformat.
+# Generated reference-prototype bundles; these are rebuilt by dc-runtime.
+Axiom Proof App/design/support.js
+Axiom Proof Handoff Map/support.js
+Axiom Proof Site/design/support.js
+design-system/support.js
 infra/helm/
+pnpm-lock.yaml
