@@ -2,9 +2,13 @@
 
 ## Scope
 
-This baseline was run against the current local worktree on `main`, at the
-same commit as `origin/main` (`9e89ee5`). The worktree already contained a
+This is the historical Phase 0 baseline. It was run against the local worktree
+on `main` at the then-current commit (`9e89ee5`). The worktree already contained a
 large set of local implementation changes; no files were reset or discarded.
+
+The baseline findings were subsequently remediated through Parts A and B.
+Current repository status is `main` at `c259c42`; see the Phase 3 report for
+the current verification result and remaining external TODOs.
 
 ## Results
 

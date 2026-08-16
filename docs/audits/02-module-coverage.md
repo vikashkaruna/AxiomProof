@@ -1,5 +1,9 @@
 # Phase 2 Module Coverage — 2026-08-16
 
+> Historical Phase 2 review. Its repository-local fixes are merged into
+> `main`; current quality and cross-document status is in
+> `docs/audits/03-quality-and-coverage.md`.
+
 ## Result
 
 All 14 Phase 2 modules were traced against the Phase-Wise Implementation Plan.

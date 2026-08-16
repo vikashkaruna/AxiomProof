@@ -6,7 +6,8 @@ This review traces the ten Phase 1 tasks in `docs/REPO_AUDIT_PLAN.md` against
 the production code and infrastructure definitions. The four generated root
 prototype bundles remain outside scope and were not changed.
 
-Result: the locally actionable findings are fixed in this worktree. External
+Result: the locally actionable Phase 1 findings are fixed and carried into the
+merged Phase 3 baseline. External
 deployment and GitHub settings still require the TODOs in this document.
 
 ## Findings and fixes

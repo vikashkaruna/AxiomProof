@@ -2,7 +2,7 @@
 
 > Status: **Repository-local findings fixed; external verification TODOs remain.**
 > Date: 2026-08-16
-> Baseline: merged Phase 2 `main` (`cc99dbc`)
+> Baseline: merged Phase 3 `main` (`c259c42`)
 
 ## Executive result
 

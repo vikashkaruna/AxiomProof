@@ -9,7 +9,7 @@ DPDP Act 2023 + Rules 2025, propose typed remediation plans — and
 **only after you approve**, execute them. Every action is sealed
 into a verifiable, hash-chained audit trail.
 
-This repository is the **end-to-end implementation** of the platform
+This repository is the **implementation and audit baseline** of the platform
 across:
 
 - **Phase 0** — Foundation: corporate, control library, Parikshan
@@ -17,10 +17,24 @@ across:
 - **Phase 1** — First cash: Drishti (discovery), Vibhaag
   (classification), RoPA generator, Sudhaar (planning), Saakshi
   (evidence), policy generator, review console, playbook capture.
+- **Phase 2** — Repeatability: shared discovery, classification, evidence,
+  approval, ledger, model-gateway, and typed generator paths are present;
+  live connector and persistence integrations remain deployment/product TODOs.
+- **Phase 3 review** — quality, type-safety, schema reuse, tenant isolation,
+  cross-document consistency, and coverage findings are recorded and fixed in
+  `docs/audits/03-quality-and-coverage.md`.
 
-Phases 2–5 are scaffolded but not built out (Lekha, Nazar, Sanket
-have working stubs; Karya has a working approval-gate, deferred
-execution to Phase 3).
+The roadmap's Phase 3 production execution and Phases 4–5 capabilities are not
+claimed as fully deployed. Karya has an approval-gated execution path, while
+live connectors, production infrastructure verification, mTLS, and external
+account configuration remain explicitly documented TODOs.
+
+## Current repository status
+
+As of 2026-08-16, `main` is at `c259c42`. Part A and Part B review Phases 0–3
+are complete. CI passes lint/typecheck, TypeScript tests, both Python 3.11 test
+suites, and the security scan. External deployment and GitHub verification
+steps are tracked in the phase audit reports.
 
 ---
 
@@ -85,7 +99,8 @@ and [`docs/07_SECURITY_REVIEW.md`](./docs/07_SECURITY_REVIEW.md)):
 │   ├── DPDPA_Axiom_Minds_Strategic_Roadmap.md
 │   ├── 07_SECURITY_REVIEW.md
 │   ├── 08_DEPLOYMENT_GUIDE.md
-│   └── 09_RUNBOOK.md
+│   ├── 09_RUNBOOK.md
+│   └── audits/                         # Baseline, security, module, and Phase 3 reports
 ├── AGENTS.md
 └── README.md
 ```

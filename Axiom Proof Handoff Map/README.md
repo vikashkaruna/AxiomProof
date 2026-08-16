@@ -1,6 +1,8 @@
 # Axiom Proof — Handoff Map
 
-The bridge document between the design prototypes and the real build. Read this before wiring any screen in [`../Axiom Proof App/`](../Axiom%20Proof%20App/) or [`../Axiom Proof Site/`](../Axiom%20Proof%20Site/) to real data.
+The bridge document between the design prototypes and the real build. Read this
+when changing screens in `../apps/web/` or `../apps/marketing/` and cross-check
+the prototype references in this folder before wiring real data.
 
 ## What's here
 
@@ -14,4 +16,8 @@ The bridge document between the design prototypes and the real build. Read this 
 
 ## Why this exists separately
 
-The prototype is UI-only with mock data. This map is what turns "a screen that looks right" into "a screen wired to the right route, agent, and entities" — it's the single reference both `Axiom Proof App` and any future backend/API work should check against, so the two don't drift from each other or from [`../docs/04_Solution_Architecture.md`](../docs/04_Solution_Architecture.md).
+The prototype is UI-only with mock data. This map turns "a screen that looks
+right" into "a screen wired to the right route, agent, and entities". The real
+web/marketing apps and backend now exist alongside these references, so update
+the route map when a production surface changes to prevent drift from
+[`../docs/04_Solution_Architecture.md`](../docs/04_Solution_Architecture.md).

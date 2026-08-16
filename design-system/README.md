@@ -1,6 +1,8 @@
 # Axiom Proof — Design System
 
-The single source of truth for brand and UI tokens, shared by [`../Axiom Proof App/`](../Axiom%20Proof%20App/) and [`../Axiom Proof Site/`](../Axiom%20Proof%20Site/). Neither should hand-roll its own palette or type scale.
+The design prototype is a visual reference for the production token and UI
+packages in `../packages/design-tokens/` and `../packages/ui/`. Neither app
+should hand-roll its own palette or type scale.
 
 ## What's here
 
@@ -13,12 +15,15 @@ The single source of truth for brand and UI tokens, shared by [`../Axiom Proof A
 
 ## On `/design-sync`
 
-The `/design-sync` skill converts a **built component library** (an npm package or Storybook with a `dist/`) into Claude Design's bundle format and uploads it, so the Claude Design agent designs with your real compiled components. That doesn't apply yet — there is no component code here, only this token/reference document pulled from Claude Design.
+The `/design-sync` skill converts a **built component library** (an npm package or Storybook with a `dist/`) into Claude Design's bundle format and uploads it, so the Claude Design agent designs with your real compiled components. The production component code now lives in `../packages/ui/`; this folder remains the visual/token reference.
 
-The natural sequencing:
+The production implementation is now available:
 
-1. Implement these tokens as a real Tailwind config / CSS variables + a small component package (buttons, badges, agent avatar, evidence seal) — likely as a shared package consumed by both `Axiom Proof App` and `Axiom Proof Site`.
-2. Once that package has a build output, run `/design-sync` from **that package's directory** to push the compiled components back up to the `Axiom Proof Design System` project on claude.ai/design — from then on, further Claude Design work on this project designs with the real components, not generic ones.
+1. Update `packages/design-tokens/` and `packages/ui/` when the shared visual
+   system changes.
+2. Keep this prototype synchronized as a reference; use the design-sync flow
+   only when a compiled component package needs to be reflected in the design
+   artifact.
 
 ## Reference
 
