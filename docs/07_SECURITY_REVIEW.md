@@ -111,10 +111,11 @@ load-bearing.
 ### 3.1 Authentication
 
 - **Supabase Auth** with email + password.
-- **MFA required** for any user with the `approver` role. Enforced
-  in the BFF middleware (in `services/bff/src/middleware/auth.ts`
-  Phase 2 follow-up; Phase 0/1 requires MFA at the Supabase level
-  via the dashboard).
+- **MFA required** for any user with the `approver` role. Supabase MFA
+  must be enabled and enforced in the project policy; the current BFF
+  role check does not yet inspect JWT `aal`/`amr` claims. This is an
+  external configuration TODO, documented in
+  `docs/audits/03-quality-and-coverage.md`.
 - **SSO/SAML** is Phase 5; not in Phase 0/1.
 
 ### 3.2 Authorization (RBAC + tenant isolation)
@@ -255,7 +256,7 @@ load-bearing.
 | A04 — Insecure Design           | The non-negotiable safety rules (BR-1 through BR-6) are enforced architecturally, not by convention                                                   |
 | A05 — Security Misconfiguration | NetworkPolicies default-deny; non-root containers; read-only root FS; seccomp default; STRICT_TRANS securityContext                                   |
 | A06 — Vulnerable Components     | Dependabot, pip-audit, Trivy in CI; high/critical block merge                                                                                         |
-| A07 — Identity & Auth Failures  | Supabase Auth with MFA for approvers; session cookies httpOnly + sameSite=strict                                                                      |
+| A07 — Identity & Auth Failures  | Supabase Auth with project-enforced MFA for approvers; cookie attributes are supplied by Supabase SSR and must be verified in deployment              |
 | A08 — Software & Data Integrity | All images built from a controlled Dockerfile; signed (cosign Phase 2); pnpm lockfile + uv lock committed                                             |
 | A09 — Logging Failures          | Every action is in the audit ledger; structured JSON logs; OTel traces                                                                                |
 | A10 — SSRF                      | The BFF makes outbound calls only to a known allowlist (Supabase, S3, Temporal, Model Gateway, LLM providers); per-host egress rules in NetworkPolicy |

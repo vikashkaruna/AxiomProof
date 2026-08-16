@@ -1,5 +1,5 @@
 import { redirect } from 'next/navigation';
-import { createSupabaseServerClient, createSupabaseAdmin } from '@axiom/supabase';
+import { createSupabaseServerClient } from '@axiom/supabase';
 import { PageHeader, Card, CardContent, Badge, SeverityChip } from '@axiom/ui';
 import { controls as controlLib, CONTROL_LIBRARY_COUNT } from '@axiom/control-library';
 

@@ -6,6 +6,11 @@ import { VerifyButton } from './verify-button';
 
 export const dynamic = 'force-dynamic';
 
+interface LedgerVerification {
+  intact: boolean;
+  firstBreak?: { sequence_no?: number } | null;
+}
+
 export default async function LedgerPage() {
   const supabase = await createSupabaseServerClient();
   const {
@@ -13,19 +18,29 @@ export default async function LedgerPage() {
   } = await supabase.auth.getUser();
   if (!user) redirect('/login');
 
+  const { data: profile, error: profileError } = await supabase
+    .from('users')
+    .select('is_axiom_internal')
+    .eq('id', user.id)
+    .maybeSingle();
+  if (profileError || !profile?.is_axiom_internal) redirect('/portal');
+
   const admin = createSupabaseAdmin();
 
   // Verify chain integrity
   const { data: tenants } = await admin.from('tenants').select('id, name').limit(1);
 
-  let verification: any = { intact: true };
+  let verification: LedgerVerification = { intact: true };
   if (tenants && tenants.length > 0 && tenants[0]) {
     const { data } = await admin.rpc('verify_ledger', {
       p_tenant_id: tenants[0].id,
       p_from_sequence: 1,
     });
     if (data && data.length > 0) {
-      verification = { intact: false, firstBreak: data[0] ?? null };
+      verification = {
+        intact: false,
+        firstBreak: data[0] as LedgerVerification['firstBreak'],
+      };
     }
   }
 
@@ -53,7 +68,7 @@ export default async function LedgerPage() {
       />
 
       <div className="grid grid-cols-1 gap-3">
-        {(entries ?? []).map((e: any) => (
+        {(entries ?? []).map((e) => (
           <Card key={e.id}>
             <CardContent className="p-3">
               <div className="flex items-start justify-between gap-3">
@@ -62,7 +77,7 @@ export default async function LedgerPage() {
                     <span className="font-mono text-xs text-slate-500">#{e.sequence_no}</span>
                     <Badge variant="indigo">{e.actor_type}</Badge>
                     {e.actor_type === 'agent' && (
-                      <AgentPill agent={e.actor_id as any} showPersona={false} />
+                      <AgentPill agent={e.actor_id} showPersona={false} />
                     )}
                     {e.actor_type === 'human' && (
                       <span className="text-sm font-medium text-slate-700">{e.actor_id}</span>

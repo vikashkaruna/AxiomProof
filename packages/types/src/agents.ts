@@ -23,9 +23,15 @@ export const AgentContractSchema = z.object({
   // Whether this agent can mutate client systems (architecturally enforced)
   canMutate: z.boolean(),
   // The Zod schema of inputs the agent accepts
-  inputSchema: z.any(),
+  inputSchema: z.custom<z.ZodTypeAny>(
+    (value) => value instanceof z.ZodType,
+    'inputSchema must be a Zod schema',
+  ),
   // The Zod schema of outputs the agent returns
-  outputSchema: z.any(),
+  outputSchema: z.custom<z.ZodTypeAny>(
+    (value) => value instanceof z.ZodType,
+    'outputSchema must be a Zod schema',
+  ),
   // Tool permission scopes (e.g. 'connector.read.postgres', 'evidence.write')
   toolScopes: z.array(z.string()),
   // When the agent must pause for human review
@@ -46,8 +52,8 @@ export const AGENT_CONTRACTS: Record<AgentName, AgentContract> = {
     oneLiner: "I find what you didn't know you had.",
     autonomyLevel: 'L1', // L2 with read-only connectors in Phase 2
     canMutate: false,
-    inputSchema: z.any(),
-    outputSchema: z.any(),
+    inputSchema: z.unknown(),
+    outputSchema: z.unknown(),
     toolScopes: ['connector.read', 'inventory.write', 'evidence.write'],
     escalationConditions: [
       'discovers_health_data',
@@ -62,8 +68,8 @@ export const AGENT_CONTRACTS: Record<AgentName, AgentContract> = {
     oneLiner: 'I tell you what kind of data it is.',
     autonomyLevel: 'L1',
     canMutate: false,
-    inputSchema: z.any(),
-    outputSchema: z.any(),
+    inputSchema: z.unknown(),
+    outputSchema: z.unknown(),
     toolScopes: [], // Operates on discovery output only
     escalationConditions: ['low_confidence_classification', 'ambiguous_field'],
     phase: 1,
@@ -74,8 +80,8 @@ export const AGENT_CONTRACTS: Record<AgentName, AgentContract> = {
     oneLiner: 'I measure you against the law.',
     autonomyLevel: 'L1',
     canMutate: false,
-    inputSchema: z.any(),
-    outputSchema: z.any(),
+    inputSchema: z.unknown(),
+    outputSchema: z.unknown(),
     toolScopes: ['control_library.read', 'findings.write'],
     escalationConditions: ['novel_finding_pattern', 'control_version_mismatch'],
     phase: 0,
@@ -86,8 +92,8 @@ export const AGENT_CONTRACTS: Record<AgentName, AgentContract> = {
     oneLiner: 'I am your witness.',
     autonomyLevel: 'L1',
     canMutate: false,
-    inputSchema: z.any(),
-    outputSchema: z.any(),
+    inputSchema: z.unknown(),
+    outputSchema: z.unknown(),
     toolScopes: ['evidence.write', 's3.write_worm'],
     escalationConditions: ['large_evidence_artifact', 'pii_in_artifact'],
     phase: 1,
@@ -98,9 +104,9 @@ export const AGENT_CONTRACTS: Record<AgentName, AgentContract> = {
     oneLiner: 'I propose the fix. You decide.',
     autonomyLevel: 'L1',
     canMutate: false, // Planning agent holds NO write credentials (ADR-3)
-    inputSchema: z.any(),
-    outputSchema: z.any(),
-    toolScopes: ['findings.read', 'control_library.read', 'plan.write'],
+    inputSchema: z.unknown(),
+    outputSchema: z.unknown(),
+    toolScopes: ['findings.read', 'control_library.read', 'plan.propose'],
     escalationConditions: [
       'novel_remediation_pattern',
       'high_blast_radius',
@@ -114,8 +120,8 @@ export const AGENT_CONTRACTS: Record<AgentName, AgentContract> = {
     oneLiner: 'I only act on your approval.',
     autonomyLevel: 'L2', // Requires approval token (ADR-2)
     canMutate: true,
-    inputSchema: z.any(),
-    outputSchema: z.any(),
+    inputSchema: z.unknown(),
+    outputSchema: z.unknown(),
     toolScopes: [
       'connector.write', // Scoped, time-bound, revocable
       'evidence.write',
@@ -136,8 +142,8 @@ export const AGENT_CONTRACTS: Record<AgentName, AgentContract> = {
     oneLiner: 'I remember everything, forever.',
     autonomyLevel: 'L1',
     canMutate: false, // Only appends to the ledger
-    inputSchema: z.any(),
-    outputSchema: z.any(),
+    inputSchema: z.unknown(),
+    outputSchema: z.unknown(),
     toolScopes: ['ledger.append', 'ledger.read'],
     escalationConditions: ['chain_verification_failure'],
     phase: 2,
@@ -148,8 +154,8 @@ export const AGENT_CONTRACTS: Record<AgentName, AgentContract> = {
     oneLiner: "I watch the law so you don't have to.",
     autonomyLevel: 'L1',
     canMutate: false,
-    inputSchema: z.any(),
-    outputSchema: z.any(),
+    inputSchema: z.unknown(),
+    outputSchema: z.unknown(),
     toolScopes: ['http.read.government_sources', 'control_library.write'],
     escalationConditions: ['regulatory_change_detected'],
     phase: 2,
@@ -160,8 +166,8 @@ export const AGENT_CONTRACTS: Record<AgentName, AgentContract> = {
     oneLiner: 'I turn findings into documents.',
     autonomyLevel: 'L1',
     canMutate: false,
-    inputSchema: z.any(),
-    outputSchema: z.any(),
+    inputSchema: z.unknown(),
+    outputSchema: z.unknown(),
     toolScopes: ['report.write', 'pdf.render'],
     escalationConditions: ['report_includes_unverified_claim'],
     phase: 0,
@@ -172,8 +178,8 @@ export const AGENT_CONTRACTS: Record<AgentName, AgentContract> = {
     oneLiner: "I find who's about to buy.",
     autonomyLevel: 'L1', // Internal GTM only
     canMutate: false,
-    inputSchema: z.any(),
-    outputSchema: z.any(),
+    inputSchema: z.unknown(),
+    outputSchema: z.unknown(),
     toolScopes: ['http.read.public_sources'],
     escalationConditions: ['high_intent_signal'],
     phase: 4,

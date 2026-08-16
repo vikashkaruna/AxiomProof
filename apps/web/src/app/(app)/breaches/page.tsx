@@ -1,5 +1,5 @@
 import { redirect } from 'next/navigation';
-import { createSupabaseServerClient, createSupabaseAdmin } from '@axiom/supabase';
+import { createSupabaseServerClient } from '@axiom/supabase';
 import {
   PageHeader,
   Card,
@@ -20,8 +20,7 @@ export default async function BreachesPage() {
   } = await supabase.auth.getUser();
   if (!user) redirect('/login');
 
-  const admin = createSupabaseAdmin();
-  const { data: breaches } = await admin
+  const { data: breaches } = await supabase
     .from('breaches')
     .select('*')
     .order('detected_at', { ascending: false });
@@ -42,7 +41,7 @@ export default async function BreachesPage() {
             </CardContent>
           </Card>
         )}
-        {(breaches ?? []).map((b: any) => (
+        {(breaches ?? []).map((b) => (
           <Card key={b.id}>
             <CardContent className="p-4">
               <div className="flex items-start justify-between gap-3">

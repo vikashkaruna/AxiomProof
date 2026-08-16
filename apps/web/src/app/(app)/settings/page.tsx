@@ -39,7 +39,9 @@ export default async function SettingsPage() {
               Full name
             </dt>
             <dd className="text-sm text-slate-700">
-              {(user.user_metadata as any)?.full_name ?? '—'}
+              {typeof user.user_metadata?.full_name === 'string'
+                ? user.user_metadata.full_name
+                : '—'}
             </dd>
             <dt className="text-xs font-medium uppercase tracking-wider text-slate-500">User ID</dt>
             <dd className="font-mono text-xs text-slate-700">{user.id}</dd>

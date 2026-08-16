@@ -35,11 +35,11 @@ export default async function AppLayout({ children }: { children: React.ReactNod
     .select('tenant_id, role, tenants:tenant_id(slug, name)')
     .eq('user_id', user.id);
 
-  const tenants = (memberships ?? []).map((m: any) => ({
+  const tenants = (memberships ?? []).map((m) => ({
     id: m.tenant_id,
     role: m.role,
-    name: m.tenants?.name ?? 'Unknown',
-    slug: m.tenants?.slug ?? '',
+    name: m.tenants?.[0]?.name ?? 'Unknown',
+    slug: m.tenants?.[0]?.slug ?? '',
   }));
 
   return (

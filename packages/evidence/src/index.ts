@@ -219,11 +219,14 @@ export class EvidenceVault {
       // We only need to know the bucket accepts the header; if it doesn't,
       // S3 returns InvalidArgument and we throw.
       void head;
-    } catch (err: any) {
+    } catch (err: unknown) {
+      const errorName = getErrorProperty(err, 'name');
+      const errorMessage = getErrorProperty(err, 'message');
+      const httpStatusCode = getErrorProperty(getErrorProperty(err, '$metadata'), 'httpStatusCode');
       if (
-        err?.name === 'InvalidArgument' ||
-        err?.message?.includes('Object Lock') ||
-        err?.message?.includes('object-lock')
+        errorName === 'InvalidArgument' ||
+        (typeof errorMessage === 'string' &&
+          (errorMessage.includes('Object Lock') || errorMessage.includes('object-lock')))
       ) {
         throw new Error(
           `Bucket ${bucket} does not have Object Lock enabled. ` +
@@ -232,11 +235,16 @@ export class EvidenceVault {
         );
       }
       // NoSuchKey is fine — bucket exists, just no probe key.
-      if (err?.name !== 'NoSuchKey' && err?.$metadata?.httpStatusCode !== 404) {
+      if (errorName !== 'NoSuchKey' && httpStatusCode !== 404) {
         throw err;
       }
     }
   }
+}
+
+function getErrorProperty(error: unknown, property: string): unknown {
+  if (typeof error !== 'object' || error === null || !(property in error)) return undefined;
+  return (error as Record<string, unknown>)[property];
 }
 
 /**

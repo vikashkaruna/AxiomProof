@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { BRAND } from '@axiom/config';
 import { CONTROL_LIBRARY_COUNT } from '@axiom/control-library';
+import type { AgentName } from '@axiom/types';
 import { Button, Card, CardContent, Badge, AgentPill } from '@axiom/ui';
 import { SubmitButton } from './gap-scan/submit-button';
 import { GapScanForm } from './gap-scan/form';
@@ -91,7 +92,7 @@ export default function HomePage() {
                 </div>
                 {s.agent && (
                   <div className="mt-2">
-                    <AgentPill agent={s.agent as any} />
+                    <AgentPill agent={s.agent as AgentName} />
                   </div>
                 )}
                 <p className="mt-2 text-sm text-slate-600">{s.desc}</p>
@@ -322,7 +323,7 @@ function HeroVisual() {
           { a: 'sudhaar', s: 'Generated 7-action plan' },
         ].map((row, i) => (
           <div key={i} className="flex items-center gap-2 text-xs">
-            <AgentPill agent={row.a as any} showPersona={false} />
+            <AgentPill agent={row.a as AgentName} showPersona={false} />
             <span className="text-slate-600">{row.s}</span>
           </div>
         ))}

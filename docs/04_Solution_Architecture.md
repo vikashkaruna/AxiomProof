@@ -170,18 +170,23 @@ This is how AP-1 (approval is architectural) is realised concretely: there is no
 
 Each agent is a versioned service with a declared contract: inputs, tool permissions, output schema, autonomy level, and escalation conditions.
 
-| Agent                    | Autonomy ceiling                 | Tool permissions                           |
-| ------------------------ | -------------------------------- | ------------------------------------------ |
-| Drishti (Discovery)      | L3                               | Connectors: **read-only**                  |
-| Vibhaag (Classification) | L3                               | None (operates on discovery output)        |
-| Parikshan (Assessment)   | L3                               | Control Library read                       |
-| Saakshi (Evidence)       | L3                               | Evidence store **write-once**              |
-| Sudhaar (Planning)       | L2 — proposes only               | Read-only; **can never execute**           |
-| **Karya (Execution)**    | **L2 — requires approval token** | Connectors: **write, scoped, token-gated** |
-| Lekha (Audit)            | L3                               | Ledger **append-only**                     |
-| Nazar (Regulatory)       | L3                               | External sources read                      |
-| Prativedan (Reporting)   | L3                               | Read all; document generation              |
-| Sanket (Signal)          | L3                               | External sources read (internal use)       |
+| Agent                    | Autonomy ceiling                  | Tool permissions                           |
+| ------------------------ | --------------------------------- | ------------------------------------------ |
+| Drishti (Discovery)      | L1 (current; L2 read-only target) | Connectors: **read-only**                  |
+| Vibhaag (Classification) | L1 (current; L2 target)           | None (operates on discovery output)        |
+| Parikshan (Assessment)   | L1 (current; L2 target)           | Control Library read                       |
+| Saakshi (Evidence)       | L1 (current; L2 target)           | Evidence store **write-once**              |
+| Sudhaar (Planning)       | L2 — proposes only                | Read-only; **can never execute**           |
+| **Karya (Execution)**    | **L2 — requires approval token**  | Connectors: **write, scoped, token-gated** |
+| Lekha (Audit)            | L1 (current; L2 target)           | Ledger **append-only**                     |
+| Nazar (Regulatory)       | L1 (current; L2 target)           | External sources read                      |
+| Prativedan (Reporting)   | L1 (current; L2 target)           | Read all; document generation              |
+| Sanket (Signal)          | L1 (current; L2 target)           | External sources read (internal use)       |
+
+The current ceilings above match the implemented Phase 0–3 runtime contracts in
+`packages/types/src/agents.ts` and `services/agent-runtime`. L2/L3 values in
+earlier drafts were roadmap targets, not deployed permissions. Karya remains the
+only mutating agent and is always approval-token gated.
 
 **Separation-of-duties design:** the agent that _plans_ (Sudhaar) is architecturally distinct from the agent that _executes_ (Karya), and Sudhaar holds no write credentials whatsoever. A planning agent cannot execute its own plan even if compromised or misbehaving. This mirrors the maker-checker principle Indian compliance buyers already understand from banking, and it is a genuine security property, not a talking point.
 
@@ -310,17 +315,17 @@ Chain integrity is verifiable by recomputing hashes from genesis. Periodic chain
 
 ## 9. TECHNOLOGY STACK SUMMARY
 
-| Layer         | Choice                                                                    | Rationale                                                              |
-| ------------- | ------------------------------------------------------------------------- | ---------------------------------------------------------------------- |
-| Frontend      | Next.js + TypeScript + Tailwind                                           | Solo-founder velocity; SSR for reports; large agent-assisted ecosystem |
-| API           | Node/TypeScript (or Python/FastAPI)                                       | Single language across stack reduces solo cognitive load               |
-| Agent runtime | Python                                                                    | Best AI/ML ecosystem; MCP tooling maturity                             |
-| Orchestration | Durable workflow engine (Temporal-class) or Postgres-backed state machine | Must survive restarts mid-workflow                                     |
-| Datastore     | PostgreSQL + pgvector                                                     | One database does transactional, audit, vector and search early        |
-| Object store  | S3-compatible, India region, object lock                                  | WORM evidence                                                          |
-| Queue         | Redis / managed queue                                                     | Simplicity                                                             |
-| LLM           | Provider-abstracted via Model Gateway                                     | Portability; self-hosted option Phase 5                                |
-| Infra         | Managed containers, India region                                          | Minimal ops burden for one person                                      |
+| Layer         | Choice                                                                    | Rationale                                                                          |
+| ------------- | ------------------------------------------------------------------------- | ---------------------------------------------------------------------------------- |
+| Frontend      | Next.js + TypeScript + Tailwind                                           | Solo-founder velocity; SSR for reports; large agent-assisted ecosystem             |
+| API           | Node/TypeScript (Hono BFF)                                                | Single language across the API tier; Python/FastAPI is reserved for agent services |
+| Agent runtime | Python                                                                    | Best AI/ML ecosystem; MCP tooling maturity                                         |
+| Orchestration | Durable workflow engine (Temporal-class) or Postgres-backed state machine | Must survive restarts mid-workflow                                                 |
+| Datastore     | PostgreSQL + pgvector                                                     | One database does transactional, audit, vector and search early                    |
+| Object store  | S3-compatible, India region, object lock                                  | WORM evidence                                                                      |
+| Queue         | Redis / managed queue                                                     | Simplicity                                                                         |
+| LLM           | Provider-abstracted via Model Gateway                                     | Portability; self-hosted option Phase 5                                            |
+| Infra         | Managed containers, India region                                          | Minimal ops burden for one person                                                  |
 
 **Language pragmatism:** TypeScript for the web tier and Python for the agent tier is the one place where two languages is justified — the agent ecosystem is Python-native and fighting that costs more than the context switch. Everywhere else, resist adding a language.
 

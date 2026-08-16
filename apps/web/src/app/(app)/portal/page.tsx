@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import { redirect } from 'next/navigation';
-import { createSupabaseServerClient, createSupabaseAdmin } from '@axiom/supabase';
+import { createSupabaseServerClient } from '@axiom/supabase';
 import {
   PageHeader,
   Card,
@@ -27,9 +27,9 @@ export default async function ClientPortalPage() {
   } = await supabase.auth.getUser();
   if (!user) redirect('/login');
 
-  // For the founder preview: pull the first tenant as the active context.
-  const admin = createSupabaseAdmin();
-  const { data: tenants } = await admin.from('tenants').select('id, name').limit(1);
+  // The portal is tenant-scoped. RLS determines which tenant the signed-in
+  // user may see; never use the service-role client for this surface.
+  const { data: tenants } = await supabase.from('tenants').select('id, name').limit(1);
   const tenant = tenants?.[0];
 
   if (!tenant) {
@@ -50,33 +50,33 @@ export default async function ClientPortalPage() {
   }
 
   const [engagementRes, planRes, evidenceRes, dsarRes, breachRes] = await Promise.all([
-    admin
+    supabase
       .from('engagements')
       .select('id, title, status, posture_score, estimated_exposure_inr, started_at')
       .eq('tenant_id', tenant.id)
       .order('started_at', { ascending: false })
       .limit(1),
-    admin
+    supabase
       .from('remediation_plans')
       .select('id, title, status, created_at')
       .eq('tenant_id', tenant.id)
       .in('status', ['draft', 'review', 'approved', 'executing'])
       .order('created_at', { ascending: false })
       .limit(5),
-    admin
+    supabase
       .from('evidence')
       .select('id, content_hash, evidence_type, description, collected_at, collected_by_agent')
       .eq('tenant_id', tenant.id)
       .order('collected_at', { ascending: false })
       .limit(5),
-    admin
+    supabase
       .from('dsars')
       .select('id, kind, status, due_by')
       .eq('tenant_id', tenant.id)
       .in('status', ['received', 'identity_verification', 'in_fulfilment'])
       .order('due_by', { ascending: true })
       .limit(5),
-    admin
+    supabase
       .from('breaches')
       .select('id, title, status, severity, dpb_notification_due_by')
       .eq('tenant_id', tenant.id)
@@ -85,7 +85,7 @@ export default async function ClientPortalPage() {
       .limit(5),
   ]);
 
-  const engagement = (engagementRes.data ?? [])[0] as any;
+  const engagement = (engagementRes.data ?? [])[0];
 
   return (
     <div className="flex flex-col gap-6">
@@ -133,7 +133,7 @@ export default async function ClientPortalPage() {
               <p className="text-sm text-slate-500">Nothing waiting on you. Good.</p>
             ) : (
               <ul className="flex flex-col gap-2">
-                {(planRes.data ?? []).map((p: any) => (
+                {(planRes.data ?? []).map((p) => (
                   <li key={p.id}>
                     <Link
                       href={`/plans/${p.id}`}
@@ -159,7 +159,7 @@ export default async function ClientPortalPage() {
               <p className="text-sm text-slate-500">No evidence yet.</p>
             ) : (
               <ul className="flex flex-col gap-2">
-                {(evidenceRes.data ?? []).map((e: any) => (
+                {(evidenceRes.data ?? []).map((e) => (
                   <li
                     key={e.id}
                     className="flex items-center justify-between rounded-md border border-slate-200 px-3 py-2"
@@ -170,7 +170,7 @@ export default async function ClientPortalPage() {
                         {e.description ?? '(no description)'}
                       </span>
                     </div>
-                    <AgentPill agent={e.collected_by_agent as any} showPersona={false} />
+                    <AgentPill agent={e.collected_by_agent} showPersona={false} />
                   </li>
                 ))}
               </ul>
@@ -187,7 +187,7 @@ export default async function ClientPortalPage() {
               <p className="text-sm text-slate-500">No open requests.</p>
             ) : (
               <ul className="flex flex-col gap-2">
-                {(dsarRes.data ?? []).map((d: any) => (
+                {(dsarRes.data ?? []).map((d) => (
                   <li
                     key={d.id}
                     className="flex items-center justify-between rounded-md border border-slate-200 px-3 py-2"
@@ -213,7 +213,7 @@ export default async function ClientPortalPage() {
               <p className="text-sm text-slate-500">No active breaches.</p>
             ) : (
               <ul className="flex flex-col gap-2">
-                {(breachRes.data ?? []).map((b: any) => (
+                {(breachRes.data ?? []).map((b) => (
                   <li
                     key={b.id}
                     className="flex items-center justify-between rounded-md border border-ember-500 bg-ember-50 px-3 py-2"

@@ -104,7 +104,7 @@ export default async function WorkbenchPage() {
               />
             ) : (
               <ul className="flex flex-col gap-2">
-                {(engagementsRes.data ?? []).map((e: any) => (
+                {(engagementsRes.data ?? []).map((e) => (
                   <li key={e.id}>
                     <Link
                       href={`/engagements/${e.id}`}
@@ -138,7 +138,7 @@ export default async function WorkbenchPage() {
               />
             ) : (
               <ul className="flex flex-col gap-2">
-                {(plansRes.data ?? []).map((p: any) => (
+                {(plansRes.data ?? []).map((p) => (
                   <li key={p.id}>
                     <Link
                       href={`/plans/${p.id}`}

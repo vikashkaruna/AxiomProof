@@ -13,6 +13,7 @@ import {
   SeverityChip,
   Button,
   ProofSeal,
+  type StatusKind,
 } from '@axiom/ui';
 import { formatDateTime, formatINR, truncateHash } from '@axiom/ui';
 import { ApprovalActions } from './approval-actions';
@@ -22,6 +23,45 @@ export const dynamic = 'force-dynamic';
 
 interface PageProps {
   params: Promise<{ id: string }>;
+}
+
+interface BlastRadius {
+  recordsAffected?: number;
+  systemsAffected?: string[];
+  environment?: string;
+}
+
+interface RemediationAction {
+  id: string;
+  sequence: number;
+  action_type: string;
+  description: string;
+  risk_class: 'low' | 'medium' | 'high' | 'critical';
+  risk_score: number;
+  closes_finding_ids: string[] | null;
+  dry_run_status: string;
+  dry_run_completed_at: string | null;
+  dry_run_expires_at: string | null;
+  dry_run_result: unknown;
+  rollback_validated: boolean;
+  rollback_definition: { estimatedRollbackTimeSeconds?: number } | null;
+  approval_status: string;
+  approved_at: string | null;
+  blast_radius: BlastRadius | null;
+}
+
+interface PlanDetail {
+  id: string;
+  title: string;
+  description: string | null;
+  tenant_id: string;
+  version: number;
+  status: string;
+  library_version: string;
+  created_at: string;
+  aggregate_blast_radius: BlastRadius | null;
+  remediation_actions: RemediationAction[];
+  tenants: { name?: string } | null;
 }
 
 export default async function PlanDetailPage({ params }: PageProps) {
@@ -45,27 +85,28 @@ export default async function PlanDetailPage({ params }: PageProps) {
     .single();
 
   if (error || !plan) notFound();
+  const typedPlan = plan as unknown as PlanDetail;
 
-  const actions = (plan.remediation_actions ?? []).sort(
-    (a: any, b: any) => a.sequence - b.sequence,
+  const actions = [...(typedPlan.remediation_actions ?? [])].sort(
+    (a, b) => a.sequence - b.sequence,
   );
 
   const eligible = actions.filter(
-    (a: any) => a.dry_run_status === 'dry_run_complete' && a.rollback_validated,
+    (a) => a.dry_run_status === 'dry_run_complete' && a.rollback_validated,
   );
   const blocked = actions.filter(
-    (a: any) => !(a.dry_run_status === 'dry_run_complete' && a.rollback_validated),
+    (a) => !(a.dry_run_status === 'dry_run_complete' && a.rollback_validated),
   );
-  const aggregateBlast = plan.aggregate_blast_radius as any;
+  const aggregateBlast = typedPlan.aggregate_blast_radius;
 
   return (
     <div className="flex flex-col gap-6">
       <PageHeader
-        title={plan.title}
-        description={plan.description ?? 'No description provided.'}
+        title={typedPlan.title}
+        description={typedPlan.description ?? 'No description provided.'}
         actions={
           <>
-            <KillSwitchButton planId={plan.id} tenantId={plan.tenant_id} />
+            <KillSwitchButton planId={typedPlan.id} tenantId={typedPlan.tenant_id} />
             <Button variant="outline" size="sm" asChild={false}>
               <Link href="/plans">Back to plans</Link>
             </Button>
@@ -73,10 +114,10 @@ export default async function PlanDetailPage({ params }: PageProps) {
         }
         meta={
           <>
-            <StatusBadge status={plan.status} />
-            <Badge variant="indigo">v{plan.version}</Badge>
-            <Badge variant="neutral">Library {plan.library_version}</Badge>
-            <Badge variant="neutral">Created {formatDateTime(plan.created_at)}</Badge>
+            <StatusBadge status={typedPlan.status as StatusKind} />
+            <Badge variant="indigo">v{typedPlan.version}</Badge>
+            <Badge variant="neutral">Library {typedPlan.library_version}</Badge>
+            <Badge variant="neutral">Created {formatDateTime(typedPlan.created_at)}</Badge>
           </>
         }
       />
@@ -126,8 +167,8 @@ export default async function PlanDetailPage({ params }: PageProps) {
         </CardHeader>
         <CardContent>
           <ApprovalActions
-            planId={plan.id}
-            tenantId={plan.tenant_id}
+            planId={typedPlan.id}
+            tenantId={typedPlan.tenant_id}
             actions={actions}
             eligible={eligible}
             blocked={blocked}
@@ -136,7 +177,7 @@ export default async function PlanDetailPage({ params }: PageProps) {
       </Card>
 
       <div className="flex flex-col gap-3">
-        {actions.map((a: any) => (
+        {actions.map((a) => (
           <ActionCard key={a.id} action={a} />
         ))}
       </div>
@@ -144,7 +185,7 @@ export default async function PlanDetailPage({ params }: PageProps) {
   );
 }
 
-function ActionCard({ action }: { action: any }) {
+function ActionCard({ action }: { action: RemediationAction }) {
   const dryRunOk = action.dry_run_status === 'dry_run_complete';
   const rollbackOk = action.rollback_validated;
   const isApproved = action.approval_status === 'approved';
@@ -187,10 +228,10 @@ function ActionCard({ action }: { action: any }) {
               Blast radius
             </p>
             <p className="mt-1 font-mono text-sm text-slate-700">
-              {(action.blast_radius as any)?.recordsAffected ?? 0} records
+              {action.blast_radius?.recordsAffected ?? 0} records
             </p>
             <p className="text-xs text-slate-500">
-              env: {(action.blast_radius as any)?.environment ?? 'n/a'}
+              env: {action.blast_radius?.environment ?? 'n/a'}
             </p>
           </div>
           <div className="rounded-md border border-slate-200 bg-mist-50 p-3">
@@ -198,7 +239,7 @@ function ActionCard({ action }: { action: any }) {
               Dry-run
             </p>
             <p className="mt-1 text-sm">
-              <StatusBadge status={action.dry_run_status} />
+              <StatusBadge status={action.dry_run_status as StatusKind} />
             </p>
             {action.dry_run_completed_at && (
               <p className="text-xs text-slate-500">
@@ -219,7 +260,7 @@ function ActionCard({ action }: { action: any }) {
               {rollbackOk ? <StatusBadge status="approved" /> : <StatusBadge status="awaiting" />}
             </p>
             <p className="text-xs text-slate-500">
-              ~{(action.rollback_definition as any)?.estimatedRollbackTimeSeconds ?? 0}s
+              ~{action.rollback_definition?.estimatedRollbackTimeSeconds ?? 0}s
             </p>
           </div>
           <div className="rounded-md border border-slate-200 bg-mist-50 p-3">
@@ -227,7 +268,7 @@ function ActionCard({ action }: { action: any }) {
               Approval
             </p>
             <p className="mt-1 text-sm">
-              <StatusBadge status={action.approval_status} />
+              <StatusBadge status={action.approval_status as StatusKind} />
             </p>
             {action.approved_at && (
               <p className="text-xs text-slate-500">{formatDateTime(action.approved_at)}</p>
