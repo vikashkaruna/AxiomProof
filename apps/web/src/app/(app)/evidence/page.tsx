@@ -1,12 +1,6 @@
 import { redirect } from 'next/navigation';
 import { createSupabaseServerClient, createSupabaseAdmin } from '@axiom/supabase';
-import {
-  PageHeader,
-  Card,
-  CardContent,
-  ProofSeal,
-  Badge,
-} from '@axiom/ui';
+import { PageHeader, Card, CardContent, ProofSeal, Badge } from '@axiom/ui';
 import { formatDateTime, truncateHash } from '@axiom/ui';
 
 export const dynamic = 'force-dynamic';
@@ -25,7 +19,9 @@ export default async function EvidenceExplorerPage({
   const admin = createSupabaseAdmin();
   let query = admin
     .from('evidence')
-    .select('id, content_hash, storage_uri, evidence_type, description, collected_by_agent, collected_at, filename, byte_size, demonstrates_control_ids')
+    .select(
+      'id, content_hash, storage_uri, evidence_type, description, collected_by_agent, collected_at, filename, byte_size, demonstrates_control_ids',
+    )
     .order('collected_at', { ascending: false })
     .limit(50);
 
@@ -78,9 +74,7 @@ export default async function EvidenceExplorerPage({
                       <span className="font-mono text-xs text-slate-500">{e.filename}</span>
                     )}
                   </div>
-                  {e.description && (
-                    <p className="text-sm text-slate-700">{e.description}</p>
-                  )}
+                  {e.description && <p className="text-sm text-slate-700">{e.description}</p>}
                   <p className="text-xs text-slate-500">
                     Collected by <span className="font-medium">{e.collected_by_agent}</span> on{' '}
                     {formatDateTime(e.collected_at)}
@@ -100,16 +94,19 @@ export default async function EvidenceExplorerPage({
                   )}
                 </div>
                 <div className="text-right text-xs text-slate-500">
-                  {e.byte_size != null && (
-                    <p>{(e.byte_size / 1024).toFixed(1)} KB</p>
-                  )}
+                  {e.byte_size != null && <p>{(e.byte_size / 1024).toFixed(1)} KB</p>}
                   <a
                     href={e.storage_uri}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="font-mono text-[10px] text-teal-600 hover:underline"
                   >
-                    s3://{e.storage_uri.replace(/^s3:\/\//, '').split('/').slice(1).join('/')}
+                    s3://
+                    {e.storage_uri
+                      .replace(/^s3:\/\//, '')
+                      .split('/')
+                      .slice(1)
+                      .join('/')}
                   </a>
                 </div>
               </div>

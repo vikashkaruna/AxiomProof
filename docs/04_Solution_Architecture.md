@@ -1,5 +1,7 @@
 # Axiom Proof — Solution Architecture
+
 ### Layered, Evolutionary, Agent-Native Platform Architecture
+
 **Axiom Minds Private Limited** · https://axiomminds.ai
 **Document:** 04 of 05 · **Version:** 1.0 · **Date:** August 2026
 
@@ -7,16 +9,16 @@
 
 ## 1. ARCHITECTURAL PRINCIPLES
 
-| # | Principle | Implication |
-|---|---|---|
-| AP-1 | **Approval is architectural, not procedural** | Execution is physically impossible without a valid approval token. Not a code convention that can be forgotten — a gate in the execution path. |
-| AP-2 | **Everything is evidence** | Every agent action emits a signed, hashed record. The ledger is not a log; it is a product surface. |
-| AP-3 | **Agents are services, not scripts** | Each agent is independently deployable, versioned, observable and replaceable. |
-| AP-4 | **Start modular monolith, evolve to services** | A solo founder cannot operate twelve microservices in Phase 1. Build with clean internal module boundaries so extraction is mechanical later. |
-| AP-5 | **Model-agnostic** | The LLM is a swappable dependency behind an abstraction, never a hard-coded vendor call. Enables self-hosted models for on-prem in Phase 5. |
+| #    | Principle                                             | Implication                                                                                                                                                     |
+| ---- | ----------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| AP-1 | **Approval is architectural, not procedural**         | Execution is physically impossible without a valid approval token. Not a code convention that can be forgotten — a gate in the execution path.                  |
+| AP-2 | **Everything is evidence**                            | Every agent action emits a signed, hashed record. The ledger is not a log; it is a product surface.                                                             |
+| AP-3 | **Agents are services, not scripts**                  | Each agent is independently deployable, versioned, observable and replaceable.                                                                                  |
+| AP-4 | **Start modular monolith, evolve to services**        | A solo founder cannot operate twelve microservices in Phase 1. Build with clean internal module boundaries so extraction is mechanical later.                   |
+| AP-5 | **Model-agnostic**                                    | The LLM is a swappable dependency behind an abstraction, never a hard-coded vendor call. Enables self-hosted models for on-prem in Phase 5.                     |
 | AP-6 | **Control plane / data plane separable from day one** | Even while single-deployment, keep orchestration logically separate from data-touching execution, so Phase 5 split-plane is a deployment change, not a rewrite. |
-| AP-7 | **India data residency by default** | All personal data stays in Indian regions. Non-negotiable. |
-| AP-8 | **Read-only until explicitly granted otherwise** | Write capability is a separate, scoped, time-bound, revocable grant. |
+| AP-7 | **India data residency by default**                   | All personal data stays in Indian regions. Non-negotiable.                                                                                                      |
+| AP-8 | **Read-only until explicitly granted otherwise**      | Write capability is a separate, scoped, time-bound, revocable grant.                                                                                            |
 
 ---
 
@@ -73,14 +75,14 @@
 
 ### 3.1 Surfaces
 
-| Surface | User | Phase | Purpose |
-|---|---|---|---|
-| **Public site + gap-scan** | Prospect | 0 | Marketing, lead capture, free assessment |
-| **Agent Workbench** | Founder | 0 | Run agents, review outputs, manage prompts/versions — the founder's cockpit |
-| **Approval Console** | Client compliance head | 3 | ⭐ The most important screen in the product |
-| **Client Portal** | Client team | 3 | Posture, gaps, evidence, reports, pending approvals |
-| **Evidence Explorer** | Client / auditor | 2 | Browse, verify and export sealed evidence |
-| **Partner Portal** | Channel partner | 4 | Multi-client management, branded output |
+| Surface                    | User                   | Phase | Purpose                                                                     |
+| -------------------------- | ---------------------- | ----- | --------------------------------------------------------------------------- |
+| **Public site + gap-scan** | Prospect               | 0     | Marketing, lead capture, free assessment                                    |
+| **Agent Workbench**        | Founder                | 0     | Run agents, review outputs, manage prompts/versions — the founder's cockpit |
+| **Approval Console**       | Client compliance head | 3     | ⭐ The most important screen in the product                                 |
+| **Client Portal**          | Client team            | 3     | Posture, gaps, evidence, reports, pending approvals                         |
+| **Evidence Explorer**      | Client / auditor       | 2     | Browse, verify and export sealed evidence                                   |
+| **Partner Portal**         | Channel partner        | 4     | Multi-client management, branded output                                     |
 
 ### 3.2 The Approval Console — design requirements
 
@@ -110,15 +112,15 @@ Design rule: **an approver must never have to trust the agent to approve safely.
 
 ### 4.1 Responsibilities
 
-| Component | Function |
-|---|---|
-| **API Gateway** | TLS termination, routing, rate limiting, request signing, WAF |
-| **BFF (Backend-for-Frontend)** | Surface-specific aggregation; keeps clients thin |
-| **AuthN** | OIDC; email+MFA in Phase 1; SSO/SAML in Phase 5 |
-| **AuthZ** | RBAC → ABAC evolution; roles: Owner, Approver, Reviewer, Viewer, Partner, Agent |
-| **Tenant Resolver** | Resolves tenant on every request; injects tenant context into all downstream calls |
-| **Idempotency Service** | Idempotency keys on all mutating operations |
-| **Webhook Dispatcher** | Outbound events to client systems (approval pending, execution complete) |
+| Component                      | Function                                                                           |
+| ------------------------------ | ---------------------------------------------------------------------------------- |
+| **API Gateway**                | TLS termination, routing, rate limiting, request signing, WAF                      |
+| **BFF (Backend-for-Frontend)** | Surface-specific aggregation; keeps clients thin                                   |
+| **AuthN**                      | OIDC; email+MFA in Phase 1; SSO/SAML in Phase 5                                    |
+| **AuthZ**                      | RBAC → ABAC evolution; roles: Owner, Approver, Reviewer, Viewer, Partner, Agent    |
+| **Tenant Resolver**            | Resolves tenant on every request; injects tenant context into all downstream calls |
+| **Idempotency Service**        | Idempotency keys on all mutating operations                                        |
+| **Webhook Dispatcher**         | Outbound events to client systems (approval pending, execution complete)           |
 
 ### 4.2 API design
 
@@ -151,16 +153,16 @@ This is how AP-1 (approval is architectural) is realised concretely: there is no
 
 ### 5.1 Control Plane
 
-| Service | Responsibility |
-|---|---|
-| **Agent Orchestrator** | Plans and dispatches agent work; manages multi-agent workflows; handles retries, timeouts, partial failure |
-| **Workflow / State Engine** | Durable state machine per engagement: `discovery → classification → assessment → evidence → planning → dry-run → approval → execution → verification → closure`. Survives restarts; resumable |
-| **Approval Engine** | Issues, validates, expires and revokes signed approval tokens. Single source of truth for "is this permitted?" |
-| **Policy & Guardrail Engine** | Evaluates standing policies (Phase 4 L3), blast-radius caps, environment rules, escalation triggers |
-| **Control Library Service** | Versioned DPDPA control catalogue with citations, evidence requirements and remediation patterns; multi-framework mapping from Phase 4 |
-| **Scheduler** | Cron and event-driven agent runs (scheduled re-discovery, monitoring, regulatory watch) |
-| **Event Bus** | Async backbone; every domain event published (`DiscoveryCompleted`, `PlanGenerated`, `ApprovalGranted`, `ExecutionFailed`) |
-| **Model Gateway** | LLM abstraction: provider routing, prompt/version registry, token accounting, caching, fallback, PII redaction before egress |
+| Service                       | Responsibility                                                                                                                                                                                |
+| ----------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Agent Orchestrator**        | Plans and dispatches agent work; manages multi-agent workflows; handles retries, timeouts, partial failure                                                                                    |
+| **Workflow / State Engine**   | Durable state machine per engagement: `discovery → classification → assessment → evidence → planning → dry-run → approval → execution → verification → closure`. Survives restarts; resumable |
+| **Approval Engine**           | Issues, validates, expires and revokes signed approval tokens. Single source of truth for "is this permitted?"                                                                                |
+| **Policy & Guardrail Engine** | Evaluates standing policies (Phase 4 L3), blast-radius caps, environment rules, escalation triggers                                                                                           |
+| **Control Library Service**   | Versioned DPDPA control catalogue with citations, evidence requirements and remediation patterns; multi-framework mapping from Phase 4                                                        |
+| **Scheduler**                 | Cron and event-driven agent runs (scheduled re-discovery, monitoring, regulatory watch)                                                                                                       |
+| **Event Bus**                 | Async backbone; every domain event published (`DiscoveryCompleted`, `PlanGenerated`, `ApprovalGranted`, `ExecutionFailed`)                                                                    |
+| **Model Gateway**             | LLM abstraction: provider routing, prompt/version registry, token accounting, caching, fallback, PII redaction before egress                                                                  |
 
 **Model Gateway detail (important for cost and portability):** every model call passes through here, which gives one chokepoint for (a) swapping providers, (b) per-tenant cost attribution against NFR-11, (c) redacting personal data before it ever reaches a model provider, and (d) recording the prompt hash and model version into the ledger for reproducibility. Without this chokepoint, an agentic product becomes un-auditable and cost-unpredictable — both fatal for a bootstrapped compliance vendor.
 
@@ -168,35 +170,35 @@ This is how AP-1 (approval is architectural) is realised concretely: there is no
 
 Each agent is a versioned service with a declared contract: inputs, tool permissions, output schema, autonomy level, and escalation conditions.
 
-| Agent | Autonomy ceiling | Tool permissions |
-|---|---|---|
-| Drishti (Discovery) | L3 | Connectors: **read-only** |
-| Vibhaag (Classification) | L3 | None (operates on discovery output) |
-| Parikshan (Assessment) | L3 | Control Library read |
-| Saakshi (Evidence) | L3 | Evidence store **write-once** |
-| Sudhaar (Planning) | L2 — proposes only | Read-only; **can never execute** |
-| **Karya (Execution)** | **L2 — requires approval token** | Connectors: **write, scoped, token-gated** |
-| Lekha (Audit) | L3 | Ledger **append-only** |
-| Nazar (Regulatory) | L3 | External sources read |
-| Prativedan (Reporting) | L3 | Read all; document generation |
-| Sanket (Signal) | L3 | External sources read (internal use) |
+| Agent                    | Autonomy ceiling                 | Tool permissions                           |
+| ------------------------ | -------------------------------- | ------------------------------------------ |
+| Drishti (Discovery)      | L3                               | Connectors: **read-only**                  |
+| Vibhaag (Classification) | L3                               | None (operates on discovery output)        |
+| Parikshan (Assessment)   | L3                               | Control Library read                       |
+| Saakshi (Evidence)       | L3                               | Evidence store **write-once**              |
+| Sudhaar (Planning)       | L2 — proposes only               | Read-only; **can never execute**           |
+| **Karya (Execution)**    | **L2 — requires approval token** | Connectors: **write, scoped, token-gated** |
+| Lekha (Audit)            | L3                               | Ledger **append-only**                     |
+| Nazar (Regulatory)       | L3                               | External sources read                      |
+| Prativedan (Reporting)   | L3                               | Read all; document generation              |
+| Sanket (Signal)          | L3                               | External sources read (internal use)       |
 
-**Separation-of-duties design:** the agent that *plans* (Sudhaar) is architecturally distinct from the agent that *executes* (Karya), and Sudhaar holds no write credentials whatsoever. A planning agent cannot execute its own plan even if compromised or misbehaving. This mirrors the maker-checker principle Indian compliance buyers already understand from banking, and it is a genuine security property, not a talking point.
+**Separation-of-duties design:** the agent that _plans_ (Sudhaar) is architecturally distinct from the agent that _executes_ (Karya), and Sudhaar holds no write credentials whatsoever. A planning agent cannot execute its own plan even if compromised or misbehaving. This mirrors the maker-checker principle Indian compliance buyers already understand from banking, and it is a genuine security property, not a talking point.
 
 **Tool/MCP Server Registry:** agent capabilities are exposed as declared tools with explicit permission scopes. Every tool invocation is logged with arguments and results. Tools are sandboxed; network egress is allowlisted.
 
 ### 5.3 Data Plane
 
-| Component | Function |
-|---|---|
-| **Connector Framework** | Pluggable adapters with a common contract: `authenticate → enumerate → sample → read → (write)`. Read and write are separate interfaces with separate credential scopes |
-| **Discovery Engine** | Batch and targeted scanning; incremental/delta; parallelism control; rate limiting to avoid impacting client production |
-| **Dry-Run Simulator** | Executes the action against a shadow/read-only path; computes and renders the diff; results are hashed and time-bound |
-| **Execution Engine** | Token-validated, idempotent, ordered execution; per-action pre/post state capture; concurrency and stop-on-failure control |
-| **Rollback Engine** | Executes generated rollback plans; supports automatic trigger on failure threshold; rollback is itself dry-run-able |
-| **Blast-Radius Governor** | Pre-flight and in-flight enforcement of caps; halts and escalates on breach; enforces production/non-production rules |
-| **Evidence Pipeline** | Normalises, hashes, seals and stores artifacts; links to controls; builds export packs |
-| **Verification Engine** | Post-execution re-assessment of targeted controls; produces closure evidence |
+| Component                 | Function                                                                                                                                                                |
+| ------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Connector Framework**   | Pluggable adapters with a common contract: `authenticate → enumerate → sample → read → (write)`. Read and write are separate interfaces with separate credential scopes |
+| **Discovery Engine**      | Batch and targeted scanning; incremental/delta; parallelism control; rate limiting to avoid impacting client production                                                 |
+| **Dry-Run Simulator**     | Executes the action against a shadow/read-only path; computes and renders the diff; results are hashed and time-bound                                                   |
+| **Execution Engine**      | Token-validated, idempotent, ordered execution; per-action pre/post state capture; concurrency and stop-on-failure control                                              |
+| **Rollback Engine**       | Executes generated rollback plans; supports automatic trigger on failure threshold; rollback is itself dry-run-able                                                     |
+| **Blast-Radius Governor** | Pre-flight and in-flight enforcement of caps; halts and escalates on breach; enforces production/non-production rules                                                   |
+| **Evidence Pipeline**     | Normalises, hashes, seals and stores artifacts; links to controls; builds export packs                                                                                  |
+| **Verification Engine**   | Post-execution re-assessment of targeted controls; produces closure evidence                                                                                            |
 
 ### 5.4 The execution safety chain (end to end)
 
@@ -225,15 +227,15 @@ Gap identified (Parikshan)
 
 ### 6.1 Stores
 
-| Store | Technology | Contents | Why |
-|---|---|---|---|
-| **Transactional** | PostgreSQL 16+ | Tenants, users, engagements, controls, findings, plans, actions, approvals | ACID; relational integrity matters for compliance data |
-| **Audit Ledger** | PostgreSQL append-only table + hash chain (→ dedicated ledger store at scale) | Every agent and human action | Tamper-evident; independently verifiable |
-| **Evidence Store** | S3-compatible object store, India region, versioning + object lock (WORM) | Evidence artifacts, reports, dry-run diffs, snapshots | Immutability is the product |
-| **Vector DB** | pgvector (Phase 0–3) → dedicated vector store (Phase 4+) | Regulatory corpus, control library, precedent for RAG | Start inside Postgres to minimise operational load for a solo founder |
-| **Cache / Queue** | Redis | Sessions, rate limits, job queues, agent state | Standard |
-| **Search** | Postgres FTS (early) → OpenSearch (Phase 4) | Evidence and finding search | Defer complexity |
-| **Metrics** | Time-series (Prometheus-compatible) | Ops and cost telemetry | Cost-per-client tracking (NFR-11) |
+| Store              | Technology                                                                    | Contents                                                                   | Why                                                                   |
+| ------------------ | ----------------------------------------------------------------------------- | -------------------------------------------------------------------------- | --------------------------------------------------------------------- |
+| **Transactional**  | PostgreSQL 16+                                                                | Tenants, users, engagements, controls, findings, plans, actions, approvals | ACID; relational integrity matters for compliance data                |
+| **Audit Ledger**   | PostgreSQL append-only table + hash chain (→ dedicated ledger store at scale) | Every agent and human action                                               | Tamper-evident; independently verifiable                              |
+| **Evidence Store** | S3-compatible object store, India region, versioning + object lock (WORM)     | Evidence artifacts, reports, dry-run diffs, snapshots                      | Immutability is the product                                           |
+| **Vector DB**      | pgvector (Phase 0–3) → dedicated vector store (Phase 4+)                      | Regulatory corpus, control library, precedent for RAG                      | Start inside Postgres to minimise operational load for a solo founder |
+| **Cache / Queue**  | Redis                                                                         | Sessions, rate limits, job queues, agent state                             | Standard                                                              |
+| **Search**         | Postgres FTS (early) → OpenSearch (Phase 4)                                   | Evidence and finding search                                                | Defer complexity                                                      |
+| **Metrics**        | Time-series (Prometheus-compatible)                                           | Ops and cost telemetry                                                     | Cost-per-client tracking (NFR-11)                                     |
 
 **Deliberate simplicity note:** Phases 0–3 run on **PostgreSQL + object store + Redis only** — pgvector handles embeddings, Postgres FTS handles search. A solo founder adding a dedicated vector database and a search cluster in Phase 1 is buying operational burden they cannot service. Each store is promoted out of Postgres only when a measured limit is hit.
 
@@ -281,26 +283,26 @@ Chain integrity is verifiable by recomputing hashes from genesis. Periodic chain
 
 ## 7. CROSS-CUTTING CONCERNS
 
-| Concern | Approach |
-|---|---|
-| **Observability** | OpenTelemetry traces spanning agent workflows; structured logs; correlation ID from API request through every agent hop to ledger entry |
-| **Secrets** | Managed KMS/secrets manager; client connector credentials encrypted per-tenant; write credentials time-bound and auto-expiring |
-| **Security** | Least privilege, network egress allowlisting, agent sandboxing, dependency scanning, SAST in CI |
-| **Cost control** | Per-tenant token and infrastructure attribution via Model Gateway; alerting on cost-per-client breaching 15% of ACV |
-| **CI/CD** | Trunk-based; automated tests; agent prompt/version changes are versioned artifacts subject to the same review as code |
-| **Prompt governance** | Prompts are versioned, hashed, and recorded in the ledger — a compliance product cannot have untracked prompt drift |
-| **Disaster recovery** | Cross-AZ within India region; RPO ≤ 1h, RTO ≤ 4h; ledger and evidence store replicated |
+| Concern               | Approach                                                                                                                                |
+| --------------------- | --------------------------------------------------------------------------------------------------------------------------------------- |
+| **Observability**     | OpenTelemetry traces spanning agent workflows; structured logs; correlation ID from API request through every agent hop to ledger entry |
+| **Secrets**           | Managed KMS/secrets manager; client connector credentials encrypted per-tenant; write credentials time-bound and auto-expiring          |
+| **Security**          | Least privilege, network egress allowlisting, agent sandboxing, dependency scanning, SAST in CI                                         |
+| **Cost control**      | Per-tenant token and infrastructure attribution via Model Gateway; alerting on cost-per-client breaching 15% of ACV                     |
+| **CI/CD**             | Trunk-based; automated tests; agent prompt/version changes are versioned artifacts subject to the same review as code                   |
+| **Prompt governance** | Prompts are versioned, hashed, and recorded in the ledger — a compliance product cannot have untracked prompt drift                     |
+| **Disaster recovery** | Cross-AZ within India region; RPO ≤ 1h, RTO ≤ 4h; ledger and evidence store replicated                                                  |
 
 ---
 
 ## 8. DEPLOYMENT EVOLUTION
 
-| Phase | Topology | Rationale |
-|---|---|---|
-| **0–1** | Single managed container + managed Postgres + object store | One person cannot operate more; cost near-zero |
-| **2–3** | Modular monolith + separate agent worker pool + queue; managed services throughout | Agents scale independently of API without full microservice overhead |
-| **4** | Extract high-load services (Discovery, Execution, Model Gateway) into separate deployables; horizontal scaling | Extraction is mechanical because module boundaries were clean from the start (AP-4) |
-| **5** | **Split-plane:** hosted control plane + customer-perimeter data plane (Kubernetes appliance); optional air-gapped variant with self-hosted models | Enterprise/BFSI/government data-residency demand |
+| Phase   | Topology                                                                                                                                          | Rationale                                                                           |
+| ------- | ------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------- |
+| **0–1** | Single managed container + managed Postgres + object store                                                                                        | One person cannot operate more; cost near-zero                                      |
+| **2–3** | Modular monolith + separate agent worker pool + queue; managed services throughout                                                                | Agents scale independently of API without full microservice overhead                |
+| **4**   | Extract high-load services (Discovery, Execution, Model Gateway) into separate deployables; horizontal scaling                                    | Extraction is mechanical because module boundaries were clean from the start (AP-4) |
+| **5**   | **Split-plane:** hosted control plane + customer-perimeter data plane (Kubernetes appliance); optional air-gapped variant with self-hosted models | Enterprise/BFSI/government data-residency demand                                    |
 
 **Why the split-plane is cheap later if designed for now:** the Control Plane never touches client personal data — it holds plans, approvals, policies and ledger metadata. The Data Plane touches personal data — discovery, execution, evidence capture. If that boundary is respected from Phase 1 (which costs nothing to maintain as a discipline), then Phase 5 split-plane deployment is a packaging and networking exercise, not an architectural rewrite. Violating this boundary early is the single most expensive mistake available in this design.
 
@@ -308,17 +310,17 @@ Chain integrity is verifiable by recomputing hashes from genesis. Periodic chain
 
 ## 9. TECHNOLOGY STACK SUMMARY
 
-| Layer | Choice | Rationale |
-|---|---|---|
-| Frontend | Next.js + TypeScript + Tailwind | Solo-founder velocity; SSR for reports; large agent-assisted ecosystem |
-| API | Node/TypeScript (or Python/FastAPI) | Single language across stack reduces solo cognitive load |
-| Agent runtime | Python | Best AI/ML ecosystem; MCP tooling maturity |
-| Orchestration | Durable workflow engine (Temporal-class) or Postgres-backed state machine | Must survive restarts mid-workflow |
-| Datastore | PostgreSQL + pgvector | One database does transactional, audit, vector and search early |
-| Object store | S3-compatible, India region, object lock | WORM evidence |
-| Queue | Redis / managed queue | Simplicity |
-| LLM | Provider-abstracted via Model Gateway | Portability; self-hosted option Phase 5 |
-| Infra | Managed containers, India region | Minimal ops burden for one person |
+| Layer         | Choice                                                                    | Rationale                                                              |
+| ------------- | ------------------------------------------------------------------------- | ---------------------------------------------------------------------- |
+| Frontend      | Next.js + TypeScript + Tailwind                                           | Solo-founder velocity; SSR for reports; large agent-assisted ecosystem |
+| API           | Node/TypeScript (or Python/FastAPI)                                       | Single language across stack reduces solo cognitive load               |
+| Agent runtime | Python                                                                    | Best AI/ML ecosystem; MCP tooling maturity                             |
+| Orchestration | Durable workflow engine (Temporal-class) or Postgres-backed state machine | Must survive restarts mid-workflow                                     |
+| Datastore     | PostgreSQL + pgvector                                                     | One database does transactional, audit, vector and search early        |
+| Object store  | S3-compatible, India region, object lock                                  | WORM evidence                                                          |
+| Queue         | Redis / managed queue                                                     | Simplicity                                                             |
+| LLM           | Provider-abstracted via Model Gateway                                     | Portability; self-hosted option Phase 5                                |
+| Infra         | Managed containers, India region                                          | Minimal ops burden for one person                                      |
 
 **Language pragmatism:** TypeScript for the web tier and Python for the agent tier is the one place where two languages is justified — the agent ecosystem is Python-native and fighting that costs more than the context switch. Everywhere else, resist adding a language.
 
@@ -326,28 +328,28 @@ Chain integrity is verifiable by recomputing hashes from genesis. Periodic chain
 
 ## 10. ARCHITECTURE DECISION RECORDS (key decisions)
 
-| ADR | Decision | Rationale | Revisit when |
-|---|---|---|---|
-| ADR-1 | Modular monolith before microservices | Solo operator cannot run a distributed system | Load or team size forces extraction |
-| ADR-2 | Approval enforced by signed token validated per-action | Makes unapproved execution architecturally impossible, not merely prohibited | Never — this is foundational |
-| ADR-3 | Planning agent holds no write credentials | Separation of duties; compromised planner cannot act | Never |
-| ADR-4 | pgvector before dedicated vector DB | Operational simplicity outweighs marginal performance at this scale | Retrieval latency or corpus size degrades |
-| ADR-5 | Append-only ledger with DB-role-enforced immutability | Application-enforced immutability is not immutability | Never |
-| ADR-6 | Control plane / data plane boundary respected from Phase 1 | Makes Phase 5 split-plane a packaging change | Never |
-| ADR-7 | Model access only via Model Gateway | Cost attribution, PII redaction, reproducibility, portability | Never |
-| ADR-8 | Row-Level Security for tenancy, not app-layer filtering | Eliminates an entire class of cross-tenant leak bugs | Schema-per-tenant migration |
-| ADR-9 | Dry-run mandatory before approval eligibility | Informed approval is the trust proposition | Never |
-| ADR-10 | Rollback plan generated at planning time, not execution time | A rollback designed under pressure is not a rollback | Never |
+| ADR    | Decision                                                     | Rationale                                                                    | Revisit when                              |
+| ------ | ------------------------------------------------------------ | ---------------------------------------------------------------------------- | ----------------------------------------- |
+| ADR-1  | Modular monolith before microservices                        | Solo operator cannot run a distributed system                                | Load or team size forces extraction       |
+| ADR-2  | Approval enforced by signed token validated per-action       | Makes unapproved execution architecturally impossible, not merely prohibited | Never — this is foundational              |
+| ADR-3  | Planning agent holds no write credentials                    | Separation of duties; compromised planner cannot act                         | Never                                     |
+| ADR-4  | pgvector before dedicated vector DB                          | Operational simplicity outweighs marginal performance at this scale          | Retrieval latency or corpus size degrades |
+| ADR-5  | Append-only ledger with DB-role-enforced immutability        | Application-enforced immutability is not immutability                        | Never                                     |
+| ADR-6  | Control plane / data plane boundary respected from Phase 1   | Makes Phase 5 split-plane a packaging change                                 | Never                                     |
+| ADR-7  | Model access only via Model Gateway                          | Cost attribution, PII redaction, reproducibility, portability                | Never                                     |
+| ADR-8  | Row-Level Security for tenancy, not app-layer filtering      | Eliminates an entire class of cross-tenant leak bugs                         | Schema-per-tenant migration               |
+| ADR-9  | Dry-run mandatory before approval eligibility                | Informed approval is the trust proposition                                   | Never                                     |
+| ADR-10 | Rollback plan generated at planning time, not execution time | A rollback designed under pressure is not a rollback                         | Never                                     |
 
 ---
 
 ## 11. PHASE-TO-ARCHITECTURE MAPPING
 
-| Phase | Layers built |
-|---|---|
-| **0** | L1 (workbench, gap-scan) · L2 (basic API/auth) · L3 (Parikshan, Prativedan, Control Library) · L4 (Postgres, object store) |
-| **1** | L3 (+Drishti, Vibhaag, Sudhaar v0, Saakshi) · L1 (+review console) |
-| **2** | L3 (+Connector Framework, Live Discovery, Lekha, Approval Engine, Event Bus, Model Gateway) · L4 (+audit ledger, evidence vault, pgvector) |
+| Phase | Layers built                                                                                                                                   |
+| ----- | ---------------------------------------------------------------------------------------------------------------------------------------------- |
+| **0** | L1 (workbench, gap-scan) · L2 (basic API/auth) · L3 (Parikshan, Prativedan, Control Library) · L4 (Postgres, object store)                     |
+| **1** | L3 (+Drishti, Vibhaag, Sudhaar v0, Saakshi) · L1 (+review console)                                                                             |
+| **2** | L3 (+Connector Framework, Live Discovery, Lekha, Approval Engine, Event Bus, Model Gateway) · L4 (+audit ledger, evidence vault, pgvector)     |
 | **3** | L3 (+Dry-Run Simulator, Execution Engine, Rollback Engine, Blast-Radius Governor, Verification, Karya) · L1 (+Approval Console, Client Portal) |
-| **4** | L3 (+Policy Engine standing policies, multi-framework control library) · service extraction · L1 (+Partner Portal) |
-| **5** | Split-plane deployment · on-prem packaging · self-hosted model support · enterprise auth |
+| **4** | L3 (+Policy Engine standing policies, multi-framework control library) · service extraction · L1 (+Partner Portal)                             |
+| **5** | Split-plane deployment · on-prem packaging · self-hosted model support · enterprise auth                                                       |

@@ -7,7 +7,11 @@
  *   - Mono:     JetBrains Mono (logs, audit trails, evidence hashes)
  */
 
-export const fontFamily = {
+export const fontFamily: {
+  heading: string[];
+  body: string[];
+  mono: string[];
+} = {
   heading: [
     '"Inter Tight"',
     'Inter',
@@ -38,9 +42,23 @@ export const fontFamily = {
     'Consolas',
     'monospace',
   ],
-} as const;
+};
 
-export const fontSize = {
+export const fontSize: {
+  xs: [string, { lineHeight: string }];
+  sm: [string, { lineHeight: string }];
+  base: [string, { lineHeight: string }];
+  lg: [string, { lineHeight: string }];
+  xl: [string, { lineHeight: string }];
+  '2xl': [string, { lineHeight: string }];
+  '3xl': [string, { lineHeight: string }];
+  '4xl': [string, { lineHeight: string }];
+  '5xl': [string, { lineHeight: string }];
+  '6xl': [string, { lineHeight: string }];
+  '7xl': [string, { lineHeight: string }];
+  '8xl': [string, { lineHeight: string }];
+  '9xl': [string, { lineHeight: string }];
+} = {
   xs: ['0.75rem', { lineHeight: '1.125rem' }], // 12px
   sm: ['0.875rem', { lineHeight: '1.25rem' }], // 14px
   base: ['1rem', { lineHeight: '1.5rem' }], // 16px
@@ -54,7 +72,7 @@ export const fontSize = {
   '7xl': ['4.5rem', { lineHeight: '1' }], // 72px
   '8xl': ['6rem', { lineHeight: '1' }], // 96px
   '9xl': ['8rem', { lineHeight: '1' }], // 128px
-} as const;
+};
 
 export const fontWeight = {
   thin: '100',

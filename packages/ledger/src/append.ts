@@ -15,11 +15,7 @@
 
 import { createClient, type SupabaseClient } from '@supabase/supabase-js';
 import { z } from 'zod';
-import {
-  ActorType,
-  LedgerActionType,
-  LedgerResult,
-} from '@axiom/types';
+import { ActorType, LedgerActionType, LedgerResult } from '@axiom/types';
 import { canonicalJson, sha256 } from './canonicalise.js';
 
 export interface AppendLedgerInput {
@@ -65,8 +61,7 @@ export class LedgerClient {
     const inputHash =
       input.inputHash ?? (await sha256(canonicalJson({ ...detail, _kind: 'input' })));
     const outputHash =
-      input.outputHash ??
-      (await sha256(canonicalJson({ ...detail, _kind: 'output' })));
+      input.outputHash ?? (await sha256(canonicalJson({ ...detail, _kind: 'output' })));
 
     const { data, error } = await this.supabase.rpc('append_ledger', {
       p_tenant_id: input.tenantId,
@@ -89,10 +84,11 @@ export class LedgerClient {
     });
 
     if (error) {
-      throw new LedgerWriteError(
-        `Failed to append ledger entry: ${error.message}`,
-        { code: error.code, hint: error.hint, details: error.details },
-      );
+      throw new LedgerWriteError(`Failed to append ledger entry: ${error.message}`, {
+        code: error.code,
+        hint: error.hint,
+        details: error.details,
+      });
     }
     if (!data) {
       throw new LedgerWriteError('append_ledger returned no data');
@@ -121,7 +117,9 @@ export class LedgerClient {
   async verify(
     tenantId: string,
     fromSequence = 1,
-  ): Promise<{ intact: true } | { intact: false; firstBreak: { sequenceNo: number; reason: string } }> {
+  ): Promise<
+    { intact: true } | { intact: false; firstBreak: { sequenceNo: number; reason: string } }
+  > {
     const { data, error } = await this.supabase.rpc('verify_ledger', {
       p_tenant_id: tenantId,
       p_from_sequence: fromSequence,

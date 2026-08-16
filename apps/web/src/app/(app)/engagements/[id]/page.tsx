@@ -85,9 +85,8 @@ export default async function EngagementDetailPage({ params }: { params: { id: s
           <CardContent>
             {(plans ?? []).length === 0 ? (
               <p className="text-sm text-slate-500">
-                No plans generated yet. Once Parikshan completes assessment, Sudhaar
-                will generate a structured plan with typed actions, dry-runs, and
-                rollback definitions.
+                No plans generated yet. Once Parikshan completes assessment, Sudhaar will generate a
+                structured plan with typed actions, dry-runs, and rollback definitions.
               </p>
             ) : (
               <ul className="flex flex-col gap-2">

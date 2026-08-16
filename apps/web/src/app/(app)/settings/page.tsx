@@ -1,6 +1,14 @@
 import { redirect } from 'next/navigation';
 import { createSupabaseServerClient } from '@axiom/supabase';
-import { PageHeader, Card, CardContent, CardHeader, CardTitle, CardDescription, Badge } from '@axiom/ui';
+import {
+  PageHeader,
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+  Badge,
+} from '@axiom/ui';
 import { BRAND } from '@axiom/config';
 
 export const dynamic = 'force-dynamic';
@@ -25,9 +33,7 @@ export default async function SettingsPage() {
         </CardHeader>
         <CardContent>
           <dl className="grid grid-cols-1 gap-2 sm:grid-cols-2">
-            <dt className="text-xs font-medium uppercase tracking-wider text-slate-500">
-              Email
-            </dt>
+            <dt className="text-xs font-medium uppercase tracking-wider text-slate-500">Email</dt>
             <dd className="text-sm text-slate-700">{user.email}</dd>
             <dt className="text-xs font-medium uppercase tracking-wider text-slate-500">
               Full name
@@ -35,9 +41,7 @@ export default async function SettingsPage() {
             <dd className="text-sm text-slate-700">
               {(user.user_metadata as any)?.full_name ?? '—'}
             </dd>
-            <dt className="text-xs font-medium uppercase tracking-wider text-slate-500">
-              User ID
-            </dt>
+            <dt className="text-xs font-medium uppercase tracking-wider text-slate-500">User ID</dt>
             <dd className="font-mono text-xs text-slate-700">{user.id}</dd>
           </dl>
         </CardContent>
@@ -65,10 +69,10 @@ export default async function SettingsPage() {
         <CardContent>
           <p className="text-sm text-slate-600">
             All tenant data, evidence, and ledger entries are stored in{' '}
-            <Badge variant="indigo">{BRAND.dataResidencyRegion}</Badge>. LLM inference
-            for personal-data-touching tasks runs through a self-hosted model gateway
-            on the same EKS cluster. Per Doc 05 §6, no LLM vendor guarantees India-only
-            inference — that's why the Model Gateway redacts PII before egress.
+            <Badge variant="indigo">{BRAND.dataResidencyRegion}</Badge>. LLM inference for
+            personal-data-touching tasks runs through a self-hosted model gateway on the same EKS
+            cluster. Per Doc 05 §6, no LLM vendor guarantees India-only inference — that's why the
+            Model Gateway redacts PII before egress.
           </p>
         </CardContent>
       </Card>

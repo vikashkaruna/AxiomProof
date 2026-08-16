@@ -63,7 +63,10 @@ export const idempotency = createMiddleware<{ Variables: Variables }>(async (c, 
     .maybeSingle();
 
   if (existing) {
-    return c.json(existing.response_body, existing.response_status as 200 | 201 | 202 | 400 | 404 | 500);
+    return c.json(
+      existing.response_body,
+      existing.response_status as 200 | 201 | 202 | 400 | 404 | 500,
+    );
   }
 
   c.set('idempotencyKey', key);

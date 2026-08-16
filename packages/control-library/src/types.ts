@@ -141,7 +141,10 @@ export const ControlSchema = z.object({
   /** Library version this control first appeared in. */
   introducedInVersion: z.string().regex(/^\d+\.\d+\.\d+$/),
   /** Last revised in this library version. */
-  revisedInVersion: z.string().regex(/^\d+\.\d+\.\d+$/).optional(),
+  revisedInVersion: z
+    .string()
+    .regex(/^\d+\.\d+\.\d+$/)
+    .optional(),
   /** Free-text notes for the assessor (longer rationale, edge cases). */
   notes: z.string().optional(),
 });

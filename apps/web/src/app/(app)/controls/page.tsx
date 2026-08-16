@@ -95,9 +95,7 @@ export default async function ControlLibraryPage({
                   <p className="text-sm text-slate-600">{c.obligation}</p>
                   <p className="text-xs text-slate-500">
                     Citations:{' '}
-                    {c.citations
-                      .map((cit) => `${cit.instrument} ${cit.reference}`)
-                      .join('; ')}
+                    {c.citations.map((cit) => `${cit.instrument} ${cit.reference}`).join('; ')}
                   </p>
                 </div>
                 <div className="text-right text-xs text-slate-500">

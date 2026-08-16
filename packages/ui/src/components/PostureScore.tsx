@@ -25,8 +25,7 @@ export function PostureScore({
   className,
 }: PostureScoreProps) {
   const s = score ?? 0;
-  const verdict =
-    s >= 85 ? 'Strong' : s >= 65 ? 'Acceptable' : s >= 40 ? 'At Risk' : 'Critical';
+  const verdict = s >= 85 ? 'Strong' : s >= 65 ? 'Acceptable' : s >= 40 ? 'At Risk' : 'Critical';
   const verdictColor =
     s >= 85
       ? 'text-teal-700'
@@ -39,9 +38,7 @@ export function PostureScore({
   if (variant === 'compact') {
     return (
       <div className={cn('flex items-center gap-2', className)}>
-        <span className={cn('font-mono text-sm font-semibold', verdictColor)}>
-          {s.toFixed(0)}
-        </span>
+        <span className={cn('font-mono text-sm font-semibold', verdictColor)}>{s.toFixed(0)}</span>
         <ProgressBar value={s} size="sm" className="w-20" />
       </div>
     );

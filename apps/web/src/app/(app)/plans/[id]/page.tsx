@@ -97,24 +97,16 @@ export default async function PlanDetailPage({ params }: PageProps) {
           <p className="text-xs font-medium uppercase tracking-wider text-slate-500">
             Eligible for approval
           </p>
-          <p className="mt-1 font-mono text-2xl font-semibold text-teal-700">
-            {eligible.length}
-          </p>
+          <p className="mt-1 font-mono text-2xl font-semibold text-teal-700">{eligible.length}</p>
           <p className="text-xs text-slate-500">of {actions.length} actions</p>
         </div>
         <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
-          <p className="text-xs font-medium uppercase tracking-wider text-slate-500">
-            Blocked
-          </p>
-          <p className="mt-1 font-mono text-2xl font-semibold text-ember-700">
-            {blocked.length}
-          </p>
+          <p className="text-xs font-medium uppercase tracking-wider text-slate-500">Blocked</p>
+          <p className="mt-1 font-mono text-2xl font-semibold text-ember-700">{blocked.length}</p>
           <p className="text-xs text-slate-500">need dry-run or rollback fix</p>
         </div>
         <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
-          <p className="text-xs font-medium uppercase tracking-wider text-slate-500">
-            Approver
-          </p>
+          <p className="text-xs font-medium uppercase tracking-wider text-slate-500">Approver</p>
           <p className="mt-1 text-sm font-medium text-indigo-500">
             {user.user_metadata?.full_name ?? user.email}
           </p>
@@ -126,10 +118,10 @@ export default async function PlanDetailPage({ params }: PageProps) {
         <CardHeader>
           <CardTitle>Approval actions</CardTitle>
           <CardDescription>
-            Per ADR-2 / BR-1, no mutating action executes without recorded human approval.
-            The signature on the token is verified per-action, not just at batch start
-            (per Doc 04 §4.3). Each action below carries everything needed to make an
-            informed decision: dry-run diff, blast radius, risk, and rollback plan.
+            Per ADR-2 / BR-1, no mutating action executes without recorded human approval. The
+            signature on the token is verified per-action, not just at batch start (per Doc 04
+            §4.3). Each action below carries everything needed to make an informed decision: dry-run
+            diff, blast radius, risk, and rollback plan.
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -181,7 +173,9 @@ function ActionCard({ action }: { action: any }) {
             <p className="text-sm text-slate-700">{action.description}</p>
           </div>
           <div className="text-right text-xs text-slate-500">
-            <p>Risk score: <span className="font-mono">{action.risk_score}</span></p>
+            <p>
+              Risk score: <span className="font-mono">{action.risk_score}</span>
+            </p>
             <p>Closes: {action.closes_finding_ids?.length ?? 0} finding(s)</p>
           </div>
         </div>
@@ -221,11 +215,7 @@ function ActionCard({ action }: { action: any }) {
               Rollback
             </p>
             <p className="mt-1 text-sm">
-              {rollbackOk ? (
-                <StatusBadge status="approved" />
-              ) : (
-                <StatusBadge status="awaiting" />
-              )}
+              {rollbackOk ? <StatusBadge status="approved" /> : <StatusBadge status="awaiting" />}
             </p>
             <p className="text-xs text-slate-500">
               ~{(action.rollback_definition as any)?.estimatedRollbackTimeSeconds ?? 0}s
@@ -239,9 +229,7 @@ function ActionCard({ action }: { action: any }) {
               <StatusBadge status={action.approval_status} />
             </p>
             {action.approved_at && (
-              <p className="text-xs text-slate-500">
-                {formatDateTime(action.approved_at)}
-              </p>
+              <p className="text-xs text-slate-500">{formatDateTime(action.approved_at)}</p>
             )}
           </div>
         </div>
@@ -251,7 +239,11 @@ function ActionCard({ action }: { action: any }) {
             View dry-run diff
           </summary>
           <pre className="mt-2 overflow-x-auto rounded-md bg-slate-900 p-3 font-mono text-xs text-slate-100">
-{JSON.stringify(action.dry_run_result ?? { note: 'no dry-run result captured' }, null, 2)}
+            {JSON.stringify(
+              action.dry_run_result ?? { note: 'no dry-run result captured' },
+              null,
+              2,
+            )}
           </pre>
         </details>
 
@@ -260,7 +252,7 @@ function ActionCard({ action }: { action: any }) {
             View rollback plan
           </summary>
           <pre className="mt-2 overflow-x-auto rounded-md bg-slate-900 p-3 font-mono text-xs text-slate-100">
-{JSON.stringify(action.rollback_definition, null, 2)}
+            {JSON.stringify(action.rollback_definition, null, 2)}
           </pre>
         </details>
       </div>

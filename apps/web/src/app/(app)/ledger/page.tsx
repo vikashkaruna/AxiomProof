@@ -16,19 +16,16 @@ export default async function LedgerPage() {
   const admin = createSupabaseAdmin();
 
   // Verify chain integrity
-  const { data: tenants } = await admin
-    .from('tenants')
-    .select('id, name')
-    .limit(1);
+  const { data: tenants } = await admin.from('tenants').select('id, name').limit(1);
 
   let verification: any = { intact: true };
-  if (tenants && tenants.length > 0) {
+  if (tenants && tenants.length > 0 && tenants[0]) {
     const { data } = await admin.rpc('verify_ledger', {
       p_tenant_id: tenants[0].id,
       p_from_sequence: 1,
     });
     if (data && data.length > 0) {
-      verification = { intact: false, firstBreak: data[0] };
+      verification = { intact: false, firstBreak: data[0] ?? null };
     }
   }
 
@@ -62,9 +59,7 @@ export default async function LedgerPage() {
               <div className="flex items-start justify-between gap-3">
                 <div className="flex flex-col gap-1.5">
                   <div className="flex items-center gap-2">
-                    <span className="font-mono text-xs text-slate-500">
-                      #{e.sequence_no}
-                    </span>
+                    <span className="font-mono text-xs text-slate-500">#{e.sequence_no}</span>
                     <Badge variant="indigo">{e.actor_type}</Badge>
                     {e.actor_type === 'agent' && (
                       <AgentPill agent={e.actor_id as any} showPersona={false} />
@@ -88,20 +83,16 @@ export default async function LedgerPage() {
                   )}
                   {e.detail && Object.keys(e.detail).length > 0 && (
                     <details className="rounded-md bg-mist-50 px-2 py-1 text-xs">
-                      <summary className="cursor-pointer text-slate-500">
-                        detail
-                      </summary>
+                      <summary className="cursor-pointer text-slate-500">detail</summary>
                       <pre className="mt-1 overflow-x-auto font-mono text-[10px] text-slate-700">
-{JSON.stringify(e.detail, null, 2)}
+                        {JSON.stringify(e.detail, null, 2)}
                       </pre>
                     </details>
                   )}
                 </div>
                 <div className="flex flex-col items-end gap-1 text-right">
                   <ProofSeal hash={e.entry_hash} compact />
-                  <p className="text-xs text-slate-500">
-                    {formatDateTime(e.occurred_at)}
-                  </p>
+                  <p className="text-xs text-slate-500">{formatDateTime(e.occurred_at)}</p>
                 </div>
               </div>
             </CardContent>

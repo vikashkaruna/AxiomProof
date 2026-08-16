@@ -20,7 +20,13 @@ export function publicRoutes(deps: Deps) {
     const parsed = GapScanSubmitSchema.safeParse(body);
     if (!parsed.success) {
       return c.json(
-        { error: { code: 'validation_failed', message: 'Invalid gap-scan submission', details: parsed.error.flatten() } },
+        {
+          error: {
+            code: 'validation_failed',
+            message: 'Invalid gap-scan submission',
+            details: parsed.error.flatten(),
+          },
+        },
         400,
       );
     }

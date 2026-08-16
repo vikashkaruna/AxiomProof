@@ -1,7 +1,15 @@
 import Link from 'next/link';
 import { createSupabaseAdmin } from '@axiom/supabase';
 import { redirect } from 'next/navigation';
-import { PageHeader, Card, CardHeader, CardTitle, CardContent, StatusBadge, Badge } from '@axiom/ui';
+import {
+  PageHeader,
+  Card,
+  CardHeader,
+  CardTitle,
+  CardContent,
+  StatusBadge,
+  Badge,
+} from '@axiom/ui';
 import { formatDate, formatPercent } from '@axiom/ui';
 import { createSupabaseServerClient } from '@axiom/supabase';
 

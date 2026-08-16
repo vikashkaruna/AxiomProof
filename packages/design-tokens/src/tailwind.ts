@@ -14,11 +14,6 @@ import { borderRadius, boxShadow, spacing, motion } from './spacing.js';
 export const axiomPreset: Partial<Config> = {
   theme: {
     colors: {
-      transparent: 'transparent',
-      current: 'currentColor',
-      inherit: 'inherit',
-      black: colors.black,
-      white: colors.white,
       ...colors,
       // expose agent accents as a dedicated namespace
       agent: agentAccents,

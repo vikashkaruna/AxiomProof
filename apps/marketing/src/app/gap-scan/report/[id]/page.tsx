@@ -1,7 +1,16 @@
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { createSupabaseAdmin } from '@axiom/supabase';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription, Badge, PostureScore, SeverityChip } from '@axiom/ui';
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+  Badge,
+  PostureScore,
+  SeverityChip,
+} from '@axiom/ui';
 import { BRAND } from '@axiom/config';
 import { formatINR } from '@axiom/ui';
 
@@ -39,15 +48,12 @@ export default async function GapScanReportPage({ params }: { params: { id: stri
         <CardHeader>
           <CardTitle>Overall posture</CardTitle>
           <CardDescription>
-            0–100, where 100 is fully compliant. 5% global discount applied for
-            unverified self-attestation — verified controls score higher.
+            0–100, where 100 is fully compliant. 5% global discount applied for unverified
+            self-attestation — verified controls score higher.
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <PostureScore
-            score={scan.posture_score}
-            exposureInr={scan.estimated_exposure_inr}
-          />
+          <PostureScore score={scan.posture_score} exposureInr={scan.estimated_exposure_inr} />
         </CardContent>
       </Card>
 
@@ -60,7 +66,10 @@ export default async function GapScanReportPage({ params }: { params: { id: stri
           <CardContent>
             <ol className="flex flex-col gap-3">
               {report.recommendations.map((r: any) => (
-                <li key={r.priority} className="flex items-start gap-3 rounded-md border border-slate-200 p-3">
+                <li
+                  key={r.priority}
+                  className="flex items-start gap-3 rounded-md border border-slate-200 p-3"
+                >
                   <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-indigo-500 font-mono text-sm font-semibold text-white">
                     {r.priority}
                   </span>
@@ -102,12 +111,8 @@ export default async function GapScanReportPage({ params }: { params: { id: stri
                   <td className="px-4 py-2">
                     <SeverityChip severity={f.severity} />
                   </td>
-                  <td className="px-4 py-2 font-mono text-xs">
-                    {Number(f.score).toFixed(0)}
-                  </td>
-                  <td className="px-4 py-2 font-mono text-xs">
-                    {Number(f.riskPoints).toFixed(1)}
-                  </td>
+                  <td className="px-4 py-2 font-mono text-xs">{Number(f.score).toFixed(0)}</td>
+                  <td className="px-4 py-2 font-mono text-xs">{Number(f.riskPoints).toFixed(1)}</td>
                   <td className="px-4 py-2 text-xs">
                     {f.score >= 80 ? (
                       <Badge variant="success">Compliant</Badge>
@@ -127,12 +132,10 @@ export default async function GapScanReportPage({ params }: { params: { id: stri
       {scan.follow_up_requested && (
         <Card>
           <CardContent className="p-6 text-center">
-            <h3 className="font-heading text-xl font-semibold text-indigo-500">
-              What's next?
-            </h3>
+            <h3 className="font-heading text-xl font-semibold text-indigo-500">What's next?</h3>
             <p className="mt-2 text-slate-600">
-              The founder will reach out to {scan.contact_email} within 1 business day
-              to walk through your findings. This is a 30-min call, not a sales pitch.
+              The founder will reach out to {scan.contact_email} within 1 business day to walk
+              through your findings. This is a 30-min call, not a sales pitch.
             </p>
             <Button asChild={false} variant="accent" size="lg" className="mt-4">
               <Link href="/contact">Or book directly</Link>
@@ -143,7 +146,8 @@ export default async function GapScanReportPage({ params }: { params: { id: stri
 
       <p className="text-center text-xs text-slate-500">
         Report ID: {scan.id} · Library v{scan.library_version} · Scored{' '}
-        {new Date(scan.created_at).toLocaleString('en-IN')}<br />
+        {new Date(scan.created_at).toLocaleString('en-IN')}
+        <br />
         {BRAND.copyright}
       </p>
     </div>

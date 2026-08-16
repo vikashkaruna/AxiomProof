@@ -1,66 +1,66 @@
 version: 2
 updates:
-  - package-ecosystem: "npm"
-    directory: "/"
+  - package-ecosystem: 'npm'
+    directory: '/'
     schedule:
-      interval: "weekly"
+      interval: 'weekly'
     open-pull-requests-limit: 5
-    rebase-strategy: "auto"
+    rebase-strategy: 'auto'
     delete-branch-after-merge: true
     commit-message:
-      prefix: "deps"
+      prefix: 'deps'
     groups:
       production-dependencies:
-        dependency-type: "production"
+        dependency-type: 'production'
       development-dependencies:
-        dependency-type: "development"
+        dependency-type: 'development'
     labels:
-      - "dependencies"
+      - 'dependencies'
 
-  - package-ecosystem: "pip"
-    directory: "/services/agent-runtime"
+  - package-ecosystem: 'pip'
+    directory: '/services/agent-runtime'
     schedule:
-      interval: "weekly"
+      interval: 'weekly'
     open-pull-requests-limit: 3
-    rebase-strategy: "auto"
+    rebase-strategy: 'auto'
     delete-branch-after-merge: true
     commit-message:
-      prefix: "deps"
+      prefix: 'deps'
     labels:
-      - "dependencies"
+      - 'dependencies'
 
-  - package-ecosystem: "pip"
-    directory: "/services/model-gateway"
+  - package-ecosystem: 'pip'
+    directory: '/services/model-gateway'
     schedule:
-      interval: "weekly"
+      interval: 'weekly'
     open-pull-requests-limit: 3
-    rebase-strategy: "auto"
+    rebase-strategy: 'auto'
     delete-branch-after-merge: true
     commit-message:
-      prefix: "deps"
+      prefix: 'deps'
     labels:
-      - "dependencies"
+      - 'dependencies'
 
-  - package-ecosystem: "pip"
-    directory: "/services/temporal-workers"
+  - package-ecosystem: 'pip'
+    directory: '/services/temporal-workers'
     schedule:
-      interval: "weekly"
+      interval: 'weekly'
     open-pull-requests-limit: 3
-    rebase-strategy: "auto"
+    rebase-strategy: 'auto'
     delete-branch-after-merge: true
     commit-message:
-      prefix: "deps"
+      prefix: 'deps'
     labels:
-      - "dependencies"
+      - 'dependencies'
 
-  - package-ecosystem: "github-actions"
-    directory: "/"
+  - package-ecosystem: 'github-actions'
+    directory: '/'
     schedule:
-      interval: "weekly"
+      interval: 'weekly'
     open-pull-requests-limit: 3
-    rebase-strategy: "auto"
+    rebase-strategy: 'auto'
     delete-branch-after-merge: true
     commit-message:
-      prefix: "ci"
+      prefix: 'ci'
     labels:
-      - "ci"
+      - 'ci'

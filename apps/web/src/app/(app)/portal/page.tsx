@@ -41,8 +41,8 @@ export default async function ClientPortalPage() {
         />
         <Card>
           <CardContent className="p-8 text-center text-slate-500">
-            No tenants on record. Once a client engagement begins, their
-            posture and pending approvals will appear here.
+            No tenants on record. Once a client engagement begins, their posture and pending
+            approvals will appear here.
           </CardContent>
         </Card>
       </div>
@@ -116,7 +116,8 @@ export default async function ClientPortalPage() {
       ) : (
         <Card>
           <CardContent className="p-8 text-center text-slate-500">
-            No active engagement. Reach out to your Axiom Proof delivery lead to begin a readiness assessment.
+            No active engagement. Reach out to your Axiom Proof delivery lead to begin a readiness
+            assessment.
           </CardContent>
         </Card>
       )}
@@ -125,9 +126,7 @@ export default async function ClientPortalPage() {
         <Card>
           <CardHeader>
             <CardTitle>Pending approvals</CardTitle>
-            <CardDescription>
-              Plans awaiting your review in the Approval Console.
-            </CardDescription>
+            <CardDescription>Plans awaiting your review in the Approval Console.</CardDescription>
           </CardHeader>
           <CardContent>
             {(planRes.data ?? []).length === 0 ? (
@@ -197,9 +196,7 @@ export default async function ClientPortalPage() {
                       <Badge variant="indigo">{d.kind}</Badge>
                       <StatusBadge status={d.status} />
                     </div>
-                    <span className="text-xs text-slate-500">
-                      Due {formatDate(d.due_by)}
-                    </span>
+                    <span className="text-xs text-slate-500">Due {formatDate(d.due_by)}</span>
                   </li>
                 ))}
               </ul>
@@ -223,9 +220,7 @@ export default async function ClientPortalPage() {
                   >
                     <div className="flex items-center gap-2">
                       <StatusBadge status={b.status} />
-                      <span className="text-sm font-medium text-slate-700">
-                        {b.title}
-                      </span>
+                      <span className="text-sm font-medium text-slate-700">{b.title}</span>
                     </div>
                     <span className="text-xs text-ember-700">
                       DPB due {formatDate(b.dpb_notification_due_by)}

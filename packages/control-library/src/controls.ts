@@ -39,19 +39,25 @@ export const controls: Control[] = [
     severity: 'critical',
     obligation:
       'Every entity that determines the purpose and means of processing digital personal data is a Data Fiduciary and bears primary statutory accountability under Section 8 of the DPDP Act, regardless of contract structure.',
-    citations: [
-      { instrument: 'DPDPA-2023', reference: 'Section 2(i), 2(k), 8(1)' },
-    ],
+    citations: [{ instrument: 'DPDPA-2023', reference: 'Section 2(i), 2(k), 8(1)' }],
     evidenceRequired: [
-      { type: 'document', description: 'Board resolution or partnership deed naming the Data Fiduciary entity' },
-      { type: 'config', description: 'Authoritative organisational record (MCA / GST filing) showing the entity' },
+      {
+        type: 'document',
+        description: 'Board resolution or partnership deed naming the Data Fiduciary entity',
+      },
+      {
+        type: 'config',
+        description: 'Authoritative organisational record (MCA / GST filing) showing the entity',
+      },
     ],
     assessmentQuestions: [
       {
         id: 'Q1',
-        prompt: 'Is there a single legal entity formally identified as the Data Fiduciary for the personal data you process?',
+        prompt:
+          'Is there a single legal entity formally identified as the Data Fiduciary for the personal data you process?',
         type: 'boolean',
         evidenceTypes: ['document', 'config'],
+        dependsOn: [],
       },
     ],
     scoring: { baseline: 0, weight: 1, penaltyPoints: 30, maxPenaltyINR: 25_00_00_000 },
@@ -79,15 +85,18 @@ export const controls: Control[] = [
     assessmentQuestions: [
       {
         id: 'Q1',
-        prompt: 'Do you have a publicly accessible privacy policy that meets Section 5(3) requirements?',
+        prompt:
+          'Do you have a publicly accessible privacy policy that meets Section 5(3) requirements?',
         type: 'boolean',
         evidenceTypes: ['document', 'screenshot'],
+        dependsOn: [],
       },
       {
         id: 'Q2',
         prompt: 'When was the policy last reviewed and is the version date visible on the page?',
         type: 'evidence',
         evidenceTypes: ['screenshot'],
+        dependsOn: [],
       },
     ],
     scoring: { baseline: 0, weight: 1, penaltyPoints: 18, maxPenaltyINR: 5_00_00_000 },
@@ -103,26 +112,33 @@ export const controls: Control[] = [
     domain: 'GOV',
     severity: 'high',
     obligation:
-      'Personal data may be processed by a Data Processor only under a valid contract that limits processing to the Data Fiduciary\'s instructions, enforces security safeguards, and binds the processor to the Act (Section 8(1), Rule 6).',
+      "Personal data may be processed by a Data Processor only under a valid contract that limits processing to the Data Fiduciary's instructions, enforces security safeguards, and binds the processor to the Act (Section 8(1), Rule 6).",
     citations: [
       { instrument: 'DPDPA-2023', reference: 'Section 8(1), 2(l)' },
       { instrument: 'DPDPR-2025', reference: 'Rule 6' },
     ],
     evidenceRequired: [
-      { type: 'document', description: 'Signed DPA with each processor covering scope, security, sub-processors, return/deletion' },
+      {
+        type: 'document',
+        description:
+          'Signed DPA with each processor covering scope, security, sub-processors, return/deletion',
+      },
     ],
     assessmentQuestions: [
       {
         id: 'Q1',
-        prompt: 'List all third parties that process personal data on your behalf (Data Processors).',
+        prompt:
+          'List all third parties that process personal data on your behalf (Data Processors).',
         type: 'text',
         evidenceTypes: ['document'],
+        dependsOn: [],
       },
       {
         id: 'Q2',
         prompt: 'For each processor, is there a signed DPA that meets Rule 6 requirements?',
         type: 'evidence',
         evidenceTypes: ['document'],
+        dependsOn: [],
       },
     ],
     scoring: { baseline: 0, weight: 1, penaltyPoints: 20, maxPenaltyINR: 5_00_00_000 },
@@ -148,27 +164,38 @@ export const controls: Control[] = [
       { instrument: 'DPDPR-2025', reference: 'Rule 5, 6' },
     ],
     evidenceRequired: [
-      { type: 'screenshot', description: 'Screenshot of the consent capture UX showing it is un-bundled and affirmative' },
-      { type: 'log', description: 'Sample of consent records with timestamp and version of notice shown' },
+      {
+        type: 'screenshot',
+        description:
+          'Screenshot of the consent capture UX showing it is un-bundled and affirmative',
+      },
+      {
+        type: 'log',
+        description: 'Sample of consent records with timestamp and version of notice shown',
+      },
     ],
     assessmentQuestions: [
       {
         id: 'Q1',
-        prompt: 'Is consent obtained via a clear affirmative action (not pre-ticked boxes or implied consent)?',
+        prompt:
+          'Is consent obtained via a clear affirmative action (not pre-ticked boxes or implied consent)?',
         type: 'boolean',
         evidenceTypes: ['screenshot', 'config'],
+        dependsOn: [],
       },
       {
         id: 'Q2',
         prompt: 'Is the consent notice shown at the time of consent and version-pinned?',
         type: 'boolean',
         evidenceTypes: ['screenshot', 'log'],
+        dependsOn: [],
       },
       {
         id: 'Q3',
         prompt: 'Can the data principal withdraw consent as easily as they gave it?',
         type: 'boolean',
         evidenceTypes: ['screenshot', 'config'],
+        dependsOn: [],
       },
     ],
     scoring: { baseline: 0, weight: 1, penaltyPoints: 35, maxPenaltyINR: 25_00_00_000 },
@@ -196,15 +223,18 @@ export const controls: Control[] = [
     assessmentQuestions: [
       {
         id: 'Q1',
-        prompt: 'Does the notice describe the personal data items being collected and the specific purpose?',
+        prompt:
+          'Does the notice describe the personal data items being collected and the specific purpose?',
         type: 'boolean',
         evidenceTypes: ['document'],
+        dependsOn: [],
       },
       {
         id: 'Q2',
         prompt: 'Does the notice explain how to exercise rights and how to make a complaint?',
         type: 'boolean',
         evidenceTypes: ['document'],
+        dependsOn: [],
       },
     ],
     scoring: { baseline: 0, weight: 1, penaltyPoints: 20, maxPenaltyINR: 5_00_00_000 },
@@ -221,25 +251,29 @@ export const controls: Control[] = [
     severity: 'high',
     obligation:
       'Records of consent — including the notice version, the data principal identifier, the timestamp, and the items consented to — must be retained for at least 7 years from the date of consent or last action, whichever is later (Rule 5(3) read with retention Rules).',
-    citations: [
-      { instrument: 'DPDPR-2025', reference: 'Rule 5(3), retention Rules' },
-    ],
+    citations: [{ instrument: 'DPDPR-2025', reference: 'Rule 5(3), retention Rules' }],
     evidenceRequired: [
-      { type: 'config', description: 'Schema + retention policy showing 7-year retention on consent records' },
+      {
+        type: 'config',
+        description: 'Schema + retention policy showing 7-year retention on consent records',
+      },
       { type: 'log', description: 'Sample consent record with all required fields' },
     ],
     assessmentQuestions: [
       {
         id: 'Q1',
-        prompt: 'Do you store a record of every consent with timestamp + notice version + items + data principal ID?',
+        prompt:
+          'Do you store a record of every consent with timestamp + notice version + items + data principal ID?',
         type: 'boolean',
         evidenceTypes: ['config', 'log'],
+        dependsOn: [],
       },
       {
         id: 'Q2',
         prompt: 'Is the retention period at least 7 years?',
         type: 'boolean',
         evidenceTypes: ['config'],
+        dependsOn: [],
       },
     ],
     scoring: { baseline: 0, weight: 1, penaltyPoints: 18, maxPenaltyINR: 5_00_00_000 },
@@ -256,9 +290,7 @@ export const controls: Control[] = [
     severity: 'critical',
     obligation:
       'On withdrawal of consent, processing must stop and personal data must be erased within a reasonable time, except where retention is necessary for legal obligation (Section 6(4), 8(7)).',
-    citations: [
-      { instrument: 'DPDPA-2023', reference: 'Section 6(4), 8(7)' },
-    ],
+    citations: [{ instrument: 'DPDPA-2023', reference: 'Section 6(4), 8(7)' }],
     evidenceRequired: [
       { type: 'log', description: 'Withdrawal workflow showing receipt → action → completion' },
       { type: 'attestation', description: 'Policy on what is erased vs retained and why' },
@@ -269,12 +301,15 @@ export const controls: Control[] = [
         prompt: 'Is there a working mechanism for users to withdraw consent?',
         type: 'boolean',
         evidenceTypes: ['screenshot', 'config'],
+        dependsOn: [],
       },
       {
         id: 'Q2',
-        prompt: 'After withdrawal, is the user\'s personal data erased from active systems within a reasonable time?',
+        prompt:
+          "After withdrawal, is the user's personal data erased from active systems within a reasonable time?",
         type: 'boolean',
         evidenceTypes: ['log', 'attestation'],
+        dependsOn: [],
       },
     ],
     scoring: { baseline: 0, weight: 1, penaltyPoints: 30, maxPenaltyINR: 25_00_00_000 },
@@ -295,15 +330,15 @@ export const controls: Control[] = [
       { instrument: 'DPDPA-2023', reference: 'Section 5(1)(b)' },
       { instrument: 'DPDPR-2025', reference: 'Rule 5(1)(a)' },
     ],
-    evidenceRequired: [
-      { type: 'document', description: 'Notice text showing itemised fields' },
-    ],
+    evidenceRequired: [{ type: 'document', description: 'Notice text showing itemised fields' }],
     assessmentQuestions: [
       {
         id: 'Q1',
-        prompt: 'For each processing purpose, does the notice itemise the specific data fields collected?',
+        prompt:
+          'For each processing purpose, does the notice itemise the specific data fields collected?',
         type: 'boolean',
         evidenceTypes: ['document'],
+        dependsOn: [],
       },
     ],
     scoring: { baseline: 0, weight: 1, penaltyPoints: 12, maxPenaltyINR: 5_00_00_000 },
@@ -338,12 +373,14 @@ export const controls: Control[] = [
         prompt: 'Can a data principal request a copy of their personal data you hold?',
         type: 'boolean',
         evidenceTypes: ['screenshot', 'config'],
+        dependsOn: [],
       },
       {
         id: 'Q2',
         prompt: 'Within what timeframe do you respond?',
         type: 'text',
         evidenceTypes: ['attestation'],
+        dependsOn: [],
       },
     ],
     scoring: { baseline: 0, weight: 1, penaltyPoints: 20, maxPenaltyINR: 5_00_00_000 },
@@ -374,12 +411,15 @@ export const controls: Control[] = [
         prompt: 'Can a data principal request correction of inaccurate personal data?',
         type: 'boolean',
         evidenceTypes: ['screenshot', 'config'],
+        dependsOn: [],
       },
       {
         id: 'Q2',
-        prompt: 'Can a data principal request erasure of personal data, and do you action it across all systems (including processors)?',
+        prompt:
+          'Can a data principal request erasure of personal data, and do you action it across all systems (including processors)?',
         type: 'boolean',
         evidenceTypes: ['screenshot', 'config', 'log'],
+        dependsOn: [],
       },
     ],
     scoring: { baseline: 0, weight: 1, penaltyPoints: 22, maxPenaltyINR: 5_00_00_000 },
@@ -410,12 +450,14 @@ export const controls: Control[] = [
         prompt: 'Is the grievance officer name and contact publicly available?',
         type: 'boolean',
         evidenceTypes: ['document', 'screenshot'],
+        dependsOn: [],
       },
       {
         id: 'Q2',
         prompt: 'Do you respond to complaints within 30 days?',
         type: 'boolean',
         evidenceTypes: ['log', 'attestation'],
+        dependsOn: [],
       },
     ],
     scoring: { baseline: 0, weight: 1, penaltyPoints: 18, maxPenaltyINR: 5_00_00_000 },
@@ -432,9 +474,7 @@ export const controls: Control[] = [
     severity: 'medium',
     obligation:
       'A data principal may nominate another individual to exercise their rights in the event of death or incapacity (Section 14).',
-    citations: [
-      { instrument: 'DPDPA-2023', reference: 'Section 14' },
-    ],
+    citations: [{ instrument: 'DPDPA-2023', reference: 'Section 14' }],
     evidenceRequired: [
       { type: 'config', description: 'Nomination feature in user account' },
       { type: 'document', description: 'Notice describing the right' },
@@ -445,6 +485,7 @@ export const controls: Control[] = [
         prompt: 'Can a user nominate another individual to exercise their rights?',
         type: 'boolean',
         evidenceTypes: ['screenshot', 'config'],
+        dependsOn: [],
       },
     ],
     scoring: { baseline: 0, weight: 1, penaltyPoints: 8, maxPenaltyINR: 2_00_00_000 },
@@ -470,7 +511,11 @@ export const controls: Control[] = [
       { instrument: 'DPDPA-2023', reference: 'Section 8' },
     ],
     evidenceRequired: [
-      { type: 'inventory', description: 'Living RoPA — purpose, data items, lawful basis, processors, retention, cross-border' },
+      {
+        type: 'inventory',
+        description:
+          'Living RoPA — purpose, data items, lawful basis, processors, retention, cross-border',
+      },
     ],
     assessmentQuestions: [
       {
@@ -478,12 +523,14 @@ export const controls: Control[] = [
         prompt: 'Do you maintain a written Record of Processing Activities?',
         type: 'boolean',
         evidenceTypes: ['inventory', 'document'],
+        dependsOn: [],
       },
       {
         id: 'Q2',
         prompt: 'Is it updated within 30 days of any change in processing?',
         type: 'boolean',
         evidenceTypes: ['attestation'],
+        dependsOn: [],
       },
     ],
     scoring: { baseline: 0, weight: 1, penaltyPoints: 18, maxPenaltyINR: 5_00_00_000 },
@@ -500,11 +547,12 @@ export const controls: Control[] = [
     severity: 'high',
     obligation:
       'The RoPA must be backed by an actual inventory of systems, databases, fields and data flows — not a generic narrative. Records must be available on demand to the Data Protection Board.',
-    citations: [
-      { instrument: 'DPDPR-2025', reference: 'Rule 21' },
-    ],
+    citations: [{ instrument: 'DPDPR-2025', reference: 'Rule 21' }],
     evidenceRequired: [
-      { type: 'inventory', description: 'System-level inventory with field-level personal-data classification' },
+      {
+        type: 'inventory',
+        description: 'System-level inventory with field-level personal-data classification',
+      },
     ],
     assessmentQuestions: [
       {
@@ -512,12 +560,14 @@ export const controls: Control[] = [
         prompt: 'Have you inventoried all systems that hold personal data?',
         type: 'boolean',
         evidenceTypes: ['inventory'],
+        dependsOn: [],
       },
       {
         id: 'Q2',
         prompt: 'Is the inventory field-level (not just system-level)?',
         type: 'boolean',
         evidenceTypes: ['inventory'],
+        dependsOn: [],
       },
     ],
     scoring: { baseline: 0, weight: 1, penaltyPoints: 18, maxPenaltyINR: 5_00_00_000 },
@@ -552,18 +602,22 @@ export const controls: Control[] = [
         prompt: 'Do you have a documented breach response procedure?',
         type: 'boolean',
         evidenceTypes: ['document'],
+        dependsOn: [],
       },
       {
         id: 'Q2',
-        prompt: 'Can you meet the statutory notification clock (typically 72 hours from awareness)?',
+        prompt:
+          'Can you meet the statutory notification clock (typically 72 hours from awareness)?',
         type: 'boolean',
         evidenceTypes: ['attestation', 'log'],
+        dependsOn: [],
       },
       {
         id: 'Q3',
         prompt: 'Do you have forensic log capture sufficient to reconstruct a breach?',
         type: 'boolean',
         evidenceTypes: ['log', 'config'],
+        dependsOn: [],
       },
     ],
     scoring: { baseline: 0, weight: 1, penaltyPoints: 40, maxPenaltyINR: 25_00_00_000 },
@@ -580,9 +634,7 @@ export const controls: Control[] = [
     severity: 'high',
     obligation:
       'Where a breach is likely to cause harm to a data principal, the Data Fiduciary must inform affected principals without delay, in plain language, of the nature of the breach and the protective measures (Rule 20).',
-    citations: [
-      { instrument: 'DPDPR-2025', reference: 'Rule 20' },
-    ],
+    citations: [{ instrument: 'DPDPR-2025', reference: 'Rule 20' }],
     evidenceRequired: [
       { type: 'document', description: 'Principal notification template and trigger criteria' },
     ],
@@ -592,12 +644,14 @@ export const controls: Control[] = [
         prompt: 'Do you have a template for notifying affected principals?',
         type: 'boolean',
         evidenceTypes: ['document'],
+        dependsOn: [],
       },
       {
         id: 'Q2',
         prompt: 'Is the trigger criteria for principal notification defined?',
         type: 'boolean',
         evidenceTypes: ['document'],
+        dependsOn: [],
       },
     ],
     scoring: { baseline: 0, weight: 1, penaltyPoints: 22, maxPenaltyINR: 5_00_00_000 },
@@ -624,7 +678,10 @@ export const controls: Control[] = [
     ],
     evidenceRequired: [
       { type: 'inventory', description: 'Data flow map showing all cross-border destinations' },
-      { type: 'document', description: 'Policy and DPA clauses restricting transfer to allowed jurisdictions' },
+      {
+        type: 'document',
+        description: 'Policy and DPA clauses restricting transfer to allowed jurisdictions',
+      },
     ],
     assessmentQuestions: [
       {
@@ -632,12 +689,15 @@ export const controls: Control[] = [
         prompt: 'Do you transfer any personal data outside India?',
         type: 'boolean',
         evidenceTypes: ['inventory'],
+        dependsOn: [],
       },
       {
         id: 'Q2',
-        prompt: 'If yes, are all destinations confirmed not on the restricted list (as notified by the Central Government)?',
+        prompt:
+          'If yes, are all destinations confirmed not on the restricted list (as notified by the Central Government)?',
         type: 'boolean',
         evidenceTypes: ['document', 'attestation'],
+        dependsOn: [],
       },
     ],
     scoring: { baseline: 0, weight: 1, penaltyPoints: 25, maxPenaltyINR: 5_00_00_000 },
@@ -654,9 +714,7 @@ export const controls: Control[] = [
     severity: 'medium',
     obligation:
       'Every cross-border transfer must be supported by a specific contract clause, consent, or other lawful basis that meets Section 16 requirements.',
-    citations: [
-      { instrument: 'DPDPA-2023', reference: 'Section 16' },
-    ],
+    citations: [{ instrument: 'DPDPA-2023', reference: 'Section 16' }],
     evidenceRequired: [
       { type: 'document', description: 'Transfer impact assessment or contract clauses' },
     ],
@@ -666,6 +724,7 @@ export const controls: Control[] = [
         prompt: 'For each cross-border transfer, is the legal basis documented?',
         type: 'boolean',
         evidenceTypes: ['document'],
+        dependsOn: [],
       },
     ],
     scoring: { baseline: 0, weight: 1, penaltyPoints: 15, maxPenaltyINR: 5_00_00_000 },
@@ -681,7 +740,7 @@ export const controls: Control[] = [
   // ─────────────────────────────────────────────────────────────────────
   {
     id: 'DPDPA-CHD-001',
-    title: 'Obtain verifiable parental consent before processing children\'s data',
+    title: "Obtain verifiable parental consent before processing children's data",
     domain: 'CHD',
     severity: 'critical',
     obligation:
@@ -700,12 +759,14 @@ export const controls: Control[] = [
         prompt: 'Do you process data of children (users under 18)?',
         type: 'boolean',
         evidenceTypes: ['inventory'],
+        dependsOn: [],
       },
       {
         id: 'Q2',
         prompt: 'If yes, do you obtain verifiable parental consent before processing?',
         type: 'boolean',
         evidenceTypes: ['config', 'log'],
+        dependsOn: [],
       },
     ],
     scoring: { baseline: 0, weight: 1, penaltyPoints: 35, maxPenaltyINR: 25_00_00_000 },
@@ -733,9 +794,11 @@ export const controls: Control[] = [
     assessmentQuestions: [
       {
         id: 'Q1',
-        prompt: 'Do you run any tracking, behavioural monitoring, or targeted advertising that could reach children?',
+        prompt:
+          'Do you run any tracking, behavioural monitoring, or targeted advertising that could reach children?',
         type: 'boolean',
         evidenceTypes: ['config', 'attestation'],
+        dependsOn: [],
       },
     ],
     scoring: { baseline: 0, weight: 1, penaltyPoints: 25, maxPenaltyINR: 5_00_00_000 },
@@ -761,21 +824,28 @@ export const controls: Control[] = [
       { instrument: 'DPDPR-2025', reference: 'Rule 11' },
     ],
     evidenceRequired: [
-      { type: 'document', description: 'DPO appointment letter, India-based address, board reporting line' },
+      {
+        type: 'document',
+        description: 'DPO appointment letter, India-based address, board reporting line',
+      },
       { type: 'config', description: 'Public DPO contact on website' },
     ],
     assessmentQuestions: [
       {
         id: 'Q1',
-        prompt: 'Have you been designated as a Significant Data Fiduciary by the Central Government?',
+        prompt:
+          'Have you been designated as a Significant Data Fiduciary by the Central Government?',
         type: 'boolean',
         evidenceTypes: ['document', 'attestation'],
+        dependsOn: [],
       },
       {
         id: 'Q2',
-        prompt: 'If yes, have you appointed a Data Protection Officer based in India and published their contact?',
+        prompt:
+          'If yes, have you appointed a Data Protection Officer based in India and published their contact?',
         type: 'boolean',
         evidenceTypes: ['document', 'screenshot'],
+        dependsOn: [],
       },
     ],
     scoring: { baseline: 0, weight: 1, penaltyPoints: 22, maxPenaltyINR: 5_00_00_000 },
@@ -805,6 +875,7 @@ export const controls: Control[] = [
         prompt: 'Are DPIAs conducted at least annually, and prior to any new high-risk processing?',
         type: 'boolean',
         evidenceTypes: ['document'],
+        dependsOn: [],
       },
     ],
     scoring: { baseline: 0, weight: 1, penaltyPoints: 20, maxPenaltyINR: 5_00_00_000 },
@@ -834,6 +905,7 @@ export const controls: Control[] = [
         prompt: 'Are you audited annually by an independent Data Auditor?',
         type: 'boolean',
         evidenceTypes: ['document'],
+        dependsOn: [],
       },
     ],
     scoring: { baseline: 0, weight: 1, penaltyPoints: 20, maxPenaltyINR: 5_00_00_000 },
@@ -859,27 +931,35 @@ export const controls: Control[] = [
       { instrument: 'DPDPR-2025', reference: 'Rule 14, 15' },
     ],
     evidenceRequired: [
-      { type: 'config', description: 'Encryption at rest + in transit, access controls, MFA, logging' },
+      {
+        type: 'config',
+        description: 'Encryption at rest + in transit, access controls, MFA, logging',
+      },
       { type: 'document', description: 'Security policy + incident response plan' },
     ],
     assessmentQuestions: [
       {
         id: 'Q1',
-        prompt: 'Is personal data encrypted at rest (AES-256 or equivalent) and in transit (TLS 1.2+)?',
+        prompt:
+          'Is personal data encrypted at rest (AES-256 or equivalent) and in transit (TLS 1.2+)?',
         type: 'boolean',
         evidenceTypes: ['config'],
+        dependsOn: [],
       },
       {
         id: 'Q2',
-        prompt: 'Is multi-factor authentication enforced for administrative access to personal data stores?',
+        prompt:
+          'Is multi-factor authentication enforced for administrative access to personal data stores?',
         type: 'boolean',
         evidenceTypes: ['config'],
+        dependsOn: [],
       },
       {
         id: 'Q3',
         prompt: 'Is access to personal data logged and reviewed?',
         type: 'boolean',
         evidenceTypes: ['log', 'config'],
+        dependsOn: [],
       },
     ],
     scoring: { baseline: 0, weight: 1, penaltyPoints: 50, maxPenaltyINR: 25_00_00_000 },
@@ -896,24 +976,22 @@ export const controls: Control[] = [
     severity: 'high',
     obligation:
       'Access to personal data must be limited to personnel who require it for the documented purpose, with role-based access controls and periodic access review.',
-    citations: [
-      { instrument: 'DPDPA-2023', reference: 'Section 8(5)' },
-    ],
-    evidenceRequired: [
-      { type: 'config', description: 'RBAC configuration + access review logs' },
-    ],
+    citations: [{ instrument: 'DPDPA-2023', reference: 'Section 8(5)' }],
+    evidenceRequired: [{ type: 'config', description: 'RBAC configuration + access review logs' }],
     assessmentQuestions: [
       {
         id: 'Q1',
         prompt: 'Is access to personal data gated by role-based access control?',
         type: 'boolean',
         evidenceTypes: ['config'],
+        dependsOn: [],
       },
       {
         id: 'Q2',
         prompt: 'Are access rights reviewed at least annually?',
         type: 'boolean',
         evidenceTypes: ['log', 'attestation'],
+        dependsOn: [],
       },
     ],
     scoring: { baseline: 0, weight: 1, penaltyPoints: 20, maxPenaltyINR: 5_00_00_000 },
@@ -930,24 +1008,22 @@ export const controls: Control[] = [
     severity: 'high',
     obligation:
       'Comprehensive, tamper-evident logs of who accessed or processed personal data, when, and for what purpose must be maintained for forensic and regulatory use.',
-    citations: [
-      { instrument: 'DPDPA-2023', reference: 'Section 8(5)' },
-    ],
-    evidenceRequired: [
-      { type: 'log', description: 'Append-only, hash-chained audit ledger' },
-    ],
+    citations: [{ instrument: 'DPDPA-2023', reference: 'Section 8(5)' }],
+    evidenceRequired: [{ type: 'log', description: 'Append-only, hash-chained audit ledger' }],
     assessmentQuestions: [
       {
         id: 'Q1',
         prompt: 'Are all access and processing events recorded to an append-only audit log?',
         type: 'boolean',
         evidenceTypes: ['log', 'config'],
+        dependsOn: [],
       },
       {
         id: 'Q2',
         prompt: 'Is the log tamper-evident (e.g. hash-chained, write-once)?',
         type: 'boolean',
         evidenceTypes: ['config'],
+        dependsOn: [],
       },
     ],
     scoring: { baseline: 0, weight: 1, penaltyPoints: 20, maxPenaltyINR: 5_00_00_000 },
@@ -964,9 +1040,7 @@ export const controls: Control[] = [
     severity: 'medium',
     obligation:
       'Personal-data-bearing systems should be subject to periodic vulnerability assessment and penetration testing, with findings remediated within a defined SLA.',
-    citations: [
-      { instrument: 'DPDPA-2023', reference: 'Section 8(5)' },
-    ],
+    citations: [{ instrument: 'DPDPA-2023', reference: 'Section 8(5)' }],
     evidenceRequired: [
       { type: 'document', description: 'Latest VAPT report + remediation evidence' },
     ],
@@ -976,6 +1050,7 @@ export const controls: Control[] = [
         prompt: 'When was your last VAPT?',
         type: 'text',
         evidenceTypes: ['document'],
+        dependsOn: [],
       },
     ],
     scoring: { baseline: 0, weight: 1, penaltyPoints: 12, maxPenaltyINR: 5_00_00_000 },
@@ -992,18 +1067,15 @@ export const controls: Control[] = [
     severity: 'high',
     obligation:
       'Backups containing personal data must be encrypted and access-controlled at the same standard as the primary system.',
-    citations: [
-      { instrument: 'DPDPA-2023', reference: 'Section 8(5)' },
-    ],
-    evidenceRequired: [
-      { type: 'config', description: 'Backup encryption configuration' },
-    ],
+    citations: [{ instrument: 'DPDPA-2023', reference: 'Section 8(5)' }],
+    evidenceRequired: [{ type: 'config', description: 'Backup encryption configuration' }],
     assessmentQuestions: [
       {
         id: 'Q1',
         prompt: 'Are backups encrypted at rest?',
         type: 'boolean',
         evidenceTypes: ['config'],
+        dependsOn: [],
       },
     ],
     scoring: { baseline: 0, weight: 1, penaltyPoints: 15, maxPenaltyINR: 5_00_00_000 },
@@ -1024,9 +1096,7 @@ export const controls: Control[] = [
     severity: 'high',
     obligation:
       'Personal data must be retained only for as long as necessary to satisfy the purpose for which it was collected, and erased thereafter (Section 8(7)).',
-    citations: [
-      { instrument: 'DPDPA-2023', reference: 'Section 8(7)' },
-    ],
+    citations: [{ instrument: 'DPDPA-2023', reference: 'Section 8(7)' }],
     evidenceRequired: [
       { type: 'document', description: 'Written retention schedule with purpose-linked durations' },
       { type: 'config', description: 'System-level enforcement of retention + deletion' },
@@ -1037,12 +1107,14 @@ export const controls: Control[] = [
         prompt: 'Do you have a written retention schedule for each category of personal data?',
         type: 'boolean',
         evidenceTypes: ['document'],
+        dependsOn: [],
       },
       {
         id: 'Q2',
         prompt: 'Is retention enforced automatically in your systems?',
         type: 'boolean',
         evidenceTypes: ['config'],
+        dependsOn: [],
       },
     ],
     scoring: { baseline: 0, weight: 1, penaltyPoints: 18, maxPenaltyINR: 5_00_00_000 },
@@ -1059,18 +1131,18 @@ export const controls: Control[] = [
     severity: 'high',
     obligation:
       'On the conclusion of the processing purpose, or on consent withdrawal, the Data Fiduciary must erase the personal data unless retention is required for legal obligation (Section 8(7)).',
-    citations: [
-      { instrument: 'DPDPA-2023', reference: 'Section 8(7)' },
-    ],
+    citations: [{ instrument: 'DPDPA-2023', reference: 'Section 8(7)' }],
     evidenceRequired: [
       { type: 'log', description: 'Erasure workflow + sample completed erasures' },
     ],
     assessmentQuestions: [
       {
         id: 'Q1',
-        prompt: 'Is erasure performed on the documented trigger (purpose end / withdrawal / retention expiry)?',
+        prompt:
+          'Is erasure performed on the documented trigger (purpose end / withdrawal / retention expiry)?',
         type: 'boolean',
         evidenceTypes: ['log', 'config'],
+        dependsOn: [],
       },
     ],
     scoring: { baseline: 0, weight: 1, penaltyPoints: 18, maxPenaltyINR: 5_00_00_000 },
@@ -1087,18 +1159,18 @@ export const controls: Control[] = [
     severity: 'medium',
     obligation:
       'Where erasure is deferred for a legal obligation (e.g. tax, AML, litigation hold), the basis, scope, and the responsible officer must be recorded in a register that an auditor or the Board can review.',
-    citations: [
-      { instrument: 'DPDPA-2023', reference: 'Section 8(7)' },
-    ],
+    citations: [{ instrument: 'DPDPA-2023', reference: 'Section 8(7)' }],
     evidenceRequired: [
       { type: 'document', description: 'Exception register with reason, scope, owner, expiry' },
     ],
     assessmentQuestions: [
       {
         id: 'Q1',
-        prompt: 'Do you maintain a register of records retained for legal obligation rather than erased?',
+        prompt:
+          'Do you maintain a register of records retained for legal obligation rather than erased?',
         type: 'boolean',
         evidenceTypes: ['document'],
+        dependsOn: [],
       },
     ],
     scoring: { baseline: 0, weight: 1, penaltyPoints: 8, maxPenaltyINR: 2_00_00_000 },
@@ -1118,19 +1190,16 @@ export const controls: Control[] = [
     domain: 'DPF',
     severity: 'medium',
     obligation:
-      'An email and a contact mechanism for privacy inquiries must be publicly available; this can be a grievance officer or a DPO depending on the entity\'s SDF status.',
-    citations: [
-      { instrument: 'DPDPA-2023', reference: 'Section 5(3)(d), 13(1)' },
-    ],
-    evidenceRequired: [
-      { type: 'screenshot', description: 'Public contact details' },
-    ],
+      "An email and a contact mechanism for privacy inquiries must be publicly available; this can be a grievance officer or a DPO depending on the entity's SDF status.",
+    citations: [{ instrument: 'DPDPA-2023', reference: 'Section 5(3)(d), 13(1)' }],
+    evidenceRequired: [{ type: 'screenshot', description: 'Public contact details' }],
     assessmentQuestions: [
       {
         id: 'Q1',
         prompt: 'Is a privacy contact email publicly listed?',
         type: 'boolean',
         evidenceTypes: ['screenshot', 'document'],
+        dependsOn: [],
       },
     ],
     scoring: { baseline: 0, weight: 1, penaltyPoints: 8, maxPenaltyINR: 2_00_00_000 },
@@ -1147,9 +1216,7 @@ export const controls: Control[] = [
     severity: 'high',
     obligation:
       'Even non-SDF Data Fiduciaries benefit from designating a single internal owner — typically a Privacy Lead — who is responsible for the privacy programme, escalation, and Board reporting.',
-    citations: [
-      { instrument: 'DPDPA-2023', reference: 'Section 8' },
-    ],
+    citations: [{ instrument: 'DPDPA-2023', reference: 'Section 8' }],
     evidenceRequired: [
       { type: 'document', description: 'Internal appointment / role description' },
     ],
@@ -1159,6 +1226,7 @@ export const controls: Control[] = [
         prompt: 'Is there a named individual accountable for the privacy programme?',
         type: 'boolean',
         evidenceTypes: ['document'],
+        dependsOn: [],
       },
     ],
     scoring: { baseline: 0, weight: 1, penaltyPoints: 15, maxPenaltyINR: 5_00_00_000 },
@@ -1179,18 +1247,21 @@ export const controls: Control[] = [
     severity: 'high',
     obligation:
       'A defensible compliance posture requires a continuous, timestamped, tamper-evident history of compliance evidence — not point-in-time documentation. This is the operational manifestation of the Act\'s "demonstrate compliance" burden.',
-    citations: [
-      { instrument: 'DPDPA-2023', reference: 'Section 8, 33' },
-    ],
+    citations: [{ instrument: 'DPDPA-2023', reference: 'Section 8, 33' }],
     evidenceRequired: [
-      { type: 'log', description: 'Append-only, hash-chained evidence ledger spanning the assessment period' },
+      {
+        type: 'log',
+        description: 'Append-only, hash-chained evidence ledger spanning the assessment period',
+      },
     ],
     assessmentQuestions: [
       {
         id: 'Q1',
-        prompt: 'Can you produce, on demand, a verifiable, timestamped history of every compliance control for the past 12 months?',
+        prompt:
+          'Can you produce, on demand, a verifiable, timestamped history of every compliance control for the past 12 months?',
         type: 'boolean',
         evidenceTypes: ['log', 'document'],
+        dependsOn: [],
       },
     ],
     scoring: { baseline: 0, weight: 1, penaltyPoints: 22, maxPenaltyINR: 5_00_00_000 },
@@ -1207,18 +1278,18 @@ export const controls: Control[] = [
     severity: 'medium',
     obligation:
       'A periodic (at least annual) posture report to the Board or Audit Committee establishes governance accountability and provides defensible evidence of oversight.',
-    citations: [
-      { instrument: 'DPDPA-2023', reference: 'Section 8' },
-    ],
+    citations: [{ instrument: 'DPDPA-2023', reference: 'Section 8' }],
     evidenceRequired: [
       { type: 'document', description: 'Most recent Board / Audit Committee privacy report' },
     ],
     assessmentQuestions: [
       {
         id: 'Q1',
-        prompt: 'Has the Board / Audit Committee received a privacy posture update in the past 12 months?',
+        prompt:
+          'Has the Board / Audit Committee received a privacy posture update in the past 12 months?',
         type: 'boolean',
         evidenceTypes: ['document'],
+        dependsOn: [],
       },
     ],
     scoring: { baseline: 0, weight: 1, penaltyPoints: 10, maxPenaltyINR: 2_00_00_000 },
@@ -1252,6 +1323,7 @@ export const controls: Control[] = [
         prompt: 'Do you conduct a DPIA before any new high-risk processing?',
         type: 'boolean',
         evidenceTypes: ['document'],
+        dependsOn: [],
       },
     ],
     scoring: { baseline: 0, weight: 1, penaltyPoints: 20, maxPenaltyINR: 5_00_00_000 },
@@ -1268,18 +1340,15 @@ export const controls: Control[] = [
     severity: 'high',
     obligation:
       'Risks identified in a DPIA must be tracked to closure with an owner, a remediation plan, and a re-assessment after remediation.',
-    citations: [
-      { instrument: 'DPDPR-2025', reference: 'Rule 12' },
-    ],
-    evidenceRequired: [
-      { type: 'log', description: 'DPIA risk register + closure evidence' },
-    ],
+    citations: [{ instrument: 'DPDPR-2025', reference: 'Rule 12' }],
+    evidenceRequired: [{ type: 'log', description: 'DPIA risk register + closure evidence' }],
     assessmentQuestions: [
       {
         id: 'Q1',
         prompt: 'Are DPIA findings tracked in a risk register with owners and closure dates?',
         type: 'boolean',
         evidenceTypes: ['log', 'document'],
+        dependsOn: [],
       },
     ],
     scoring: { baseline: 0, weight: 1, penaltyPoints: 18, maxPenaltyINR: 5_00_00_000 },
@@ -1300,18 +1369,15 @@ export const controls: Control[] = [
     severity: 'low',
     obligation:
       'Roles and responsibilities for privacy must be visible and current — who decides purposes, who signs off on processors, who handles DSARs, who is on the breach call.',
-    citations: [
-      { instrument: 'DPDPA-2023', reference: 'Section 8' },
-    ],
-    evidenceRequired: [
-      { type: 'document', description: 'RACI / org chart for privacy' },
-    ],
+    citations: [{ instrument: 'DPDPA-2023', reference: 'Section 8' }],
+    evidenceRequired: [{ type: 'document', description: 'RACI / org chart for privacy' }],
     assessmentQuestions: [
       {
         id: 'Q1',
         prompt: 'Is there a current RACI or org chart for privacy responsibilities?',
         type: 'boolean',
         evidenceTypes: ['document'],
+        dependsOn: [],
       },
     ],
     scoring: { baseline: 0, weight: 1, penaltyPoints: 5, maxPenaltyINR: 2_00_00_000 },
@@ -1328,18 +1394,15 @@ export const controls: Control[] = [
     severity: 'medium',
     obligation:
       'Personnel handling personal data must receive privacy training on induction and at least annually thereafter, with completion recorded.',
-    citations: [
-      { instrument: 'DPDPA-2023', reference: 'Section 8(5)' },
-    ],
-    evidenceRequired: [
-      { type: 'log', description: 'Training records with completion status' },
-    ],
+    citations: [{ instrument: 'DPDPA-2023', reference: 'Section 8(5)' }],
+    evidenceRequired: [{ type: 'log', description: 'Training records with completion status' }],
     assessmentQuestions: [
       {
         id: 'Q1',
         prompt: 'Do all staff handling personal data receive annual privacy training?',
         type: 'boolean',
         evidenceTypes: ['log'],
+        dependsOn: [],
       },
     ],
     scoring: { baseline: 0, weight: 1, penaltyPoints: 10, maxPenaltyINR: 2_00_00_000 },
@@ -1360,9 +1423,7 @@ export const controls: Control[] = [
     severity: 'high',
     obligation:
       'A named individual must own breach response end-to-end, with a documented playbook covering detection → triage → notification → post-mortem, exercised at least annually.',
-    citations: [
-      { instrument: 'DPDPA-2023', reference: 'Section 8(6)' },
-    ],
+    citations: [{ instrument: 'DPDPA-2023', reference: 'Section 8(6)' }],
     evidenceRequired: [
       { type: 'document', description: 'Breach response playbook' },
       { type: 'attestation', description: 'Tabletop exercise record' },
@@ -1373,12 +1434,14 @@ export const controls: Control[] = [
         prompt: 'Is there a named breach response owner and a current playbook?',
         type: 'boolean',
         evidenceTypes: ['document'],
+        dependsOn: [],
       },
       {
         id: 'Q2',
         prompt: 'Has a tabletop exercise been run in the past 12 months?',
         type: 'boolean',
         evidenceTypes: ['attestation'],
+        dependsOn: [],
       },
     ],
     scoring: { baseline: 0, weight: 1, penaltyPoints: 18, maxPenaltyINR: 5_00_00_000 },
@@ -1399,9 +1462,7 @@ export const controls: Control[] = [
     severity: 'high',
     obligation:
       'Beyond the RoPA, a working data-flow map (system-of-systems diagram) showing personal data movement — including to sub-processors — must be available for the Board and any DPB inquiry.',
-    citations: [
-      { instrument: 'DPDPR-2025', reference: 'Rule 21' },
-    ],
+    citations: [{ instrument: 'DPDPR-2025', reference: 'Rule 21' }],
     evidenceRequired: [
       { type: 'inventory', description: 'Data flow diagram with processors and sub-processors' },
     ],
@@ -1411,6 +1472,7 @@ export const controls: Control[] = [
         prompt: 'Is there a current data-flow map showing processors and sub-processors?',
         type: 'boolean',
         evidenceTypes: ['inventory', 'document'],
+        dependsOn: [],
       },
     ],
     scoring: { baseline: 0, weight: 1, penaltyPoints: 18, maxPenaltyINR: 5_00_00_000 },
@@ -1431,18 +1493,16 @@ export const controls: Control[] = [
     severity: 'medium',
     obligation:
       'For transfers to jurisdictions with materially different data protection regimes, a transfer impact assessment should be completed to demonstrate that the receiving environment provides comparable protection.',
-    citations: [
-      { instrument: 'DPDPA-2023', reference: 'Section 16' },
-    ],
-    evidenceRequired: [
-      { type: 'document', description: 'TIA per high-risk destination' },
-    ],
+    citations: [{ instrument: 'DPDPA-2023', reference: 'Section 16' }],
+    evidenceRequired: [{ type: 'document', description: 'TIA per high-risk destination' }],
     assessmentQuestions: [
       {
         id: 'Q1',
-        prompt: 'Have you completed a transfer impact assessment for each cross-border destination with weaker protection?',
+        prompt:
+          'Have you completed a transfer impact assessment for each cross-border destination with weaker protection?',
         type: 'boolean',
         evidenceTypes: ['document'],
+        dependsOn: [],
       },
     ],
     scoring: { baseline: 0, weight: 1, penaltyPoints: 12, maxPenaltyINR: 5_00_00_000 },
@@ -1463,18 +1523,21 @@ export const controls: Control[] = [
     severity: 'medium',
     obligation:
       'Media and devices containing personal data, including at end-of-life, must be securely wiped or destroyed with a documented process and certificate of destruction where applicable.',
-    citations: [
-      { instrument: 'DPDPA-2023', reference: 'Section 8(5)' },
-    ],
+    citations: [{ instrument: 'DPDPA-2023', reference: 'Section 8(5)' }],
     evidenceRequired: [
-      { type: 'document', description: 'Media sanitisation policy + certificate of destruction register' },
+      {
+        type: 'document',
+        description: 'Media sanitisation policy + certificate of destruction register',
+      },
     ],
     assessmentQuestions: [
       {
         id: 'Q1',
-        prompt: 'Is there a documented media sanitisation process and a register of end-of-life destructions?',
+        prompt:
+          'Is there a documented media sanitisation process and a register of end-of-life destructions?',
         type: 'boolean',
         evidenceTypes: ['document'],
+        dependsOn: [],
       },
     ],
     scoring: { baseline: 0, weight: 1, penaltyPoints: 8, maxPenaltyINR: 2_00_00_000 },
@@ -1491,9 +1554,7 @@ export const controls: Control[] = [
     severity: 'high',
     obligation:
       'Beyond breach notification, an operational incident response capability — on-call, escalation, runbook, post-mortem — is necessary to meet the 72-hour clock in practice, not just in policy.',
-    citations: [
-      { instrument: 'DPDPA-2023', reference: 'Section 8(5), 8(6)' },
-    ],
+    citations: [{ instrument: 'DPDPA-2023', reference: 'Section 8(5), 8(6)' }],
     evidenceRequired: [
       { type: 'document', description: 'Incident response runbook + on-call roster' },
       { type: 'log', description: 'Tabletop exercise record' },
@@ -1504,6 +1565,7 @@ export const controls: Control[] = [
         prompt: 'Do you have an on-call rotation and runbook for security incidents?',
         type: 'boolean',
         evidenceTypes: ['document', 'attestation'],
+        dependsOn: [],
       },
     ],
     scoring: { baseline: 0, weight: 1, penaltyPoints: 18, maxPenaltyINR: 5_00_00_000 },
@@ -1524,18 +1586,16 @@ export const controls: Control[] = [
     severity: 'medium',
     obligation:
       'Identity verification proportional to the sensitivity of the request is required before acting on access, correction, or erasure requests, to prevent unauthorised disclosure.',
-    citations: [
-      { instrument: 'DPDPR-2025', reference: 'Rule 16, 17' },
-    ],
-    evidenceRequired: [
-      { type: 'document', description: 'Identity verification procedure' },
-    ],
+    citations: [{ instrument: 'DPDPR-2025', reference: 'Rule 16, 17' }],
+    evidenceRequired: [{ type: 'document', description: 'Identity verification procedure' }],
     assessmentQuestions: [
       {
         id: 'Q1',
-        prompt: 'Do you verify the identity of the data principal before fulfilling rights requests?',
+        prompt:
+          'Do you verify the identity of the data principal before fulfilling rights requests?',
         type: 'boolean',
         evidenceTypes: ['document', 'attestation'],
+        dependsOn: [],
       },
     ],
     scoring: { baseline: 0, weight: 1, penaltyPoints: 10, maxPenaltyINR: 2_00_00_000 },
@@ -1552,18 +1612,20 @@ export const controls: Control[] = [
     severity: 'medium',
     obligation:
       'On request, the data principal is entitled to receive a copy of their personal data in a structured, commonly used and machine-readable format (Section 11(2)).',
-    citations: [
-      { instrument: 'DPDPA-2023', reference: 'Section 11(2)' },
-    ],
+    citations: [{ instrument: 'DPDPA-2023', reference: 'Section 11(2)' }],
     evidenceRequired: [
-      { type: 'config', description: 'Export pipeline producing JSON / CSV in a documented schema' },
+      {
+        type: 'config',
+        description: 'Export pipeline producing JSON / CSV in a documented schema',
+      },
     ],
     assessmentQuestions: [
       {
         id: 'Q1',
-        prompt: 'Can you export a user\'s data in a structured, machine-readable format on request?',
+        prompt: "Can you export a user's data in a structured, machine-readable format on request?",
         type: 'boolean',
         evidenceTypes: ['config', 'log'],
+        dependsOn: [],
       },
     ],
     scoring: { baseline: 0, weight: 1, penaltyPoints: 10, maxPenaltyINR: 2_00_00_000 },

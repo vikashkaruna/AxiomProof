@@ -26,9 +26,7 @@ export default async function LoginPage({
   return (
     <div className="flex min-h-screen flex-col items-center justify-center bg-mist-100 p-4">
       <Link href="/" className="mb-8 flex items-center gap-2">
-        <span className="font-heading text-xl font-semibold text-indigo-500">
-          {BRAND.name}
-        </span>
+        <span className="font-heading text-xl font-semibold text-indigo-500">{BRAND.name}</span>
       </Link>
 
       <Card className="w-full max-w-md">
@@ -51,7 +49,9 @@ export default async function LoginPage({
           <form action={isSignup ? signupAction : loginAction} className="mt-6 flex flex-col gap-4">
             {isSignup && (
               <div className="flex flex-col gap-1.5">
-                <Label htmlFor="full_name" required>Full name</Label>
+                <Label htmlFor="full_name" required>
+                  Full name
+                </Label>
                 <Input
                   id="full_name"
                   name="full_name"
@@ -63,7 +63,9 @@ export default async function LoginPage({
               </div>
             )}
             <div className="flex flex-col gap-1.5">
-              <Label htmlFor="email" required>Email</Label>
+              <Label htmlFor="email" required>
+                Email
+              </Label>
               <Input
                 id="email"
                 name="email"
@@ -74,7 +76,9 @@ export default async function LoginPage({
               />
             </div>
             <div className="flex flex-col gap-1.5">
-              <Label htmlFor="password" required>Password</Label>
+              <Label htmlFor="password" required>
+                Password
+              </Label>
               <Input
                 id="password"
                 name="password"

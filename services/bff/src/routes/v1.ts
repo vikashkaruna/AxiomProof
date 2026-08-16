@@ -38,7 +38,13 @@ export function v1Routes(deps: Deps) {
     const parsed = IssueApprovalRequestSchema.safeParse(body);
     if (!parsed.success) {
       return c.json(
-        { error: { code: 'validation_failed', message: 'Invalid request', details: parsed.error.flatten() } },
+        {
+          error: {
+            code: 'validation_failed',
+            message: 'Invalid request',
+            details: parsed.error.flatten(),
+          },
+        },
         400,
       );
     }
@@ -50,7 +56,12 @@ export function v1Routes(deps: Deps) {
 
     if (!['owner', 'admin', 'approver'].includes(role)) {
       return c.json(
-        { error: { code: 'role_forbidden', message: 'Only owners, admins, and approvers can issue approval tokens' } },
+        {
+          error: {
+            code: 'role_forbidden',
+            message: 'Only owners, admins, and approvers can issue approval tokens',
+          },
+        },
         403,
       );
     }
@@ -210,7 +221,10 @@ export function v1Routes(deps: Deps) {
   // POST /v1/plans/:id/reject — reject the plan
   app.post('/plans/:id/reject', async (c) => {
     if (deps.killSwitch.isActive()) {
-      return c.json({ error: { code: 'kill_switch_active', message: 'Kill switch is engaged' } }, 423);
+      return c.json(
+        { error: { code: 'kill_switch_active', message: 'Kill switch is engaged' } },
+        423,
+      );
     }
     const planId = c.req.param('id');
     const tenantId = c.get('tenantId');
@@ -218,7 +232,10 @@ export function v1Routes(deps: Deps) {
     const role = c.get('role');
 
     if (!['owner', 'admin', 'approver'].includes(role)) {
-      return c.json({ error: { code: 'role_forbidden', message: 'Only owners/admins/approvers can reject' } }, 403);
+      return c.json(
+        { error: { code: 'role_forbidden', message: 'Only owners/admins/approvers can reject' } },
+        403,
+      );
     }
 
     const admin = createSupabaseAdmin();
@@ -255,7 +272,10 @@ export function v1Routes(deps: Deps) {
   // approval token. The token is validated per-action.
   app.post('/plans/:id/execute', async (c) => {
     if (deps.killSwitch.isActive()) {
-      return c.json({ error: { code: 'kill_switch_active', message: 'Kill switch is engaged' } }, 423);
+      return c.json(
+        { error: { code: 'kill_switch_active', message: 'Kill switch is engaged' } },
+        423,
+      );
     }
 
     const planId = c.req.param('id');
@@ -265,7 +285,13 @@ export function v1Routes(deps: Deps) {
     const parsed = ExecutePlanRequestSchema.safeParse(body);
     if (!parsed.success) {
       return c.json(
-        { error: { code: 'validation_failed', message: 'Invalid execute request', details: parsed.error.flatten() } },
+        {
+          error: {
+            code: 'validation_failed',
+            message: 'Invalid execute request',
+            details: parsed.error.flatten(),
+          },
+        },
         400,
       );
     }
@@ -292,7 +318,12 @@ export function v1Routes(deps: Deps) {
     const verification = await deps.approvalEngine.verify(tenantId, signedToken);
     if (!verification.valid) {
       return c.json(
-        { error: { code: 'token_invalid', message: `Token validation failed: ${verification.reason}` } },
+        {
+          error: {
+            code: 'token_invalid',
+            message: `Token validation failed: ${verification.reason}`,
+          },
+        },
         403,
       );
     }
@@ -419,12 +450,25 @@ export function v1Routes(deps: Deps) {
 
   app.post('/kill-switch/engage', async (c) => {
     if (c.get('role') !== 'founder' && c.get('role') !== 'admin' && c.get('role') !== 'owner') {
-      return c.json({ error: { code: 'role_forbidden', message: 'Only founders/owners can engage the kill switch' } }, 403);
+      return c.json(
+        {
+          error: {
+            code: 'role_forbidden',
+            message: 'Only founders/owners can engage the kill switch',
+          },
+        },
+        403,
+      );
     }
     const body = await c.req.json().catch(() => ({}));
     const reason = (body as any)?.reason ?? 'manual engagement';
     const scope = (body as any)?.scope ?? 'global';
-    deps.killSwitch.engage({ tenantId: c.get('tenantId'), userId: c.get('user').id, reason, scope });
+    deps.killSwitch.engage({
+      tenantId: c.get('tenantId'),
+      userId: c.get('user').id,
+      reason,
+      scope,
+    });
     await deps.ledger.append({
       tenantId: c.get('tenantId'),
       correlationId: randomUUID(),
@@ -513,7 +557,10 @@ export function v1Routes(deps: Deps) {
 
   app.post('/engagements', async (c) => {
     if (!['owner', 'admin', 'reviewer'].includes(c.get('role'))) {
-      return c.json({ error: { code: 'role_forbidden', message: 'Only owners/admins/reviewers' } }, 403);
+      return c.json(
+        { error: { code: 'role_forbidden', message: 'Only owners/admins/reviewers' } },
+        403,
+      );
     }
     const body = await c.req.json();
     const Schema = z.object({
@@ -536,7 +583,8 @@ export function v1Routes(deps: Deps) {
       })
       .select()
       .single();
-    if (error) return c.json({ error: { code: 'persistence_failed', message: error.message } }, 500);
+    if (error)
+      return c.json({ error: { code: 'persistence_failed', message: error.message } }, 500);
     return c.json(data, 201);
   });
 

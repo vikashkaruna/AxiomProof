@@ -31,14 +31,24 @@ export default async function WorkbenchPage() {
 
   const [tenantsRes, engagementsRes, plansRes, ledgerRes, breachRes, dsarRes] = await Promise.all([
     admin.from('tenants').select('id, name, tier, is_sdf', { count: 'exact' }).limit(5),
-    admin.from('engagements').select('id, title, status, posture_score, started_at, tenant_id', { count: 'exact' })
-      .order('started_at', { ascending: false }).limit(8),
-    admin.from('remediation_plans').select('id, title, status, tenant_id, created_at', { count: 'exact' })
-      .order('created_at', { ascending: false }).limit(8),
+    admin
+      .from('engagements')
+      .select('id, title, status, posture_score, started_at, tenant_id', { count: 'exact' })
+      .order('started_at', { ascending: false })
+      .limit(8),
+    admin
+      .from('remediation_plans')
+      .select('id, title, status, tenant_id, created_at', { count: 'exact' })
+      .order('created_at', { ascending: false })
+      .limit(8),
     admin.from('audit_ledger').select('*', { count: 'exact', head: true }),
-    admin.from('breaches').select('*', { count: 'exact', head: true })
+    admin
+      .from('breaches')
+      .select('*', { count: 'exact', head: true })
       .in('status', ['detected', 'triaging', 'contained', 'notifying_dpb', 'notifying_principals']),
-    admin.from('dsars').select('*', { count: 'exact', head: true })
+    admin
+      .from('dsars')
+      .select('*', { count: 'exact', head: true })
       .in('status', ['received', 'identity_verification', 'in_fulfilment']),
   ]);
 
@@ -141,27 +151,25 @@ export default async function WorkbenchPage() {
         <CardHeader>
           <CardTitle>Agent roster</CardTitle>
           <CardDescription>
-            10 named agents, each with a contract, an autonomy ceiling, and tool permissions.
-            Per Doc 04 §5.2: the planning agent (Sudhaar) holds no write credentials;
-            Karya requires a signed approval token to execute.
+            10 named agents, each with a contract, an autonomy ceiling, and tool permissions. Per
+            Doc 04 §5.2: the planning agent (Sudhaar) holds no write credentials; Karya requires a
+            signed approval token to execute.
           </CardDescription>
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
-            {(
-              [
-                { name: 'drishti' as const, one: 'I find what you didn\'t know you had.' },
-                { name: 'vibhaag' as const, one: 'I tell you what kind of data it is.' },
-                { name: 'parikshan' as const, one: 'I measure you against the law.' },
-                { name: 'saakshi' as const, one: 'I am your witness.' },
-                { name: 'sudhaar' as const, one: 'I propose the fix. You decide.' },
-                { name: 'karya' as const, one: 'I only act on your approval.' },
-                { name: 'lekha' as const, one: 'I remember everything, forever.' },
-                { name: 'nazar' as const, one: 'I watch the law so you don\'t have to.' },
-                { name: 'prativedan' as const, one: 'I turn findings into documents.' },
-                { name: 'sanket' as const, one: 'I find who\'s about to buy.' },
-              ]
-            ).map((a) => (
+            {[
+              { name: 'drishti' as const, one: "I find what you didn't know you had." },
+              { name: 'vibhaag' as const, one: 'I tell you what kind of data it is.' },
+              { name: 'parikshan' as const, one: 'I measure you against the law.' },
+              { name: 'saakshi' as const, one: 'I am your witness.' },
+              { name: 'sudhaar' as const, one: 'I propose the fix. You decide.' },
+              { name: 'karya' as const, one: 'I only act on your approval.' },
+              { name: 'lekha' as const, one: 'I remember everything, forever.' },
+              { name: 'nazar' as const, one: "I watch the law so you don't have to." },
+              { name: 'prativedan' as const, one: 'I turn findings into documents.' },
+              { name: 'sanket' as const, one: "I find who's about to buy." },
+            ].map((a) => (
               <div
                 key={a.name}
                 className="flex flex-col gap-1.5 rounded-lg border border-slate-200 bg-mist-50 p-3"

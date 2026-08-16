@@ -20,7 +20,12 @@ interface KillSwitchState {
  */
 export interface KillSwitchService {
   isActive(): boolean;
-  engage(opts: { tenantId?: string; userId: string; reason: string; scope: 'global' | 'tenant' }): void;
+  engage(opts: {
+    tenantId?: string;
+    userId: string;
+    reason: string;
+    scope: 'global' | 'tenant';
+  }): void;
   release(): void;
   state(): KillSwitchState;
 }

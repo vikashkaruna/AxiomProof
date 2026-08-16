@@ -14,8 +14,16 @@ export const metadata: Metadata = {
   authors: [{ name: BRAND.company }],
   generator: 'Axiom Proof',
   keywords: [
-    'DPDPA', 'DPDP Act', 'compliance', 'India', 'data protection',
-    'AI agents', 'audit trail', 'privacy', 'agentic', 'mid-market',
+    'DPDPA',
+    'DPDP Act',
+    'compliance',
+    'India',
+    'data protection',
+    'AI agents',
+    'audit trail',
+    'privacy',
+    'agentic',
+    'mid-market',
   ],
   referrer: 'strict-origin-when-cross-origin',
   openGraph: {
@@ -46,9 +54,7 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en-IN" className="h-full">
-      <body className="min-h-full bg-white font-body text-slate-700 antialiased">
-        {children}
-      </body>
+      <body className="min-h-full bg-white font-body text-slate-700 antialiased">{children}</body>
     </html>
   );
 }

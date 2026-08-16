@@ -12,7 +12,10 @@ export interface RealtimeService {
  * by Supabase Realtime channels (Postgres CDC) for cross-instance
  * delivery. For Phase 0/1, in-process is sufficient.
  */
-export function startRealtimeChannel(_deps: { ledger: unknown; killSwitch: unknown }): RealtimeService {
+export function startRealtimeChannel(_deps: {
+  ledger: unknown;
+  killSwitch: unknown;
+}): RealtimeService {
   const emitter = new EventEmitter();
   emitter.setMaxListeners(1000);
 

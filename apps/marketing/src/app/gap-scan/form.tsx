@@ -38,8 +38,7 @@ const QUESTIONS = [
   },
   {
     id: 'q6',
-    prompt:
-      'Is personal data encrypted at rest (AES-256 or equivalent) and in transit (TLS 1.2+)?',
+    prompt: 'Is personal data encrypted at rest (AES-256 or equivalent) and in transit (TLS 1.2+)?',
     type: 'boolean' as const,
     mapsTo: 'DPDPA-SEC-001',
   },
@@ -83,8 +82,15 @@ const QUESTIONS = [
 ];
 
 const SECTORS = [
-  'BFSI', 'Healthcare', 'SaaS / Tech', 'E-commerce / D2C', 'Manufacturing',
-  'Education / EdTech', 'Logistics', 'Hospitality', 'Other',
+  'BFSI',
+  'Healthcare',
+  'SaaS / Tech',
+  'E-commerce / D2C',
+  'Manufacturing',
+  'Education / EdTech',
+  'Logistics',
+  'Hospitality',
+  'Other',
 ];
 
 export function GapScanForm() {
@@ -234,7 +240,8 @@ export function GapScanForm() {
       {step === 1 && (
         <div className="flex flex-col gap-4">
           <h3 className="font-heading text-xl font-semibold text-indigo-500">
-            {QUESTIONS.filter((q) => answers[q.id] !== undefined).length} of {QUESTIONS.length} answered
+            {QUESTIONS.filter((q) => answers[q.id] !== undefined).length} of {QUESTIONS.length}{' '}
+            answered
           </h3>
           <p className="text-sm text-slate-500">
             Answer as best you can. "I don't know" is honest — it counts as a gap.
@@ -296,8 +303,8 @@ export function GapScanForm() {
             Want a personalised walkthrough?
           </h3>
           <p className="text-sm text-slate-500">
-            Optional. Add your details and the founder will reach out within 1
-            business day to walk through your findings. No newsletter, no spam.
+            Optional. Add your details and the founder will reach out within 1 business day to walk
+            through your findings. No newsletter, no spam.
           </p>
           <label className="flex items-center gap-2 text-sm">
             <input
@@ -378,9 +385,9 @@ export function GapScanForm() {
             </ul>
           </div>
           <p className="text-xs text-slate-500">
-            On submit, your answers are scored against library v0.1.0 (43 DPDPA
-            controls) and a prioritised report is generated in &lt; 30 seconds.
-            You can save the report as PDF from the result page.
+            On submit, your answers are scored against library v0.1.0 (43 DPDPA controls) and a
+            prioritised report is generated in &lt; 30 seconds. You can save the report as PDF from
+            the result page.
           </p>
           <div className="flex justify-between">
             <Button variant="ghost" onClick={() => setStep(2)}>
@@ -391,9 +398,7 @@ export function GapScanForm() {
               size="lg"
               onClick={submit}
               loading={submitting}
-              disabled={
-                followUp && (!contactName || !contactEmail || !contactCompany)
-              }
+              disabled={followUp && (!contactName || !contactEmail || !contactCompany)}
             >
               Generate my report
             </Button>

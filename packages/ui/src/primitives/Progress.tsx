@@ -30,10 +30,7 @@ export const ProgressBar = forwardRef<HTMLDivElement, ProgressBarProps>(
     return (
       <div ref={ref} className={cn('flex items-center gap-2', className)} {...props}>
         <div
-          className={cn(
-            'flex-1 overflow-hidden rounded-full bg-mist-200',
-            heightClass,
-          )}
+          className={cn('flex-1 overflow-hidden rounded-full bg-mist-200', heightClass)}
           role="progressbar"
           aria-valuenow={v}
           aria-valuemin={0}

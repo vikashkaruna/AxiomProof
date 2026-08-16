@@ -1,5 +1,13 @@
 import Link from 'next/link';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription, Button, Badge } from '@axiom/ui';
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+  Button,
+  Badge,
+} from '@axiom/ui';
 
 export const metadata = { title: 'Pricing' };
 
@@ -11,8 +19,8 @@ export default function PricingPage() {
         Pricing
       </h1>
       <p className="mt-3 max-w-2xl text-lg text-slate-600">
-        We're bootstrap-mode. The pricing model is services-first, software-second,
-        and adapts to the engagement rather than the other way around.
+        We're bootstrap-mode. The pricing model is services-first, software-second, and adapts to
+        the engagement rather than the other way around.
       </p>
 
       <div className="mt-10 grid grid-cols-1 gap-4 md:grid-cols-3">
@@ -20,9 +28,7 @@ export default function PricingPage() {
           <CardHeader>
             <Badge variant="info">vDPO Retainer</Badge>
             <CardTitle className="mt-1">₹40k – ₹1.5L / month</CardTitle>
-            <CardDescription>
-              Founder-delivered, AI-agent-assisted fractional DPO.
-            </CardDescription>
+            <CardDescription>Founder-delivered, AI-agent-assisted fractional DPO.</CardDescription>
           </CardHeader>
           <CardContent>
             <ul className="flex flex-col gap-2 text-sm text-slate-600">
@@ -39,9 +45,7 @@ export default function PricingPage() {
           <CardHeader>
             <Badge variant="indigo">Readiness Assessment</Badge>
             <CardTitle className="mt-1">₹75k – ₹3L one-time</CardTitle>
-            <CardDescription>
-              Structured gap assessment + prioritised report.
-            </CardDescription>
+            <CardDescription>Structured gap assessment + prioritised report.</CardDescription>
           </CardHeader>
           <CardContent>
             <ul className="flex flex-col gap-2 text-sm text-slate-600">
@@ -59,9 +63,7 @@ export default function PricingPage() {
           <CardHeader>
             <Badge variant="proof">Remediation Project</Badge>
             <CardTitle className="mt-1">Custom</CardTitle>
-            <CardDescription>
-              AI-agent-executed remediation with full audit trail.
-            </CardDescription>
+            <CardDescription>AI-agent-executed remediation with full audit trail.</CardDescription>
           </CardHeader>
           <CardContent>
             <ul className="flex flex-col gap-2 text-sm text-slate-600">

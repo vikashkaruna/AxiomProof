@@ -37,9 +37,7 @@ export function AgentPill({ agent, showPersona = true, className }: AgentPillPro
         aria-hidden="true"
       />
       <span className="font-heading capitalize">{agent}</span>
-      {showPersona && (
-        <span className="text-slate-500">· {persona.persona}</span>
-      )}
+      {showPersona && <span className="text-slate-500">· {persona.persona}</span>}
     </span>
   );
 }

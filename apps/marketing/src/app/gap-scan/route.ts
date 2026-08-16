@@ -39,9 +39,7 @@ export async function POST(request: Request) {
   const input = parsed.data;
   const ip = request.headers.get('x-forwarded-for') ?? 'unknown';
   const ua = request.headers.get('user-agent') ?? 'unknown';
-  const sessionHash = createHash('sha256')
-    .update(`${input.sessionId}|${ip}|${ua}`)
-    .digest('hex');
+  const sessionHash = createHash('sha256').update(`${input.sessionId}|${ip}|${ua}`).digest('hex');
 
   const report = await computeGapScanReport(input.answers);
 

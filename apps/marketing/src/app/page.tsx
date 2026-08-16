@@ -25,10 +25,9 @@ export default function HomePage() {
                   {BRAND.tagline.split('.').slice(1).join('.').trim()}
                 </p>
                 <p className="mt-6 max-w-xl text-lg text-slate-600">
-                  AI agents discover your personal data, assess your gaps against
-                  the DPDP Act and Rules, propose the fixes — and{' '}
-                  <strong>only after you approve</strong>, execute them with a
-                  verifiable, rollback-capable, permanently auditable trail.
+                  AI agents discover your personal data, assess your gaps against the DPDP Act and
+                  Rules, propose the fixes — and <strong>only after you approve</strong>, execute
+                  them with a verifiable, rollback-capable, permanently auditable trail.
                 </p>
                 <div className="mt-8 flex flex-wrap gap-3">
                   <Button variant="accent" size="lg" asChild={false}>
@@ -39,8 +38,8 @@ export default function HomePage() {
                   </Button>
                 </div>
                 <p className="mt-3 text-sm text-slate-500">
-                  No live data connectors. No credit card. Real assessment against
-                  43 DPDPA controls in 5 minutes.
+                  No live data connectors. No credit card. Real assessment against 43 DPDPA controls
+                  in 5 minutes.
                 </p>
               </div>
 
@@ -64,7 +63,12 @@ export default function HomePage() {
 
           <div className="mt-12 grid grid-cols-1 gap-4 md:grid-cols-5">
             {[
-              { n: 1, label: 'Discover', agent: 'drishti', desc: 'Find personal data across your systems' },
+              {
+                n: 1,
+                label: 'Discover',
+                agent: 'drishti',
+                desc: 'Find personal data across your systems',
+              },
               { n: 2, label: 'Classify', agent: 'vibhaag', desc: 'Categorise by DPDPA type' },
               { n: 3, label: 'Assess', agent: 'parikshan', desc: 'Score against 43 controls' },
               { n: 4, label: 'Plan', agent: 'sudhaar', desc: 'Typed actions with rollback' },
@@ -144,9 +148,8 @@ export default function HomePage() {
               Free 5-minute DPDPA gap-scan
             </h2>
             <p className="mt-3 text-lg text-slate-600">
-              Answer 12 questions. Get a prioritised report against the same
-              43-control library a paid engagement uses. No live data connectors —
-              your inputs stay on this page.
+              Answer 12 questions. Get a prioritised report against the same 43-control library a
+              paid engagement uses. No live data connectors — your inputs stay on this page.
             </p>
           </div>
 
@@ -160,18 +163,21 @@ export default function HomePage() {
         {/* CTA */}
         <section className="border-t border-slate-200 bg-indigo-500 text-white">
           <div className="mx-auto max-w-4xl px-4 py-16 text-center sm:px-6">
-            <h2 className="font-heading text-3xl font-semibold">
-              Enforcement is 8 months away.
-            </h2>
+            <h2 className="font-heading text-3xl font-semibold">Enforcement is 8 months away.</h2>
             <p className="mt-3 text-lg text-indigo-100">
-              Discovery + remediation take 6–9 months. Starting at enforcement means
-              being non-compliant at enforcement.
+              Discovery + remediation take 6–9 months. Starting at enforcement means being
+              non-compliant at enforcement.
             </p>
             <div className="mt-8 flex flex-wrap justify-center gap-3">
               <Button variant="proof" size="lg" asChild={false}>
                 <Link href="#gap-scan">Run the gap-scan</Link>
               </Button>
-              <Button variant="outline" size="lg" className="border-white/30 bg-transparent text-white hover:bg-white/10" asChild={false}>
+              <Button
+                variant="outline"
+                size="lg"
+                className="border-white/30 bg-transparent text-white hover:bg-white/10"
+                asChild={false}
+              >
                 <Link href="/contact">Book a 30-min call</Link>
               </Button>
             </div>
@@ -191,9 +197,7 @@ function SiteHeader() {
         <Link href="/" className="flex items-center gap-2">
           <span className="inline-block h-7 w-7 rounded-md bg-indigo-500" />
           <div>
-            <p className="font-heading text-base font-semibold text-indigo-500">
-              {BRAND.name}
-            </p>
+            <p className="font-heading text-base font-semibold text-indigo-500">{BRAND.name}</p>
             <p className="text-[10px] uppercase tracking-wider text-slate-500">
               {BRAND.jurisdiction} · {BRAND.dataResidencyRegion}
             </p>
@@ -238,38 +242,47 @@ function SiteFooter() {
           <div className="col-span-2">
             <div className="flex items-center gap-2">
               <span className="inline-block h-7 w-7 rounded-md bg-indigo-500" />
-              <p className="font-heading text-base font-semibold text-indigo-500">
-                {BRAND.name}
-              </p>
+              <p className="font-heading text-base font-semibold text-indigo-500">{BRAND.name}</p>
             </div>
-            <p className="mt-2 max-w-md text-sm text-slate-600">
-              {BRAND.tagline}
-            </p>
+            <p className="mt-2 max-w-md text-sm text-slate-600">{BRAND.tagline}</p>
             <p className="mt-3 text-xs text-slate-500">
-              {BRAND.copyright}<br />
+              {BRAND.copyright}
+              <br />
               {BRAND.jurisdiction} · {BRAND.dataResidencyRegion}
             </p>
           </div>
           <div>
-            <p className="text-xs font-medium uppercase tracking-wider text-slate-500">
-              Product
-            </p>
+            <p className="text-xs font-medium uppercase tracking-wider text-slate-500">Product</p>
             <ul className="mt-2 flex flex-col gap-1.5 text-sm text-slate-700">
-              <li><Link href="#how-it-works">How it works</Link></li>
-              <li><Link href="#gap-scan">Gap-scan</Link></li>
-              <li><Link href="/agents">Agents</Link></li>
-              <li><Link href="/pricing">Pricing</Link></li>
+              <li>
+                <Link href="#how-it-works">How it works</Link>
+              </li>
+              <li>
+                <Link href="#gap-scan">Gap-scan</Link>
+              </li>
+              <li>
+                <Link href="/agents">Agents</Link>
+              </li>
+              <li>
+                <Link href="/pricing">Pricing</Link>
+              </li>
             </ul>
           </div>
           <div>
-            <p className="text-xs font-medium uppercase tracking-wider text-slate-500">
-              Company
-            </p>
+            <p className="text-xs font-medium uppercase tracking-wider text-slate-500">Company</p>
             <ul className="mt-2 flex flex-col gap-1.5 text-sm text-slate-700">
-              <li><Link href="/about">About</Link></li>
-              <li><Link href="/contact">Contact</Link></li>
-              <li><Link href="/privacy">Privacy</Link></li>
-              <li><Link href="/terms">Terms</Link></li>
+              <li>
+                <Link href="/about">About</Link>
+              </li>
+              <li>
+                <Link href="/contact">Contact</Link>
+              </li>
+              <li>
+                <Link href="/privacy">Privacy</Link>
+              </li>
+              <li>
+                <Link href="/terms">Terms</Link>
+              </li>
             </ul>
           </div>
         </div>
@@ -284,7 +297,9 @@ function HeroVisual() {
       <div className="flex items-center justify-between">
         <div>
           <p className="text-xs uppercase tracking-wider text-slate-500">Posture</p>
-          <p className="font-heading text-4xl font-semibold text-indigo-500">62<span className="text-base text-slate-500">/100</span></p>
+          <p className="font-heading text-4xl font-semibold text-indigo-500">
+            62<span className="text-base text-slate-500">/100</span>
+          </p>
         </div>
         <Badge variant="warning">At Risk</Badge>
       </div>

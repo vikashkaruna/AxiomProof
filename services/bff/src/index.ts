@@ -73,8 +73,7 @@ export default {
 // For dev with tsx watch:
 if (import.meta.url === `file://${process.argv[1]}`) {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  (await import('@hono/node-server')).serve(
-    { fetch: app.fetch, port },
-    (info) => log.info({ addr: info.address, port: info.port }, 'BFF listening'),
+  (await import('@hono/node-server')).serve({ fetch: app.fetch, port }, (info) =>
+    log.info({ addr: info.address, port: info.port }, 'BFF listening'),
   );
 }

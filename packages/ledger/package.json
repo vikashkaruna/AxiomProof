@@ -11,10 +11,11 @@
   "scripts": {
     "typecheck": "tsc --noEmit",
     "lint": "echo 'no lint config'",
-    "test": "vitest run",
+    "test": "vitest run --passWithNoTests",
     "clean": "rm -rf dist .turbo coverage"
   },
   "dependencies": {
+    "@axiom/types": "workspace:*",
     "@supabase/supabase-js": "^2.45.4",
     "zod": "^3.23.8"
   },

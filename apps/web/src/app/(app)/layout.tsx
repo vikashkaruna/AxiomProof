@@ -68,9 +68,7 @@ function Sidebar({
         <Link href="/workbench" className="flex items-center gap-2">
           <span className="inline-block h-7 w-7 rounded-md bg-indigo-500" />
           <div>
-            <p className="font-heading text-sm font-semibold text-indigo-500">
-              {BRAND.name}
-            </p>
+            <p className="font-heading text-sm font-semibold text-indigo-500">{BRAND.name}</p>
             <p className="text-[10px] uppercase tracking-wider text-slate-500">
               {BRAND.jurisdiction} · {BRAND.dataResidencyRegion}
             </p>

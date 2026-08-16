@@ -1,9 +1,6 @@
 {
   "$schema": "https://turbo.build/schema.json",
-  "globalDependencies": [
-    "**/.env.*",
-    "tsconfig.base.json"
-  ],
+  "globalDependencies": ["**/.env.*", "tsconfig.base.json"],
   "globalEnv": [
     "NODE_ENV",
     "SUPABASE_URL",
@@ -18,7 +15,15 @@
     "build": {
       "dependsOn": ["^build"],
       "outputs": [".next/**", "!.next/cache/**", "dist/**", "build/**"],
-      "inputs": ["src/**", "public/**", "next.config.*", "tsconfig.json", "package.json", "tailwind.config.*", "postcss.config.*"]
+      "inputs": [
+        "src/**",
+        "public/**",
+        "next.config.*",
+        "tsconfig.json",
+        "package.json",
+        "tailwind.config.*",
+        "postcss.config.*"
+      ]
     },
     "dev": {
       "cache": false,

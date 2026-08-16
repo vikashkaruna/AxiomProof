@@ -11,10 +11,11 @@
   "scripts": {
     "typecheck": "tsc --noEmit",
     "lint": "echo 'no lint config'",
-    "test": "vitest run",
+    "test": "vitest run --passWithNoTests",
     "clean": "rm -rf dist .turbo coverage"
   },
   "dependencies": {
+    "@axiom/ledger": "workspace:*",
     "zod": "^3.23.8"
   },
   "devDependencies": {

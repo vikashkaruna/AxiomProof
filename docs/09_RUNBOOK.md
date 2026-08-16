@@ -169,16 +169,16 @@ artifacts that are themselves sealed into the vault.
 
 ## Alerting (Phase 2+)
 
-| Signal | Threshold | Action |
-|---|---|---|
-| `audit_ledger` chain break | any | PagerDuty: founder + on-call |
-| Kill switch engaged | any | Slack: #axiom-prod |
-| Agent run failure | > 5% over 1h | Slack: #axiom-prod |
-| BFF 5xx rate | > 1% over 5m | PagerDuty: on-call |
-| Model gateway PII redaction failures | > 0 | PagerDuty: founder (potential bypass) |
-| S3 evidence Object Lock retention expiry | any within 30 days | Slack: #axiom-prod |
-| Approval token signature mismatch | any | PagerDuty: founder (security) |
-| Per-tenant cost > 15% of ACV | monthly check | Founder review |
+| Signal                                   | Threshold          | Action                                |
+| ---------------------------------------- | ------------------ | ------------------------------------- |
+| `audit_ledger` chain break               | any                | PagerDuty: founder + on-call          |
+| Kill switch engaged                      | any                | Slack: #axiom-prod                    |
+| Agent run failure                        | > 5% over 1h       | Slack: #axiom-prod                    |
+| BFF 5xx rate                             | > 1% over 5m       | PagerDuty: on-call                    |
+| Model gateway PII redaction failures     | > 0                | PagerDuty: founder (potential bypass) |
+| S3 evidence Object Lock retention expiry | any within 30 days | Slack: #axiom-prod                    |
+| Approval token signature mismatch        | any                | PagerDuty: founder (security)         |
+| Per-tenant cost > 15% of ACV             | monthly check      | Founder review                        |
 
 These are configured in CloudWatch Alarms + PagerDuty (Phase 2+).
 The Phase 0/1 manual equivalent is the daily/weekly/monthly checklist

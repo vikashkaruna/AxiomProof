@@ -79,7 +79,10 @@ export async function computeGapScanReport(
   }
 
   // Apply a 5% global posture discount for unverified self-attestation
-  const postureScore = Math.max(0, Math.min(100, weightedScore / Math.max(0.0001, totalWeight) * 0.95));
+  const postureScore = Math.max(
+    0,
+    Math.min(100, (weightedScore / Math.max(0.0001, totalWeight)) * 0.95),
+  );
 
   // Top recommendations: highest-risk findings first
   const top = [...findings]
@@ -90,7 +93,8 @@ export async function computeGapScanReport(
   const recommendations = top.map((f, i) => ({
     priority: i + 1,
     title: `Address ${f.controlId} (${f.title})`,
-    effort: f.severity === 'critical' ? '2–4 weeks' : f.severity === 'high' ? '2–3 weeks' : '1–2 weeks',
+    effort:
+      f.severity === 'critical' ? '2–4 weeks' : f.severity === 'high' ? '2–3 weeks' : '1–2 weeks',
   }));
 
   return {

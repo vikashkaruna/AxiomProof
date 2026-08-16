@@ -38,10 +38,7 @@ export const tenantResolver = createMiddleware<{ Variables: Variables }>(async (
     .single();
 
   if (error || !membership) {
-    logger.warn(
-      { userId: user.id, tenantId, error: error?.message },
-      'tenant access denied',
-    );
+    logger.warn({ userId: user.id, tenantId, error: error?.message }, 'tenant access denied');
     return c.json(
       { error: { code: 'tenant_forbidden', message: 'Not a member of this tenant' } },
       403,

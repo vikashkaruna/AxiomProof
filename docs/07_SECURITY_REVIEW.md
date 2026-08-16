@@ -20,13 +20,13 @@ audit ledger, evidence vault). The control plane is also sensitive
 
 ### 1.1 Adversary classes
 
-| Class | Motivation | Capability |
-|---|---|---|
-| **External attacker** | Data exfiltration, ransom, defacement | Network access, scripting, social engineering |
-| **Malicious founder / employee** | Privilege abuse, financial gain | Internal access, possibly root |
-| **Compromised agent** (prompt injection, model jailbreak) | Subvert compliance process | LLM access |
-| **Compromised client** (a malicious tenant) | Cross-tenant access, lateral movement | Tenant credentials |
-| **Compromised LLM provider** (Anthropic, AWS) | Data exfiltration | Sees redacted prompt + redacted response |
+| Class                                                     | Motivation                            | Capability                                    |
+| --------------------------------------------------------- | ------------------------------------- | --------------------------------------------- |
+| **External attacker**                                     | Data exfiltration, ransom, defacement | Network access, scripting, social engineering |
+| **Malicious founder / employee**                          | Privilege abuse, financial gain       | Internal access, possibly root                |
+| **Compromised agent** (prompt injection, model jailbreak) | Subvert compliance process            | LLM access                                    |
+| **Compromised client** (a malicious tenant)               | Cross-tenant access, lateral movement | Tenant credentials                            |
+| **Compromised LLM provider** (Anthropic, AWS)             | Data exfiltration                     | Sees redacted prompt + redacted response      |
 
 ### 1.2 Trust boundaries
 
@@ -246,32 +246,32 @@ load-bearing.
 
 ### 4.3 OWASP Top 10 coverage
 
-| OWASP category | Mitigation |
-|---|---|
-| A01 — Broken Access Control | RLS at the DB level; per-action token validation; BFF middleware that refuses tenant cross-access |
-| A02 — Cryptographic Failures | TLS 1.3 in transit; AES-256 at rest via S3 SSE-KMS; SHA-256 chain; HMAC-SHA-256 tokens |
-| A03 — Injection | Supabase client uses parameterised queries; pgcrypto + RLS prevent SQL injection; LLM prompts are versioned and reviewed |
-| A04 — Insecure Design | The non-negotiable safety rules (BR-1 through BR-6) are enforced architecturally, not by convention |
-| A05 — Security Misconfiguration | NetworkPolicies default-deny; non-root containers; read-only root FS; seccomp default; STRICT_TRANS securityContext |
-| A06 — Vulnerable Components | Dependabot, pip-audit, Trivy in CI; high/critical block merge |
-| A07 — Identity & Auth Failures | Supabase Auth with MFA for approvers; session cookies httpOnly + sameSite=strict |
-| A08 — Software & Data Integrity | All images built from a controlled Dockerfile; signed (cosign Phase 2); pnpm lockfile + uv lock committed |
-| A09 — Logging Failures | Every action is in the audit ledger; structured JSON logs; OTel traces |
-| A10 — SSRF | The BFF makes outbound calls only to a known allowlist (Supabase, S3, Temporal, Model Gateway, LLM providers); per-host egress rules in NetworkPolicy |
+| OWASP category                  | Mitigation                                                                                                                                            |
+| ------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------- |
+| A01 — Broken Access Control     | RLS at the DB level; per-action token validation; BFF middleware that refuses tenant cross-access                                                     |
+| A02 — Cryptographic Failures    | TLS 1.3 in transit; AES-256 at rest via S3 SSE-KMS; SHA-256 chain; HMAC-SHA-256 tokens                                                                |
+| A03 — Injection                 | Supabase client uses parameterised queries; pgcrypto + RLS prevent SQL injection; LLM prompts are versioned and reviewed                              |
+| A04 — Insecure Design           | The non-negotiable safety rules (BR-1 through BR-6) are enforced architecturally, not by convention                                                   |
+| A05 — Security Misconfiguration | NetworkPolicies default-deny; non-root containers; read-only root FS; seccomp default; STRICT_TRANS securityContext                                   |
+| A06 — Vulnerable Components     | Dependabot, pip-audit, Trivy in CI; high/critical block merge                                                                                         |
+| A07 — Identity & Auth Failures  | Supabase Auth with MFA for approvers; session cookies httpOnly + sameSite=strict                                                                      |
+| A08 — Software & Data Integrity | All images built from a controlled Dockerfile; signed (cosign Phase 2); pnpm lockfile + uv lock committed                                             |
+| A09 — Logging Failures          | Every action is in the audit ledger; structured JSON logs; OTel traces                                                                                |
+| A10 — SSRF                      | The BFF makes outbound calls only to a known allowlist (Supabase, S3, Temporal, Model Gateway, LLM providers); per-host egress rules in NetworkPolicy |
 
 ---
 
 ## 5. Known gaps and roadmap
 
-| Gap | Phase | Notes |
-|---|---|---|
-| mTLS between BFF and agent runtime | 3 | Currently using internal-token; mTLS via SPIFFE is the proper fix |
-| Per-tenant approval signing keys (currently shared default) | 2 | Doc 06 §1 has the trigger: "client contractually requires 100%-in-house infrastructure" |
-| SOC 2 Type 2 / ISO 27001 | 5 | Revenue-triggered per Doc 02 §5 |
-| Customer-managed encryption keys (CMEK) for the audit ledger | 4 | Currently we own the keys; enterprise customers want their own |
-| Per-action RBAC (e.g. "approver Alice can only approve policy.publish") | 4 | `tenant_users.approval_scopes` exists in the schema but the BFF doesn't enforce it yet |
-| Penetration test by an external firm | 3 | Before Phase 3 (Karya) goes live with real client data |
-| Bug-bounty program | 4 | After Phase 3 stabilises |
+| Gap                                                                     | Phase | Notes                                                                                   |
+| ----------------------------------------------------------------------- | ----- | --------------------------------------------------------------------------------------- |
+| mTLS between BFF and agent runtime                                      | 3     | Currently using internal-token; mTLS via SPIFFE is the proper fix                       |
+| Per-tenant approval signing keys (currently shared default)             | 2     | Doc 06 §1 has the trigger: "client contractually requires 100%-in-house infrastructure" |
+| SOC 2 Type 2 / ISO 27001                                                | 5     | Revenue-triggered per Doc 02 §5                                                         |
+| Customer-managed encryption keys (CMEK) for the audit ledger            | 4     | Currently we own the keys; enterprise customers want their own                          |
+| Per-action RBAC (e.g. "approver Alice can only approve policy.publish") | 4     | `tenant_users.approval_scopes` exists in the schema but the BFF doesn't enforce it yet  |
+| Penetration test by an external firm                                    | 3     | Before Phase 3 (Karya) goes live with real client data                                  |
+| Bug-bounty program                                                      | 4     | After Phase 3 stabilises                                                                |
 
 ---
 

@@ -4,7 +4,10 @@ import { Badge } from './Badge.js';
 
 export type Severity = 'critical' | 'high' | 'medium' | 'low';
 
-const severityConfig: Record<Severity, { label: string; variant: 'danger' | 'warning' | 'neutral' | 'info'; symbol: string }> = {
+const severityConfig: Record<
+  Severity,
+  { label: string; variant: 'danger' | 'warning' | 'neutral' | 'info'; symbol: string }
+> = {
   critical: { label: 'Critical', variant: 'danger', symbol: '◆' },
   high: { label: 'High', variant: 'warning', symbol: '▲' },
   medium: { label: 'Medium', variant: 'neutral', symbol: '●' },
@@ -16,7 +19,12 @@ export interface SeverityChipProps extends HTMLAttributes<HTMLSpanElement> {
   showSymbol?: boolean;
 }
 
-export function SeverityChip({ severity, showSymbol = true, className, ...props }: SeverityChipProps) {
+export function SeverityChip({
+  severity,
+  showSymbol = true,
+  className,
+  ...props
+}: SeverityChipProps) {
   const c = severityConfig[severity];
   return (
     <Badge variant={c.variant} className={cn('font-medium', className)} {...props}>

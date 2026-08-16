@@ -16,13 +16,7 @@
  */
 
 type JsonValue =
-  | string
-  | number
-  | boolean
-  | null
-  | undefined
-  | JsonValue[]
-  | { [k: string]: JsonValue };
+  string | number | boolean | null | undefined | JsonValue[] | { [k: string]: JsonValue };
 
 function sortKeys(value: JsonValue): JsonValue {
   if (value === null || value === undefined) return null;
@@ -44,8 +38,8 @@ function sortKeys(value: JsonValue): JsonValue {
   return value;
 }
 
-export function canonicalJson(value: JsonValue): string {
-  return JSON.stringify(sortKeys(value));
+export function canonicalJson(value: unknown): string {
+  return JSON.stringify(sortKeys(value as JsonValue));
 }
 
 export async function sha256(input: string | Uint8Array): Promise<string> {

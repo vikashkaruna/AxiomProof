@@ -14,6 +14,7 @@
     "@axiom/config": "workspace:*",
     "@axiom/control-library": "workspace:*",
     "@axiom/design-tokens": "workspace:*",
+    "@axiom/supabase": "workspace:*",
     "@axiom/types": "workspace:*",
     "@axiom/ui": "workspace:*",
     "lucide-react": "^0.439.0",

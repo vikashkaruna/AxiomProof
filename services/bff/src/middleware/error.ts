@@ -11,10 +11,7 @@ export const errorHandler = () =>
         return err.getResponse();
       }
       const error = err as Error;
-      logger.error(
-        { err: error.message, stack: error.stack, path: c.req.path },
-        'unhandled error',
-      );
+      logger.error({ err: error.message, stack: error.stack, path: c.req.path }, 'unhandled error');
       return c.json(
         {
           error: {

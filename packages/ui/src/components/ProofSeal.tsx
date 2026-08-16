@@ -44,7 +44,10 @@ export function ProofSeal({
       title={`SHA-256: ${hash}${sealedAt ? `\nSealed: ${sealedAt}` : ''}`}
       {...props}
     >
-      <span className="h-1.5 w-1.5 rounded-full bg-gold-500 shadow-[0_0_0_2px_rgb(201,162,39,0.18)]" aria-hidden="true" />
+      <span
+        className="h-1.5 w-1.5 rounded-full bg-gold-500 shadow-[0_0_0_2px_rgb(201,162,39,0.18)]"
+        aria-hidden="true"
+      />
       {compact ? truncateHash(hash) : `Sealed · ${truncateHash(hash)}`}
     </span>
   );

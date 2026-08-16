@@ -1,21 +1,23 @@
 # Axiom Proof — Complete Strategy & Build Document Set
+
 ### Axiom Minds Private Limited · https://axiomminds.ai
+
 **Compiled:** August 2026
 
 ---
 
 ## Document index
 
-| # | Document | Contents | Use it for |
-|---|---|---|---|
-| **00** | `00_README_Document_Index.md` | This file | Orientation |
-| **01** | `01_Product_Naming_Branding_and_GTM.md` | Product name options + recommendation, agent roster, brand guidelines (colour, type, logo, tone), positioning, messaging, 3-channel GTM, launch sequence, materials checklist, objection handling | Naming decision, brand build, website copy, sales conversations |
-| **02** | `02_Phase_Wise_Implementation_Plan.md` | Agentic autonomy ladder (L0–L4), Phases 0–5 with every module and feature, build sequence, 49-module master index, critical path and dependency graph | Build planning, sprint sequencing, what to build next |
-| **03** | `03_BRD_PRD.md` | Business context, objectives, scope, stakeholders, business rules, personas, user journeys, 13 functional requirement groups, non-functional requirements, constraints, risks, acceptance criteria | Handing to a developer/contractor, defining "done", scoping |
-| **04** | `04_Solution_Architecture.md` | 4-layer architecture (Experience / API / Agentic Middle / Data), control plane vs data plane, agent runtime and permissions, execution safety chain, audit ledger schema, tenancy, deployment evolution, 10 ADRs | Technical build, architecture decisions, future engineering hires |
-| **05** | `05_Technology_Stack_Analysis.md` | Vendor & framework selection resolving Doc 04's open "or"s (API language, orchestration), specific India-region hosting per layer, the LLM-residency finding that shapes the Model Gateway, docs/help-site choice. **Vendor picks in §5/§7/§8 superseded by Doc 06.** | Vendor sign-up, infra provisioning, resolving "which specific tool" questions Doc 04 left open |
-| **06** | `06_Infrastructure_and_Lockin_Strategy.md` | Single-CSP consolidation analysis (AWS vs GCP vs Azure), lock-in scoring per service, Supabase/S3/Redis/compute alternatives, hybrid self-hosted + hosted LLM strategy, on-prem trade-off | Choosing the actual CSP and deploy targets, evaluating "no lock-in" trade-offs before signing up for any vendor |
-| **—** | `DPDPA_Axiom_Minds_Strategic_Roadmap.md` | Market sizing (TAM/SAM/SOM), competitive landscape, right-to-win, pricing, cash-flow model, revenue projections, risk register, council deliberation log | Strategic context, investor conversation (if ever), market positioning |
+| #      | Document                                   | Contents                                                                                                                                                                                                                                                              | Use it for                                                                                                      |
+| ------ | ------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------- |
+| **00** | `00_README_Document_Index.md`              | This file                                                                                                                                                                                                                                                             | Orientation                                                                                                     |
+| **01** | `01_Product_Naming_Branding_and_GTM.md`    | Product name options + recommendation, agent roster, brand guidelines (colour, type, logo, tone), positioning, messaging, 3-channel GTM, launch sequence, materials checklist, objection handling                                                                     | Naming decision, brand build, website copy, sales conversations                                                 |
+| **02** | `02_Phase_Wise_Implementation_Plan.md`     | Agentic autonomy ladder (L0–L4), Phases 0–5 with every module and feature, build sequence, 49-module master index, critical path and dependency graph                                                                                                                 | Build planning, sprint sequencing, what to build next                                                           |
+| **03** | `03_BRD_PRD.md`                            | Business context, objectives, scope, stakeholders, business rules, personas, user journeys, 13 functional requirement groups, non-functional requirements, constraints, risks, acceptance criteria                                                                    | Handing to a developer/contractor, defining "done", scoping                                                     |
+| **04** | `04_Solution_Architecture.md`              | 4-layer architecture (Experience / API / Agentic Middle / Data), control plane vs data plane, agent runtime and permissions, execution safety chain, audit ledger schema, tenancy, deployment evolution, 10 ADRs                                                      | Technical build, architecture decisions, future engineering hires                                               |
+| **05** | `05_Technology_Stack_Analysis.md`          | Vendor & framework selection resolving Doc 04's open "or"s (API language, orchestration), specific India-region hosting per layer, the LLM-residency finding that shapes the Model Gateway, docs/help-site choice. **Vendor picks in §5/§7/§8 superseded by Doc 06.** | Vendor sign-up, infra provisioning, resolving "which specific tool" questions Doc 04 left open                  |
+| **06** | `06_Infrastructure_and_Lockin_Strategy.md` | Single-CSP consolidation analysis (AWS vs GCP vs Azure), lock-in scoring per service, Supabase/S3/Redis/compute alternatives, hybrid self-hosted + hosted LLM strategy, on-prem trade-off                                                                             | Choosing the actual CSP and deploy targets, evaluating "no lock-in" trade-offs before signing up for any vendor |
+| **—**  | `DPDPA_Axiom_Minds_Strategic_Roadmap.md`   | Market sizing (TAM/SAM/SOM), competitive landscape, right-to-win, pricing, cash-flow model, revenue projections, risk register, council deliberation log                                                                                                              | Strategic context, investor conversation (if ever), market positioning                                          |
 
 ---
 
@@ -27,8 +29,9 @@
 
 ## The recommended name
 
-> ### ✅ **Axiom Proof** — *by Axiom Minds*
-> *"Agents do the work. You approve. The proof is automatic."*
+> ### ✅ **Axiom Proof** — _by Axiom Minds_
+>
+> _"Agents do the work. You approve. The proof is automatic."_
 
 Full rationale in Document 01. Backup name: **ProofPlane**. Trademark filing recommended in Phase 0 (Classes 42 and 45, ~₹15–25k).
 
@@ -36,18 +39,18 @@ Full rationale in Document 01. Backup name: **ProofPlane**. Trademark filing rec
 
 ## The agent roster
 
-| Agent | Function |
-|---|---|
-| **Drishti** | Discovery — finds personal data (batch or targeted) |
-| **Vibhaag** | Classification — categorises by DPDPA type and sensitivity |
-| **Parikshan** | Assessment — scores against the control library |
-| **Saakshi** | Evidence — collects, timestamps, seals |
-| **Sudhaar** | Remediation planning — proposes fixes with rollback plans (holds **no** write access) |
-| **Karya** | Execution — executes approved actions only (batch or individual) |
-| **Lekha** | Audit — writes the immutable hash-chained ledger |
-| **Nazar** | Regulatory watch — monitors MeitY/DPB/gazette |
-| **Prativedan** | Reporting — Board, auditor and DPB-ready documents |
-| **Sanket** | Market signal — buying-intent intelligence (internal GTM) |
+| Agent          | Function                                                                              |
+| -------------- | ------------------------------------------------------------------------------------- |
+| **Drishti**    | Discovery — finds personal data (batch or targeted)                                   |
+| **Vibhaag**    | Classification — categorises by DPDPA type and sensitivity                            |
+| **Parikshan**  | Assessment — scores against the control library                                       |
+| **Saakshi**    | Evidence — collects, timestamps, seals                                                |
+| **Sudhaar**    | Remediation planning — proposes fixes with rollback plans (holds **no** write access) |
+| **Karya**      | Execution — executes approved actions only (batch or individual)                      |
+| **Lekha**      | Audit — writes the immutable hash-chained ledger                                      |
+| **Nazar**      | Regulatory watch — monitors MeitY/DPB/gazette                                         |
+| **Prativedan** | Reporting — Board, auditor and DPB-ready documents                                    |
+| **Sanket**     | Market signal — buying-intent intelligence (internal GTM)                             |
 
 ---
 

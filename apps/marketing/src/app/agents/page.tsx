@@ -1,5 +1,13 @@
 import { BRAND } from '@axiom/config';
-import { AgentPill, Card, CardContent, CardHeader, CardTitle, CardDescription, Badge } from '@axiom/ui';
+import {
+  AgentPill,
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+  Badge,
+} from '@axiom/ui';
 
 export const metadata = { title: 'Agents' };
 
@@ -7,7 +15,7 @@ const AGENTS = [
   {
     name: 'drishti',
     persona: 'Discovery',
-    one: 'I find what you didn\'t know you had.',
+    one: "I find what you didn't know you had.",
     long: 'Drishti runs discovery across your systems — initially via interview-driven walkthroughs in Phase 1, then through live read-only connectors (PostgreSQL, MySQL, Google Workspace, M365, S3) in Phase 2. It produces a complete inventory of where personal data lives, how it flows, and where it crosses borders.',
     autonomy: 'L1 → L2 (read)',
     scopes: ['connector.read', 'inventory.write', 'evidence.write'],
@@ -16,7 +24,7 @@ const AGENTS = [
     name: 'vibhaag',
     persona: 'Classification',
     one: 'I tell you what kind of data it is.',
-    long: 'Vibhaag takes Drishti\'s output and classifies each field by DPDPA category — name, contact, government ID, financial, health, children\'s data, biometric, cross-border. Confidence scores are produced; low-confidence fields are routed to a human review queue.',
+    long: "Vibhaag takes Drishti's output and classifies each field by DPDPA category — name, contact, government ID, financial, health, children's data, biometric, cross-border. Confidence scores are produced; low-confidence fields are routed to a human review queue.",
     autonomy: 'L1',
     scopes: [],
   },
@@ -63,8 +71,8 @@ const AGENTS = [
   {
     name: 'nazar',
     persona: 'Regulatory watch',
-    one: 'I watch the law so you don\'t have to.',
-    long: 'Nazar monitors MeitY notifications, the Data Protection Board\'s orders, and the gazette. When a regulatory change is detected, Nazar maps it to affected controls in the library and raises a re-assessment prompt.',
+    one: "I watch the law so you don't have to.",
+    long: "Nazar monitors MeitY notifications, the Data Protection Board's orders, and the gazette. When a regulatory change is detected, Nazar maps it to affected controls in the library and raises a re-assessment prompt.",
     autonomy: 'L1',
     scopes: ['http.read.government_sources', 'control_library.write'],
   },
@@ -79,8 +87,8 @@ const AGENTS = [
   {
     name: 'sanket',
     persona: 'Market signal',
-    one: 'I find who\'s about to buy.',
-    long: 'Sanket reads public sources (hiring posts, tender notices, regulatory filings) for buying-intent signals relevant to DPDPA. Internal-only — used to fuel the founder\'s GTM, not a customer-facing product.',
+    one: "I find who's about to buy.",
+    long: "Sanket reads public sources (hiring posts, tender notices, regulatory filings) for buying-intent signals relevant to DPDPA. Internal-only — used to fuel the founder's GTM, not a customer-facing product.",
     autonomy: 'L1 (internal)',
     scopes: ['http.read.public_sources'],
   },
@@ -94,9 +102,9 @@ export default function AgentsPage() {
         The {BRAND.name} agent roster
       </h1>
       <p className="mt-3 max-w-2xl text-lg text-slate-600">
-        Each agent has a contract, an autonomy ceiling, declared tool permissions,
-        and explicit escalation conditions. The agents are versioned services
-        with their own prompt registry and model assignments.
+        Each agent has a contract, an autonomy ceiling, declared tool permissions, and explicit
+        escalation conditions. The agents are versioned services with their own prompt registry and
+        model assignments.
       </p>
 
       <div className="mt-10 grid grid-cols-1 gap-4">
@@ -107,9 +115,7 @@ export default function AgentsPage() {
                 <AgentPill agent={a.name as any} />
                 <Badge variant="indigo">{a.autonomy}</Badge>
               </div>
-              <CardDescription className="text-base text-slate-700">
-                {a.one}
-              </CardDescription>
+              <CardDescription className="text-base text-slate-700">{a.one}</CardDescription>
             </CardHeader>
             <CardContent className="flex flex-col gap-3">
               <p className="text-sm text-slate-600">{a.long}</p>

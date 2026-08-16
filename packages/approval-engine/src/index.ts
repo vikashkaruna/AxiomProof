@@ -43,7 +43,13 @@ export interface SignedApprovalToken {
 
 export interface ValidationResult {
   valid: boolean;
-  reason?: 'signature_mismatch' | 'expired' | 'revoked' | 'consumed' | 'nonce_replay' | 'action_not_in_scope';
+  reason?:
+    | 'signature_mismatch'
+    | 'expired'
+    | 'revoked'
+    | 'consumed'
+    | 'nonce_replay'
+    | 'action_not_in_scope';
   details?: Record<string, unknown>;
 }
 
@@ -66,8 +72,7 @@ export class ApprovalEngine {
     if (s) return s;
     if (this.defaultSecret) return this.defaultSecret;
     throw new Error(
-      `No approval signing secret for tenant ${tenantId}. ` +
-        `Call setTenantSecret() at boot.`,
+      `No approval signing secret for tenant ${tenantId}. ` + `Call setTenantSecret() at boot.`,
     );
   }
 
@@ -76,7 +81,10 @@ export class ApprovalEngine {
    * for storage in approval_tokens; the verifier uses the spec to
    * recompute the signature.
    */
-  async issue(tenantId: string, input: Omit<ApprovalTokenSpec, 'nonce'>): Promise<SignedApprovalToken> {
+  async issue(
+    tenantId: string,
+    input: Omit<ApprovalTokenSpec, 'nonce'>,
+  ): Promise<SignedApprovalToken> {
     const nonce = randomBytes(16).toString('hex');
     const spec: ApprovalTokenSpec = {
       ...input,

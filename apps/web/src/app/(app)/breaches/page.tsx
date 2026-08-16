@@ -1,6 +1,14 @@
 import { redirect } from 'next/navigation';
 import { createSupabaseServerClient, createSupabaseAdmin } from '@axiom/supabase';
-import { PageHeader, Card, CardContent, CardHeader, CardTitle, StatusBadge, Badge } from '@axiom/ui';
+import {
+  PageHeader,
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  StatusBadge,
+  Badge,
+} from '@axiom/ui';
 import { formatDateTime } from '@axiom/ui';
 
 export const dynamic = 'force-dynamic';

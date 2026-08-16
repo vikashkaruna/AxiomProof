@@ -31,7 +31,13 @@ export type StatusKind =
   | 'expired'
   | 'invalid';
 
-const statusConfig: Record<StatusKind, { label: string; variant: 'neutral' | 'info' | 'success' | 'warning' | 'danger' | 'indigo' | 'proof' }> = {
+const statusConfig: Record<
+  StatusKind,
+  {
+    label: string;
+    variant: 'neutral' | 'info' | 'success' | 'warning' | 'danger' | 'indigo' | 'proof';
+  }
+> = {
   draft: { label: 'Draft', variant: 'neutral' },
   in_progress: { label: 'In Progress', variant: 'info' },
   review: { label: 'In Review', variant: 'indigo' },

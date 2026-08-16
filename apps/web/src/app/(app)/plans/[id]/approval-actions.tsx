@@ -23,9 +23,7 @@ interface Props {
 
 export function ApprovalActions({ planId, actions, eligible, blocked }: Props) {
   const router = useRouter();
-  const [selected, setSelected] = useState<Set<string>>(
-    new Set(eligible.map((a) => a.id)),
-  );
+  const [selected, setSelected] = useState<Set<string>>(new Set(eligible.map((a) => a.id)));
   const [reason, setReason] = useState('');
   const [concurrency, setConcurrency] = useState(1);
   const [stopOnFailure, setStopOnFailure] = useState(true);
@@ -78,9 +76,9 @@ export function ApprovalActions({ planId, actions, eligible, blocked }: Props) {
     <div className="flex flex-col gap-4">
       {blocked.length > 0 && (
         <div className="rounded-md border border-ember-500 bg-ember-50 p-3 text-sm text-ember-700">
-          <strong>{blocked.length} action(s) blocked</strong> — not eligible for
-          approval. Need a completed dry-run AND a validated rollback. The BFF
-          will refuse to issue an approval token that includes a blocked action.
+          <strong>{blocked.length} action(s) blocked</strong> — not eligible for approval. Need a
+          completed dry-run AND a validated rollback. The BFF will refuse to issue an approval token
+          that includes a blocked action.
         </div>
       )}
 
@@ -98,11 +96,7 @@ export function ApprovalActions({ planId, actions, eligible, blocked }: Props) {
         >
           Select all eligible
         </Button>
-        <Button
-          variant="ghost"
-          onClick={() => setSelected(new Set())}
-          size="sm"
-        >
+        <Button variant="ghost" onClick={() => setSelected(new Set())} size="sm">
           Clear
         </Button>
         <span className="text-sm text-slate-500">
@@ -143,9 +137,7 @@ export function ApprovalActions({ planId, actions, eligible, blocked }: Props) {
               onChange={(e) => setStopOnFailure(e.target.checked)}
               className="h-4 w-4 rounded border-slate-300"
             />
-            <span className="text-sm text-slate-600">
-              Halt the batch on first action failure
-            </span>
+            <span className="text-sm text-slate-600">Halt the batch on first action failure</span>
           </div>
         </div>
       </div>
@@ -193,9 +185,9 @@ export function ApprovalActions({ planId, actions, eligible, blocked }: Props) {
       </div>
 
       <p className="text-xs text-slate-500">
-        On approval, the BFF issues a signed, scope-bound token via the Approval
-        Engine. The token is the gate (per ADR-2). A separate execute call is
-        required to actually run — the token itself doesn't execute.
+        On approval, the BFF issues a signed, scope-bound token via the Approval Engine. The token
+        is the gate (per ADR-2). A separate execute call is required to actually run — the token
+        itself doesn't execute.
       </p>
     </div>
   );

@@ -9,13 +9,14 @@ The single source of truth for brand and UI tokens, shared by [`../Axiom Proof A
   - **Type** — Inter Tight (headings), Inter (body), JetBrains Mono (hashes, logs, audit trails).
   - **Components** — buttons, risk/status badges, phase tags, evidence-seal treatment.
   - **Agent identity system** — mark, colour, Devanagari initial, autonomy ceiling, and persona line for each of the 10 agents (Drishti, Vibhaag, Parikshan, Saakshi, Sudhaar, Karya, Lekha, Nazar, Prativedan, Sanket).
-  - **Voice & tone** — words to use / avoid, and the critical brand rule: *never market autonomy without control* — every agentic claim must pair the capability with the approval gate.
+  - **Voice & tone** — words to use / avoid, and the critical brand rule: _never market autonomy without control_ — every agentic claim must pair the capability with the approval gate.
 
 ## On `/design-sync`
 
 The `/design-sync` skill converts a **built component library** (an npm package or Storybook with a `dist/`) into Claude Design's bundle format and uploads it, so the Claude Design agent designs with your real compiled components. That doesn't apply yet — there is no component code here, only this token/reference document pulled from Claude Design.
 
 The natural sequencing:
+
 1. Implement these tokens as a real Tailwind config / CSS variables + a small component package (buttons, badges, agent avatar, evidence seal) — likely as a shared package consumed by both `Axiom Proof App` and `Axiom Proof Site`.
 2. Once that package has a build output, run `/design-sync` from **that package's directory** to push the compiled components back up to the `Axiom Proof Design System` project on claude.ai/design — from then on, further Claude Design work on this project designs with the real components, not generic ones.
 

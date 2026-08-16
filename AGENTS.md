@@ -53,7 +53,7 @@ comprehensive [`README.md`](./README.md).
   `services/model-gateway` (FastAPI, self-hosted LLM gateway),
   `services/temporal-workers` (durable orchestration).
 - **Shared:** `packages/{design-tokens, ui, types, control-library,
-  ledger, evidence, approval-engine, supabase, config}`.
+ledger, evidence, approval-engine, supabase, config}`.
 
 ## Brand
 
@@ -122,21 +122,21 @@ terraform init && terraform plan && terraform apply
 
 ## Where to look for X
 
-| Question | Where |
-|---|---|
-| What is the brand voice / naming? | `docs/01_Product_Naming_Branding_and_GTM.md` |
-| What are the 14 modules and their phase? | `docs/02_Phase_Wise_Implementation_Plan.md` |
-| What's the FR / NFR / business rule? | `docs/03_BRD_PRD.md` |
-| What's the architecture? | `docs/04_Solution_Architecture.md` |
-| What stack? | `docs/05_Technology_Stack_Analysis.md` |
-| Why this stack over alternatives? | `docs/06_Infrastructure_and_Lockin_Strategy.md` |
-| Security review? | `docs/07_SECURITY_REVIEW.md` |
-| How do I deploy? | `docs/08_DEPLOYMENT_GUIDE.md` |
-| How do I run this in production? | `docs/09_RUNBOOK.md` |
-| What are the agents? | `docs/01_...md` (Section 1.4) and `apps/marketing/src/app/agents/page.tsx` |
-| What does the control library look like? | `packages/control-library/src/controls.ts` |
-| How does the approval engine work? | `packages/approval-engine/src/index.ts` + `services/agent-runtime/src/axiom/approval_engine.py` |
-| How does the audit ledger work? | `infra/supabase/migrations/0005_approvals_ledger.sql` + `packages/ledger/src/append.ts` |
-| How does evidence sealing work? | `packages/evidence/src/index.ts` + `infra/terraform/envs/prod/s3.tf` |
-| How does the model gateway decide? | `services/model-gateway/src/model_gateway/router.py` |
-| How do the E2E tests work? | `tests/e2e/tests/*.spec.ts` |
+| Question                                 | Where                                                                                           |
+| ---------------------------------------- | ----------------------------------------------------------------------------------------------- |
+| What is the brand voice / naming?        | `docs/01_Product_Naming_Branding_and_GTM.md`                                                    |
+| What are the 14 modules and their phase? | `docs/02_Phase_Wise_Implementation_Plan.md`                                                     |
+| What's the FR / NFR / business rule?     | `docs/03_BRD_PRD.md`                                                                            |
+| What's the architecture?                 | `docs/04_Solution_Architecture.md`                                                              |
+| What stack?                              | `docs/05_Technology_Stack_Analysis.md`                                                          |
+| Why this stack over alternatives?        | `docs/06_Infrastructure_and_Lockin_Strategy.md`                                                 |
+| Security review?                         | `docs/07_SECURITY_REVIEW.md`                                                                    |
+| How do I deploy?                         | `docs/08_DEPLOYMENT_GUIDE.md`                                                                   |
+| How do I run this in production?         | `docs/09_RUNBOOK.md`                                                                            |
+| What are the agents?                     | `docs/01_...md` (Section 1.4) and `apps/marketing/src/app/agents/page.tsx`                      |
+| What does the control library look like? | `packages/control-library/src/controls.ts`                                                      |
+| How does the approval engine work?       | `packages/approval-engine/src/index.ts` + `services/agent-runtime/src/axiom/approval_engine.py` |
+| How does the audit ledger work?          | `infra/supabase/migrations/0005_approvals_ledger.sql` + `packages/ledger/src/append.ts`         |
+| How does evidence sealing work?          | `packages/evidence/src/index.ts` + `infra/terraform/envs/prod/s3.tf`                            |
+| How does the model gateway decide?       | `services/model-gateway/src/model_gateway/router.py`                                            |
+| How do the E2E tests work?               | `tests/e2e/tests/*.spec.ts`                                                                     |

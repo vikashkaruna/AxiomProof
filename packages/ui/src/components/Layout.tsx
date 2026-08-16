@@ -17,9 +17,7 @@ export function PageHeader({ title, description, actions, meta, className }: Pag
           <h1 className="font-heading text-2xl font-semibold tracking-tight text-indigo-500">
             {title}
           </h1>
-          {description && (
-            <p className="mt-1 max-w-3xl text-sm text-slate-600">{description}</p>
-          )}
+          {description && <p className="mt-1 max-w-3xl text-sm text-slate-600">{description}</p>}
         </div>
         {actions && <div className="flex shrink-0 items-center gap-2">{actions}</div>}
       </div>
@@ -33,12 +31,7 @@ export function StatGrid({
   className,
 }: HTMLAttributes<HTMLDivElement> & { children: ReactNode }) {
   return (
-    <div
-      className={cn(
-        'grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4',
-        className,
-      )}
-    >
+    <div className={cn('grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4', className)}>
       {children}
     </div>
   );

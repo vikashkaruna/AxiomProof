@@ -13,10 +13,7 @@ const env = loadEnv();
 export const authMiddleware = createMiddleware<{ Variables: Variables }>(async (c, next) => {
   const auth = c.req.header('authorization') ?? '';
   if (!auth.startsWith('Bearer ')) {
-    return c.json(
-      { error: { code: 'unauthorized', message: 'Missing bearer token' } },
-      401,
-    );
+    return c.json({ error: { code: 'unauthorized', message: 'Missing bearer token' } }, 401);
   }
   const token = auth.slice(7);
 
@@ -33,10 +30,7 @@ export const authMiddleware = createMiddleware<{ Variables: Variables }>(async (
 
   if (error || !user) {
     logger.warn({ error: error?.message }, 'auth rejected');
-    return c.json(
-      { error: { code: 'unauthorized', message: 'Invalid or expired token' } },
-      401,
-    );
+    return c.json({ error: { code: 'unauthorized', message: 'Invalid or expired token' } }, 401);
   }
 
   c.set('user', user);

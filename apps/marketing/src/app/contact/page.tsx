@@ -18,25 +18,50 @@ export default function ContactPage() {
         <div className="md:col-span-2">
           <Card>
             <CardContent className="p-6">
-              <form className="flex flex-col gap-4" action={`mailto:${BRAND.contactEmail}`} method="post" encType="text/plain">
+              <form
+                className="flex flex-col gap-4"
+                action={`mailto:${BRAND.contactEmail}`}
+                method="post"
+                encType="text/plain"
+              >
                 <div className="flex flex-col gap-1.5">
-                  <Label htmlFor="name" required>Your name</Label>
+                  <Label htmlFor="name" required>
+                    Your name
+                  </Label>
                   <Input id="name" name="name" required placeholder="Vikash Karuna" />
                 </div>
                 <div className="flex flex-col gap-1.5">
-                  <Label htmlFor="email" required>Email</Label>
-                  <Input id="email" name="email" type="email" required placeholder="you@company.com" />
+                  <Label htmlFor="email" required>
+                    Email
+                  </Label>
+                  <Input
+                    id="email"
+                    name="email"
+                    type="email"
+                    required
+                    placeholder="you@company.com"
+                  />
                 </div>
                 <div className="flex flex-col gap-1.5">
                   <Label htmlFor="company">Company</Label>
                   <Input id="company" name="company" placeholder="Acme Fintech Pvt Ltd" />
                 </div>
                 <div className="flex flex-col gap-1.5">
-                  <Label htmlFor="msg" required>How can we help?</Label>
-                  <Textarea id="msg" name="message" required rows={5} placeholder="We have ~400 employees, process children data, and need a readiness assessment before May 2027." />
+                  <Label htmlFor="msg" required>
+                    How can we help?
+                  </Label>
+                  <Textarea
+                    id="msg"
+                    name="message"
+                    required
+                    rows={5}
+                    placeholder="We have ~400 employees, process children data, and need a readiness assessment before May 2027."
+                  />
                 </div>
                 <div>
-                  <Button type="submit" variant="primary" size="lg">Send</Button>
+                  <Button type="submit" variant="primary" size="lg">
+                    Send
+                  </Button>
                 </div>
               </form>
             </CardContent>

@@ -175,9 +175,10 @@ cd tests/e2e && pnpm test:e2e
 ## Deployment
 
 For production deployment to AWS `ap-south-1` (EKS + S3 + ElastiCache
-+ Supabase + Temporal Cloud), see [`docs/08_DEPLOYMENT_GUIDE.md`](./docs/08_DEPLOYMENT_GUIDE.md).
-For day-2 operations, see [`docs/09_RUNBOOK.md`](./docs/09_RUNBOOK.md).
-For the security review and SDLC, see [`docs/07_SECURITY_REVIEW.md`](./docs/07_SECURITY_REVIEW.md).
+
+- Supabase + Temporal Cloud), see [`docs/08_DEPLOYMENT_GUIDE.md`](./docs/08_DEPLOYMENT_GUIDE.md).
+  For day-2 operations, see [`docs/09_RUNBOOK.md`](./docs/09_RUNBOOK.md).
+  For the security review and SDLC, see [`docs/07_SECURITY_REVIEW.md`](./docs/07_SECURITY_REVIEW.md).
 
 ---
 

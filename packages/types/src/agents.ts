@@ -43,7 +43,7 @@ export const AGENT_CONTRACTS: Record<AgentName, AgentContract> = {
   drishti: {
     name: 'drishti',
     displayName: 'Drishti',
-    oneLiner: 'I find what you didn\'t know you had.',
+    oneLiner: "I find what you didn't know you had.",
     autonomyLevel: 'L1', // L2 with read-only connectors in Phase 2
     canMutate: false,
     inputSchema: z.any(),
@@ -117,7 +117,7 @@ export const AGENT_CONTRACTS: Record<AgentName, AgentContract> = {
     inputSchema: z.any(),
     outputSchema: z.any(),
     toolScopes: [
-      'connector.write',          // Scoped, time-bound, revocable
+      'connector.write', // Scoped, time-bound, revocable
       'evidence.write',
       'rollback.execute',
     ],
@@ -145,7 +145,7 @@ export const AGENT_CONTRACTS: Record<AgentName, AgentContract> = {
   nazar: {
     name: 'nazar',
     displayName: 'Nazar',
-    oneLiner: 'I watch the law so you don\'t have to.',
+    oneLiner: "I watch the law so you don't have to.",
     autonomyLevel: 'L1',
     canMutate: false,
     inputSchema: z.any(),
@@ -169,7 +169,7 @@ export const AGENT_CONTRACTS: Record<AgentName, AgentContract> = {
   sanket: {
     name: 'sanket',
     displayName: 'Sanket',
-    oneLiner: 'I find who\'s about to buy.',
+    oneLiner: "I find who's about to buy.",
     autonomyLevel: 'L1', // Internal GTM only
     canMutate: false,
     inputSchema: z.any(),

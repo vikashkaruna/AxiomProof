@@ -8,12 +8,8 @@ export default function HomePage() {
       <header className="border-b border-slate-200 bg-white">
         <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6">
           <div className="flex items-center gap-2">
-            <span className="font-heading text-lg font-semibold text-indigo-500">
-              {BRAND.name}
-            </span>
-            <span className="hidden text-sm text-slate-500 sm:inline">
-              by {BRAND.company}
-            </span>
+            <span className="font-heading text-lg font-semibold text-indigo-500">{BRAND.name}</span>
+            <span className="hidden text-sm text-slate-500 sm:inline">by {BRAND.company}</span>
           </div>
           <nav className="flex items-center gap-2">
             <Button variant="ghost" size="sm" asChild={false}>
@@ -32,8 +28,8 @@ export default function HomePage() {
         </h1>
         <p className="mt-4 max-w-2xl text-lg text-slate-600">{BRAND.tagline}</p>
         <p className="mt-2 max-w-2xl text-sm text-slate-500">
-          The agentic DPDPA compliance platform for Indian mid-market enterprises.
-          Discover. Assess. Remediate. <span className="text-gold-700">Prove.</span>
+          The agentic DPDPA compliance platform for Indian mid-market enterprises. Discover. Assess.
+          Remediate. <span className="text-gold-700">Prove.</span>
         </p>
 
         <div className="mt-10 flex flex-wrap items-center justify-center gap-3">

@@ -5,7 +5,12 @@ import type { AppendLedgerInput, AppendLedgerResult } from '@axiom/ledger';
 export interface LedgerService {
   append(input: AppendLedgerInput): Promise<AppendLedgerResult>;
   appendAndForget(input: AppendLedgerInput): void;
-  verify(tenantId: string, fromSequence?: number): Promise<{ intact: true } | { intact: false; firstBreak: { sequenceNo: number; reason: string } }>;
+  verify(
+    tenantId: string,
+    fromSequence?: number,
+  ): Promise<
+    { intact: true } | { intact: false; firstBreak: { sequenceNo: number; reason: string } }
+  >;
   query(opts: Parameters<LedgerClient['query']>[0]): ReturnType<LedgerClient['query']>;
 }
 

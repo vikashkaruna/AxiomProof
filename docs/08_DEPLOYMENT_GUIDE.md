@@ -141,6 +141,7 @@ terraform apply tfplan
 ```
 
 This provisions:
+
 - VPC with 3 public + 3 private subnets across 3 AZs
 - EKS cluster with Fargate profiles (axiom-proof namespace) and a
   GPU node group (for the self-hosted vLLM)
@@ -151,6 +152,7 @@ This provisions:
 - IAM roles for IRSA
 
 Outputs (sensitive):
+
 - `eks_cluster_name`
 - `eks_cluster_endpoint`
 - `evidence_bucket`
@@ -200,6 +202,7 @@ supabase db push
 ```
 
 This creates:
+
 - All tables (tenants, users, controls, engagements, plans, actions,
   approval_tokens, audit_ledger, evidence, ...)
 - All RLS policies
@@ -220,6 +223,7 @@ and `control_libraries` tables.
 ### 4.4 Configure auth
 
 In the Supabase dashboard, **Authentication → Providers → Email**:
+
 - Enable email provider
 - Disable "Confirm email" (we send our own confirmation via
   Supabase Auth's email template)
@@ -227,6 +231,7 @@ In the Supabase dashboard, **Authentication → Providers → Email**:
 - Set the redirect URL to `https://app.axiomminds.ai/login`
 
 For MFA, **Authentication → Multi-Factor**:
+
 - Enable TOTP
 - **Do not** require MFA at signup; the BFF enforces MFA for any
   user with the `approver` role.
@@ -507,7 +512,7 @@ curl -fsS http://localhost:8001/ready
 1. Create a test engagement via the Supabase dashboard
    (insert into `engagements`).
 2. Run Parikshan via the agent runtime: `curl -X POST
-   http://localhost:8000/agents/parikshan/invoke ...`
+http://localhost:8000/agents/parikshan/invoke ...`
 3. Generate a plan with Sudhaar.
 4. Open the plan in the app. The dry-run / rollback / blast-radius
    cards should be visible.
@@ -607,15 +612,15 @@ key compromise scenarios.
 
 ### 10.7 Disaster recovery
 
-| Scenario | Recovery |
-|---|---|
-| Single EKS pod crash | Kubernetes reschedules automatically |
-| EKS node failure | Managed node group replaces it |
-| AZ failure | Multi-AZ Fargate + cross-AZ S3 replication |
-| Region failure | DR runbook (manual) — restore Supabase from backup, S3 from cross-region replication, redeploy EKS in DR region |
-| Supabase data loss | PITR (7-day) |
-| Evidence vault data loss | S3 versioning + cross-region replication (in `ap-south-1` only) |
-| Approval key compromise | Rotate the key (see §10.5); all outstanding tokens become invalid |
+| Scenario                 | Recovery                                                                                                        |
+| ------------------------ | --------------------------------------------------------------------------------------------------------------- |
+| Single EKS pod crash     | Kubernetes reschedules automatically                                                                            |
+| EKS node failure         | Managed node group replaces it                                                                                  |
+| AZ failure               | Multi-AZ Fargate + cross-AZ S3 replication                                                                      |
+| Region failure           | DR runbook (manual) — restore Supabase from backup, S3 from cross-region replication, redeploy EKS in DR region |
+| Supabase data loss       | PITR (7-day)                                                                                                    |
+| Evidence vault data loss | S3 versioning + cross-region replication (in `ap-south-1` only)                                                 |
+| Approval key compromise  | Rotate the key (see §10.5); all outstanding tokens become invalid                                               |
 
 ---
 
@@ -633,7 +638,8 @@ artifacts here are the source of truth for what they should do.)
 ## Appendix B — Disaster Recovery
 
 RPO ≤ 1 hour, RTO ≤ 4 hours (NFR-9). The cross-region S3 replication
-+ Supabase PITR + Terraform-from-scratch recovery are the safety net.
+
+- Supabase PITR + Terraform-from-scratch recovery are the safety net.
 
 For region-failure scenarios, the recovery procedure is:
 
@@ -652,19 +658,19 @@ the automation is in place.
 Estimated Phase 0/1 monthly cost (Mumbai, 1 EKS cluster, low
 traffic):
 
-| Resource | Monthly (USD) |
-|---|---|
-| EKS control plane | 73 |
-| Fargate (BFF + agent runtime + model gateway, low traffic) | 100–300 |
-| S3 evidence (1 TB, IA) | 25 |
-| Supabase Pro | 25 |
-| Temporal Cloud | 25–100 |
-| ElastiCache (cache.r6g.large × 2) | 200 |
-| KMS | 5 |
-| Secrets Manager | 5 |
-| CloudWatch logs (30-day retention) | 20 |
-| Route 53 + ACM | 5 |
-| **Total** | **~480–760** |
+| Resource                                                   | Monthly (USD) |
+| ---------------------------------------------------------- | ------------- |
+| EKS control plane                                          | 73            |
+| Fargate (BFF + agent runtime + model gateway, low traffic) | 100–300       |
+| S3 evidence (1 TB, IA)                                     | 25            |
+| Supabase Pro                                               | 25            |
+| Temporal Cloud                                             | 25–100        |
+| ElastiCache (cache.r6g.large × 2)                          | 200           |
+| KMS                                                        | 5             |
+| Secrets Manager                                            | 5             |
+| CloudWatch logs (30-day retention)                         | 20            |
+| Route 53 + ACM                                             | 5             |
+| **Total**                                                  | **~480–760**  |
 
 Phase 3+ (Karya executing real remediation) will add significant
 cost for the GPU node group and per-tenant approval key storage.

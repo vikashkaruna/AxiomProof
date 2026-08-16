@@ -1,7 +1,15 @@
 import Link from 'next/link';
 import { redirect } from 'next/navigation';
 import { createSupabaseServerClient, createSupabaseAdmin } from '@axiom/supabase';
-import { PageHeader, Card, CardContent, CardHeader, CardTitle, StatusBadge, PostureScore } from '@axiom/ui';
+import {
+  PageHeader,
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  StatusBadge,
+  PostureScore,
+} from '@axiom/ui';
 import { formatDate, formatINR } from '@axiom/ui';
 
 export const dynamic = 'force-dynamic';
@@ -16,7 +24,9 @@ export default async function EngagementsListPage() {
   const admin = createSupabaseAdmin();
   const { data: engagements } = await admin
     .from('engagements')
-    .select('id, title, status, posture_score, estimated_exposure_inr, started_at, completed_at, tenant_id, library_version, tenants:tenant_id(name)')
+    .select(
+      'id, title, status, posture_score, estimated_exposure_inr, started_at, completed_at, tenant_id, library_version, tenants:tenant_id(name)',
+    )
     .order('started_at', { ascending: false });
 
   return (

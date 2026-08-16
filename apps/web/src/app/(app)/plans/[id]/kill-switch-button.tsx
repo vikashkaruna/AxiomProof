@@ -15,7 +15,8 @@ export function KillSwitchButton({ planId }: { planId: string }) {
           'prevent any further agent execution until reset. This action is recorded ' +
           'in the audit ledger and is not reversible by the system — only by the founder.',
       )
-    ) return;
+    )
+      return;
     setBusy(true);
     try {
       await fetch('/api/bff/v1/kill-switch/engage', {

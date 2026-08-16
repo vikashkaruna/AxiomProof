@@ -101,9 +101,7 @@ export class EvidenceVault {
     // We verify that here so a misconfigured bucket fails fast.
     await this.assertObjectLockEnabled(input.bucket);
 
-    const retainUntilDate = new Date(
-      Date.now() + input.retentionDays * 24 * 60 * 60 * 1000,
-    );
+    const retainUntilDate = new Date(Date.now() + input.retentionDays * 24 * 60 * 60 * 1000);
 
     const legalHold: ObjectLockLegalHold = {
       Status: input.legalHold ? 'ON' : 'OFF',
@@ -148,7 +146,10 @@ export class EvidenceVault {
   /**
    * Retrieve a sealed artifact. Returns the body and metadata.
    */
-  async retrieve(bucket: string, key: string): Promise<{
+  async retrieve(
+    bucket: string,
+    key: string,
+  ): Promise<{
     body: Buffer;
     contentHash: string;
     metadata: Record<string, string>;
@@ -180,7 +181,11 @@ export class EvidenceVault {
    * Used to detect bit-rot or accidental overwrite (the latter is
    * blocked by Object Lock, but verifying is still good practice).
    */
-  async verifyIntegrity(bucket: string, key: string, expectedHash: string): Promise<{
+  async verifyIntegrity(
+    bucket: string,
+    key: string,
+    expectedHash: string,
+  ): Promise<{
     ok: boolean;
     actualHash: string;
   }> {
@@ -192,11 +197,7 @@ export class EvidenceVault {
    * Generate a time-limited signed URL for auditor access.
    * Audit URLs are read-only and short-lived.
    */
-  async presignedAuditUrl(
-    bucket: string,
-    key: string,
-    expiresInSeconds = 300,
-  ): Promise<string> {
+  async presignedAuditUrl(bucket: string, key: string, expiresInSeconds = 300): Promise<string> {
     const cmd = new GetObjectCommand({ Bucket: bucket, Key: key });
     return getSignedUrl(this.s3, cmd, { expiresIn: expiresInSeconds });
   }
@@ -212,7 +213,9 @@ export class EvidenceVault {
 
   private async assertObjectLockEnabled(bucket: string): Promise<void> {
     try {
-      const head = await this.s3.send(new HeadObjectCommand({ Bucket: bucket, Key: '__axiom_lock_probe' }));
+      const head = await this.s3.send(
+        new HeadObjectCommand({ Bucket: bucket, Key: '__axiom_lock_probe' }),
+      );
       // We only need to know the bucket accepts the header; if it doesn't,
       // S3 returns InvalidArgument and we throw.
       void head;

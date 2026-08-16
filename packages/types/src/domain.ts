@@ -101,8 +101,8 @@ export const ControlQuestionSchema = z.object({
   type: z.enum(['boolean', 'scale', 'text', 'multi', 'evidence']),
   scaleAnchors: z.array(z.string()).optional(),
   options: z.array(z.string()).optional(),
-  evidenceTypes: z.array(z.nativeEnum(EvidenceType)).default([]),
-  dependsOn: z.array(z.string()).default([]),
+  evidenceTypes: z.array(z.nativeEnum(EvidenceType)).optional().default([]),
+  dependsOn: z.array(z.string()).optional().default([]),
 });
 export type ControlQuestion = z.infer<typeof ControlQuestionSchema>;
 
@@ -373,7 +373,14 @@ export const DsarSchema = z.object({
   id: z.string().uuid(),
   tenantId: z.string().uuid(),
   kind: z.enum(['access', 'correction', 'erasure', 'nominate', 'portability']),
-  status: z.enum(['received', 'identity_verification', 'in_fulfilment', 'completed', 'rejected', 'escalated']),
+  status: z.enum([
+    'received',
+    'identity_verification',
+    'in_fulfilment',
+    'completed',
+    'rejected',
+    'escalated',
+  ]),
   dataPrincipalName: z.string().nullable(),
   dataPrincipalEmail: z.string().nullable(),
   dataPrincipalPhone: z.string().nullable(),
@@ -396,7 +403,15 @@ export const BreachSchema = z.object({
   title: z.string(),
   description: z.string(),
   severity: z.enum(['low', 'medium', 'high', 'critical']),
-  status: z.enum(['detected', 'triaging', 'contained', 'notifying_dpb', 'notifying_principals', 'post_mortem', 'closed']),
+  status: z.enum([
+    'detected',
+    'triaging',
+    'contained',
+    'notifying_dpb',
+    'notifying_principals',
+    'post_mortem',
+    'closed',
+  ]),
   occurredAt: z.string().datetime().nullable(),
   detectedAt: z.string().datetime(),
   dpbNotificationDueBy: z.string().datetime(),

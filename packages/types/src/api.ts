@@ -80,9 +80,20 @@ export type CreateEngagementRequest = z.infer<typeof CreateEngagementSchema>;
 
 export const UpdateEngagementStatusSchema = z.object({
   status: z.enum([
-    'intake', 'discovery', 'classification', 'assessment', 'planning',
-    'review', 'dry_run', 'awaiting_approval', 'executing', 'verifying',
-    'closure', 'completed', 'paused', 'cancelled',
+    'intake',
+    'discovery',
+    'classification',
+    'assessment',
+    'planning',
+    'review',
+    'dry_run',
+    'awaiting_approval',
+    'executing',
+    'verifying',
+    'closure',
+    'completed',
+    'paused',
+    'cancelled',
   ]),
   note: z.string().max(1000).optional(),
 });
@@ -94,8 +105,14 @@ export const SealedEvidenceMetadataSchema = z.object({
   tenantId: z.string().uuid(),
   engagementId: z.string().uuid().optional(),
   evidenceType: z.enum([
-    'document', 'config', 'screenshot', 'log',
-    'attestation', 'interview', 'inventory', 'report',
+    'document',
+    'config',
+    'screenshot',
+    'log',
+    'attestation',
+    'interview',
+    'inventory',
+    'report',
   ]),
   description: z.string().max(2000).optional(),
   collectedByAgent: z.string(),
@@ -134,7 +151,12 @@ export const IssueApprovalRequestSchema = z.object({
   mode: z.enum(['batch', 'individual']).default('batch'),
   concurrency: z.number().int().positive().max(20).default(1),
   stopOnFailure: z.boolean().default(true),
-  expiresInMinutes: z.number().int().positive().max(7 * 24 * 60).default(60),
+  expiresInMinutes: z
+    .number()
+    .int()
+    .positive()
+    .max(7 * 24 * 60)
+    .default(60),
   reason: z.string().max(2000).optional(),
   conditions: z.record(z.unknown()).default({}),
 });

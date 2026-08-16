@@ -25,7 +25,18 @@ test.describe('Public gap-scan funnel', () => {
 
   test('the agents page lists all 10 named agents', async ({ page }) => {
     await page.goto('/agents');
-    const agents = ['Drishti', 'Vibhaag', 'Parikshan', 'Saakshi', 'Sudhaar', 'Karya', 'Lekha', 'Nazar', 'Prativedan', 'Sanket'];
+    const agents = [
+      'Drishti',
+      'Vibhaag',
+      'Parikshan',
+      'Saakshi',
+      'Sudhaar',
+      'Karya',
+      'Lekha',
+      'Nazar',
+      'Prativedan',
+      'Sanket',
+    ];
     for (const name of agents) {
       await expect(page.getByText(name, { exact: false }).first()).toBeVisible();
     }
