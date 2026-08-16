@@ -28,6 +28,18 @@ describe('loadEnv', () => {
     });
     expect(env.NODE_ENV).toBe('development');
   });
+
+  it('fails closed when production service credentials are incomplete', () => {
+    resetEnvCache();
+    expect(() =>
+      loadEnv({
+        NODE_ENV: 'production',
+        SUPABASE_URL: 'https://example.supabase.co',
+        SUPABASE_ANON_KEY: 'a'.repeat(40),
+        SUPABASE_SERVICE_KEY: 'b'.repeat(40),
+      }),
+    ).toThrow(/AGENT_RUNTIME_INTERNAL_TOKEN|APPROVAL_SIGNING_KEY/);
+  });
 });
 
 describe('BRAND', () => {

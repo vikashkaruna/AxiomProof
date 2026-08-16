@@ -13,6 +13,9 @@ import type { Variables } from '../types.js';
 import { createSupabaseAdmin } from '@axiom/supabase';
 import { logger } from '../lib/logger.js';
 import { randomUUID } from 'node:crypto';
+import { loadEnv } from '@axiom/config';
+
+const env = loadEnv();
 
 interface Deps {
   approvalEngine: ApprovalEngine;
@@ -28,7 +31,7 @@ export function v1Routes(deps: Deps) {
 
   // POST /v1/plans/approve — issue a signed approval token
   app.post('/plans/approve', async (c) => {
-    if (deps.killSwitch.isActive()) {
+    if (deps.killSwitch.isActive(c.get('tenantId'))) {
       return c.json(
         { error: { code: 'kill_switch_active', message: 'Kill switch is engaged' } },
         423,
@@ -78,14 +81,36 @@ export function v1Routes(deps: Deps) {
     if (planErr || !plan) {
       return c.json({ error: { code: 'plan_not_found', message: 'Plan not found' } }, 404);
     }
+    if (!['review', 'approved'].includes(plan.status)) {
+      return c.json(
+        { error: { code: 'plan_not_approvable', message: 'Plan is not ready for approval' } },
+        422,
+      );
+    }
 
     const { data: actions, error: actErr } = await admin
       .from('remediation_actions')
-      .select('id, dry_run_status, rollback_validated, dry_run_expires_at')
+      .select('id, tenant_id, plan_id, dry_run_status, rollback_validated, dry_run_expires_at')
       .eq('plan_id', input.planId)
+      .eq('tenant_id', tenantId)
       .in('id', input.actionIds);
     if (actErr) {
       return c.json({ error: { code: 'lookup_failed', message: actErr.message } }, 500);
+    }
+
+    const foundActionIds = new Set((actions ?? []).map((action) => action.id));
+    const missing = input.actionIds.filter((actionId) => !foundActionIds.has(actionId));
+    if (missing.length > 0) {
+      return c.json(
+        {
+          error: {
+            code: 'actions_not_found',
+            message: 'Every requested action must belong to this tenant and plan',
+            details: { missing },
+          },
+        },
+        404,
+      );
     }
 
     // Hard gate: every action must have a successful dry-run and a
@@ -166,7 +191,7 @@ export function v1Routes(deps: Deps) {
     }
 
     // Mark actions as approved
-    await admin
+    const { error: actionApprovalErr } = await admin
       .from('remediation_actions')
       .update({
         approval_status: 'approved',
@@ -174,7 +199,16 @@ export function v1Routes(deps: Deps) {
         approved_by: user.id,
         approved_at: new Date().toISOString(),
       })
+      .eq('tenant_id', tenantId)
+      .eq('plan_id', input.planId)
       .in('id', input.actionIds);
+    if (actionApprovalErr) {
+      logger.error({ err: actionApprovalErr.message }, 'failed to mark actions approved');
+      return c.json(
+        { error: { code: 'persistence_failed', message: 'Could not mark actions approved' } },
+        500,
+      );
+    }
 
     // Ledger
     const correlationId = randomUUID();
@@ -220,7 +254,7 @@ export function v1Routes(deps: Deps) {
 
   // POST /v1/plans/:id/reject — reject the plan
   app.post('/plans/:id/reject', async (c) => {
-    if (deps.killSwitch.isActive()) {
+    if (deps.killSwitch.isActive(c.get('tenantId'))) {
       return c.json(
         { error: { code: 'kill_switch_active', message: 'Kill switch is engaged' } },
         423,
@@ -251,6 +285,7 @@ export function v1Routes(deps: Deps) {
       .from('remediation_actions')
       .update({ approval_status: 'skipped', final_outcome: 'skipped' })
       .eq('plan_id', planId)
+      .eq('tenant_id', tenantId)
       .eq('approval_status', 'draft');
 
     await deps.ledger.append({
@@ -271,7 +306,8 @@ export function v1Routes(deps: Deps) {
   // Per ADR-2 / BR-1: no mutating action executes without a valid
   // approval token. The token is validated per-action.
   app.post('/plans/:id/execute', async (c) => {
-    if (deps.killSwitch.isActive()) {
+    const tenantId = c.get('tenantId');
+    if (deps.killSwitch.isActive(tenantId)) {
       return c.json(
         { error: { code: 'kill_switch_active', message: 'Kill switch is engaged' } },
         423,
@@ -279,7 +315,6 @@ export function v1Routes(deps: Deps) {
     }
 
     const planId = c.req.param('id');
-    const tenantId = c.get('tenantId');
     const user = c.get('user');
     const body = await c.req.json().catch(() => null);
     const parsed = ExecutePlanRequestSchema.safeParse(body);
@@ -315,6 +350,7 @@ export function v1Routes(deps: Deps) {
       );
     }
 
+    const admin = createSupabaseAdmin();
     const verification = await deps.approvalEngine.verify(tenantId, signedToken);
     if (!verification.valid) {
       return c.json(
@@ -335,7 +371,45 @@ export function v1Routes(deps: Deps) {
       );
     }
 
-    const admin = createSupabaseAdmin();
+    // The in-memory nonce check is only a fast path. The persisted token is
+    // the source of truth so replay protection also works across replicas.
+    const { data: persistedToken, error: persistedTokenErr } = await admin
+      .from('approval_tokens')
+      .select('id, tenant_id, plan_id, action_ids, signature, status, expires_at')
+      .eq('nonce', signedToken.spec.nonce)
+      .eq('tenant_id', tenantId)
+      .eq('plan_id', planId)
+      .maybeSingle();
+    if (persistedTokenErr) {
+      return c.json(
+        { error: { code: 'token_lookup_failed', message: persistedTokenErr.message } },
+        500,
+      );
+    }
+    if (!persistedToken || persistedToken.signature !== signedToken.signature) {
+      return c.json(
+        { error: { code: 'token_not_found', message: 'Approval token is not registered' } },
+        403,
+      );
+    }
+    if (persistedToken.status !== 'issued') {
+      return c.json(
+        { error: { code: 'token_already_used', message: 'Approval token is no longer usable' } },
+        409,
+      );
+    }
+    const persistedActionIds = new Set((persistedToken.action_ids ?? []).map(String));
+    if (signedToken.spec.actionIds.some((actionId: string) => !persistedActionIds.has(actionId))) {
+      return c.json(
+        {
+          error: {
+            code: 'token_scope_mismatch',
+            message: 'Token scope does not match its database record',
+          },
+        },
+        403,
+      );
+    }
 
     // Per-action validation
     const accepted: string[] = [];
@@ -350,6 +424,7 @@ export function v1Routes(deps: Deps) {
         .from('remediation_actions')
         .select('id, plan_id, approval_status, dry_run_status, rollback_validated, idempotency_key')
         .eq('id', actionId)
+        .eq('tenant_id', tenantId)
         .single();
       if (!action || action.plan_id !== planId) {
         rejected.push({ actionId, reason: 'action_not_found' });
@@ -374,13 +449,47 @@ export function v1Routes(deps: Deps) {
 
     // Mark accepted actions as executing + record idempotency key
     if (accepted.length > 0) {
-      await admin
+      const { data: consumedToken, error: consumeErr } = await admin
+        .from('approval_tokens')
+        .update({ status: 'consumed', consumed_at: new Date().toISOString() })
+        .eq('id', persistedToken.id)
+        .eq('tenant_id', tenantId)
+        .eq('status', 'issued')
+        .select('id')
+        .maybeSingle();
+      if (consumeErr) {
+        return c.json(
+          { error: { code: 'token_consume_failed', message: consumeErr.message } },
+          500,
+        );
+      }
+      if (!consumedToken) {
+        return c.json(
+          {
+            error: {
+              code: 'token_already_used',
+              message: 'Approval token was consumed concurrently',
+            },
+          },
+          409,
+        );
+      }
+
+      const { error: executionUpdateErr } = await admin
         .from('remediation_actions')
         .update({
           execution_status: 'executing',
           idempotency_key: c.get('idempotencyKey'),
         })
+        .eq('tenant_id', tenantId)
+        .eq('plan_id', planId)
         .in('id', accepted);
+      if (executionUpdateErr) {
+        return c.json(
+          { error: { code: 'persistence_failed', message: 'Could not mark actions as executing' } },
+          500,
+        );
+      }
     }
 
     const correlationId = randomUUID();
@@ -404,13 +513,13 @@ export function v1Routes(deps: Deps) {
     // immediately mark the actions as succeeded (advisory only) and
     // surface the plan via the realtime channel so the workbench
     // shows the lifecycle.
-    if (accepted.length > 0 && process.env.AGENT_RUNTIME_URL) {
+    if (accepted.length > 0 && env.AGENT_RUNTIME_URL) {
       try {
-        await fetch(`${process.env.AGENT_RUNTIME_URL}/internal/execute`, {
+        await fetch(`${env.AGENT_RUNTIME_URL}/internal/execute`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
-            'X-Internal-Token': process.env.AGENT_RUNTIME_INTERNAL_TOKEN ?? '',
+            'X-Internal-Token': env.AGENT_RUNTIME_INTERNAL_TOKEN ?? '',
           },
           body: JSON.stringify({
             tenantId,
@@ -461,8 +570,30 @@ export function v1Routes(deps: Deps) {
       );
     }
     const body = await c.req.json().catch(() => ({}));
-    const reason = (body as any)?.reason ?? 'manual engagement';
-    const scope = (body as any)?.scope ?? 'global';
+    const parsedKillSwitch = z
+      .object({
+        reason: z.string().min(1).max(500).default('manual engagement'),
+        scope: z.enum(['global', 'tenant']).default('global'),
+      })
+      .safeParse(body);
+    if (!parsedKillSwitch.success) {
+      return c.json(
+        { error: { code: 'validation_failed', message: 'Invalid kill-switch request' } },
+        400,
+      );
+    }
+    const { reason, scope } = parsedKillSwitch.data;
+    if (scope === 'global' && c.get('role') !== 'founder' && c.get('role') !== 'owner') {
+      return c.json(
+        {
+          error: {
+            code: 'role_forbidden',
+            message: 'Only founders/owners can engage a global kill switch',
+          },
+        },
+        403,
+      );
+    }
     deps.killSwitch.engage({
       tenantId: c.get('tenantId'),
       userId: c.get('user').id,
@@ -482,6 +613,12 @@ export function v1Routes(deps: Deps) {
   });
 
   app.post('/kill-switch/release', async (c) => {
+    if (c.get('role') !== 'founder') {
+      return c.json(
+        { error: { code: 'role_forbidden', message: 'Only founders can release the kill switch' } },
+        403,
+      );
+    }
     deps.killSwitch.release();
     await deps.ledger.append({
       tenantId: c.get('tenantId'),
@@ -496,7 +633,7 @@ export function v1Routes(deps: Deps) {
   });
 
   app.get('/kill-switch/status', (c) => {
-    return c.json({ engaged: deps.killSwitch.isActive() });
+    return c.json({ engaged: deps.killSwitch.isActive(c.get('tenantId')) });
   });
 
   // ─── Ledger ──────────────────────────────────────────────────────

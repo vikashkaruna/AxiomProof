@@ -29,18 +29,11 @@ const nextConfig = {
           { key: 'Referrer-Policy', value: 'strict-origin-when-cross-origin' },
           { key: 'X-DNS-Prefetch-Control', value: 'on' },
           { key: 'Permissions-Policy', value: 'camera=(), microphone=(), geolocation=()' },
-          { key: 'Strict-Transport-Security', value: 'max-age=63072000; includeSubDomains; preload' },
+          {
+            key: 'Strict-Transport-Security',
+            value: 'max-age=63072000; includeSubDomains; preload',
+          },
         ],
-      },
-    ];
-  },
-  // CSP — strict in production
-  async rewrites() {
-    return [
-      // Proxy BFF API calls in dev (avoids CORS during local dev)
-      {
-        source: '/api/bff/:path*',
-        destination: `${process.env.BFF_PUBLIC_URL || 'http://localhost:4000'}/:path*`,
       },
     ];
   },

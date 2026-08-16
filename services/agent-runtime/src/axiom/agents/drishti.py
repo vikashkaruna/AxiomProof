@@ -84,13 +84,15 @@ class DrishtiAgent(BaseAgent[DrishtiInput, DrishtiOutput]):
         escalation_reason: str | None = None
         # Escalate if children data was discovered
         for s in inventory:
-            if "children" in s.data_categories:
+            categories = {category.lower() for category in s.data_categories}
+            if "children" in categories:
                 escalate = True
                 escalation_reason = f"discovers_children_data: system '{s.name}' flagged"
                 break
         # Escalate if health data was discovered
         for s in inventory:
-            if "health" in s.data_categories:
+            categories = {category.lower() for category in s.data_categories}
+            if "health" in categories:
                 escalate = True
                 escalation_reason = escalation_reason or f"discovers_health_data: system '{s.name}' flagged"
                 break

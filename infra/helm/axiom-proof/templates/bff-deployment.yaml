@@ -53,11 +53,18 @@ spec:
               value: {{ .Values.config.awsRegion }}
             - name: MODEL_GATEWAY_URL
               value: {{ .Values.config.modelGatewayUrl }}
+            - name: AGENT_RUNTIME_URL
+              value: {{ .Values.config.agentRuntimeUrl }}
             - name: AGENT_RUNTIME_INTERNAL_TOKEN
               valueFrom:
                 secretKeyRef:
                   name: {{ include "axiom-proof.fullname" . }}-internal
                   key: agent-runtime-token
+            - name: MODEL_GATEWAY_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "axiom-proof.fullname" . }}-internal
+                  key: model-gateway-key
             - name: APPROVAL_SIGNING_KEY
               valueFrom:
                 secretKeyRef:

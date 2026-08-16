@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
+import { cookies } from 'next/headers';
 import { createSupabaseAdmin } from '@axiom/supabase';
 import {
   Card,
@@ -19,11 +20,15 @@ export const dynamic = 'force-dynamic';
 
 export default async function GapScanReportPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
+  const access = (await cookies()).get('gap_scan_access')?.value;
+  if (!access) notFound();
+
   const supabase = createSupabaseAdmin();
   const { data: scan } = await supabase
     .from('gap_scan_responses')
     .select('*')
     .eq('id', id)
+    .eq('session_id', access)
     .single();
 
   if (!scan) notFound();
@@ -137,8 +142,8 @@ export default async function GapScanReportPage({ params }: { params: Promise<{ 
           <CardContent className="p-6 text-center">
             <h3 className="font-heading text-xl font-semibold text-indigo-500">What's next?</h3>
             <p className="mt-2 text-slate-600">
-              The founder will reach out to {scan.contact_email} within 1 business day to walk
-              through your findings. This is a 30-min call, not a sales pitch.
+              The founder will reach out within 1 business day to walk through your findings. This
+              is a 30-min call, not a sales pitch.
             </p>
             <Button asChild={false} variant="accent" size="lg" className="mt-4">
               <Link href="/contact">Or book directly</Link>

@@ -92,6 +92,20 @@ class KaryaAgent(BaseAgent[KaryaInput, KaryaOutput]):
                 error=f"Token invalid: {verification.reason}",
             )
 
+        spec = input.approval_token.get("spec", {})
+        if spec.get("planId") != input.plan_id:
+            return KaryaOutput(
+                action_id=input.action_id,
+                status="denied",
+                error="Token was not issued for this plan",
+            )
+        if input.action_id not in spec.get("actionIds", []):
+            return KaryaOutput(
+                action_id=input.action_id,
+                status="denied",
+                error="Action is not covered by the approval token",
+            )
+
         # Token valid. Phase 3+ would now dispatch to the typed action
         # catalogue (connector-driven for data actions, file system
         # for policy publishing, etc.). For Phase 0/1 we record the

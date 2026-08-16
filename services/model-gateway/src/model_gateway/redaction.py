@@ -17,6 +17,7 @@ from __future__ import annotations
 import hashlib
 import re
 from dataclasses import dataclass
+from functools import lru_cache
 from typing import Any
 
 # DPDPA-specific patterns (high-precision, low-false-positive)
@@ -25,11 +26,29 @@ DPDPA_PATTERNS: list[tuple[str, re.Pattern[str]]] = [
     ("AADHAAR", re.compile(r"\b\d{4}\s?\d{4}\s?\d{4}\b")),
     ("PASSPORT", re.compile(r"\b[A-PR-WY][0-9]{7}\b")),
     ("IFSC", re.compile(r"\b[A-Z]{4}0[A-Z0-9]{6}\b")),
+    ("UPI", re.compile(r"\b[\w.-]{2,}@(ybl|okaxis|oksbi|paytm|upi)\b", re.IGNORECASE)),
     ("EMAIL", re.compile(r"\b[\w.+-]+@[\w-]+\.[\w.-]+\b")),
     ("PHONE_IN", re.compile(r"(?:\+?91[\s-]?)?[6-9]\d{4}[\s-]?\d{5}\b")),
     ("CARD", re.compile(r"\b(?:\d[ -]?){13,19}\b")),
     ("IP", re.compile(r"\b(?:\d{1,3}\.){3}\d{1,3}\b")),
 ]
+
+
+@lru_cache(maxsize=1)
+def _presidio_analyzer() -> Any | None:
+    """Load Presidio once when its language model is available.
+
+    Regexes remain the deterministic baseline. A missing Presidio model must
+    not make the gateway crash during local development, but production
+    deployments should install and verify the analyzer model as documented in
+    the Phase 1 security report.
+    """
+    try:
+        from presidio_analyzer import AnalyzerEngine
+
+        return AnalyzerEngine()
+    except Exception:  # noqa: BLE001 - optional dependency/model failure
+        return None
 
 
 @dataclass(frozen=True)
@@ -64,6 +83,45 @@ def redact(text: str) -> RedactionSummary:
             count = len(matches)
             redactions[name] = count
             out = pattern.sub(f"[REDACTED:{name}]", out)
+
+    # Presidio covers the PII classes that cannot be safely identified with a
+    # portable regex alone, especially PERSON and LOCATION/ADDRESS.
+    analyzer = _presidio_analyzer()
+    if analyzer is not None and out:
+        try:
+            results = analyzer.analyze(
+                text=out,
+                language="en",
+                entities=[
+                    "PERSON",
+                    "LOCATION",
+                    "ADDRESS",
+                    "PHONE_NUMBER",
+                    "EMAIL_ADDRESS",
+                    "CREDIT_CARD",
+                    "IP_ADDRESS",
+                    "DATE_TIME",
+                ],
+                score_threshold=0.6,
+            )
+            labels = {
+                "PERSON": "PERSON",
+                "LOCATION": "LOCATION",
+                "ADDRESS": "ADDRESS",
+                "PHONE_NUMBER": "PHONE",
+                "EMAIL_ADDRESS": "EMAIL",
+                "CREDIT_CARD": "CARD",
+                "IP_ADDRESS": "IP",
+                "DATE_TIME": "DATE_TIME",
+            }
+            for result in sorted(results, key=lambda item: item.start, reverse=True):
+                label = labels.get(result.entity_type)
+                if not label:
+                    continue
+                out = out[: result.start] + f"[REDACTED:{label}]" + out[result.end :]
+                redactions[label] = redactions.get(label, 0) + 1
+        except Exception:  # noqa: BLE001 - fail back to deterministic regexes
+            pass
 
     return RedactionSummary(
         redacted_text=out,

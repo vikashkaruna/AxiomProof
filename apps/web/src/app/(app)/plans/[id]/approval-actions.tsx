@@ -16,12 +16,13 @@ interface Action {
 
 interface Props {
   planId: string;
+  tenantId: string;
   actions: Action[];
   eligible: Action[];
   blocked: Action[];
 }
 
-export function ApprovalActions({ planId, actions, eligible, blocked }: Props) {
+export function ApprovalActions({ planId, tenantId, actions, eligible, blocked }: Props) {
   const router = useRouter();
   const [selected, setSelected] = useState<Set<string>>(new Set(eligible.map((a) => a.id)));
   const [reason, setReason] = useState('');
@@ -29,6 +30,8 @@ export function ApprovalActions({ planId, actions, eligible, blocked }: Props) {
   const [stopOnFailure, setStopOnFailure] = useState(true);
   const [expiresInMinutes, setExpiresInMinutes] = useState(60);
   const [submitting, setSubmitting] = useState(false);
+  const [approvalToken, setApprovalToken] = useState<string | null>(null);
+  const [approvedActionIds, setApprovedActionIds] = useState<string[]>([]);
   const [error, setError] = useState<string | null>(null);
 
   function toggle(id: string) {
@@ -48,7 +51,7 @@ export function ApprovalActions({ planId, actions, eligible, blocked }: Props) {
     try {
       const res = await fetch('/api/bff/v1/plans/approve', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', 'X-Tenant-Id': tenantId },
         body: JSON.stringify({
           planId,
           actionIds: Array.from(selected),
@@ -64,6 +67,45 @@ export function ApprovalActions({ planId, actions, eligible, blocked }: Props) {
         setError(body?.error?.message ?? `HTTP ${res.status}`);
         return;
       }
+      const body = await res.json();
+      setApprovalToken(JSON.stringify(body.token));
+      setApprovedActionIds(Array.from(selected));
+      router.refresh();
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'Failed');
+    } finally {
+      setSubmitting(false);
+    }
+  }
+
+  async function execute() {
+    if (!approvalToken || approvedActionIds.length === 0) return;
+    setError(null);
+    setSubmitting(true);
+    try {
+      const res = await fetch(`/api/bff/v1/plans/${planId}/execute`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-Tenant-Id': tenantId,
+          'Idempotency-Key': crypto.randomUUID(),
+        },
+        body: JSON.stringify({
+          planId,
+          approvalToken,
+          actionIds: approvedActionIds,
+          mode: 'batch',
+          concurrency,
+          stopOnFailure,
+        }),
+      });
+      if (!res.ok) {
+        const body = await res.json().catch(() => ({}));
+        setError(body?.error?.message ?? `HTTP ${res.status}`);
+        return;
+      }
+      setApprovalToken(null);
+      setApprovedActionIds([]);
       router.refresh();
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Failed');
@@ -163,6 +205,11 @@ export function ApprovalActions({ planId, actions, eligible, blocked }: Props) {
         >
           Approve {selected.size} action{selected.size === 1 ? '' : 's'}
         </Button>
+        {approvalToken && (
+          <Button variant="primary" size="lg" onClick={execute} loading={submitting}>
+            Execute approved actions
+          </Button>
+        )}
         <Button variant="ghost" size="lg" onClick={() => router.refresh()}>
           Refresh
         </Button>
@@ -173,7 +220,10 @@ export function ApprovalActions({ planId, actions, eligible, blocked }: Props) {
             if (!confirm('Reject the plan? This will mark all actions as rejected.')) return;
             setSubmitting(true);
             try {
-              await fetch(`/api/bff/v1/plans/${planId}/reject`, { method: 'POST' });
+              await fetch(`/api/bff/v1/plans/${planId}/reject`, {
+                method: 'POST',
+                headers: { 'X-Tenant-Id': tenantId },
+              });
               router.refresh();
             } finally {
               setSubmitting(false);

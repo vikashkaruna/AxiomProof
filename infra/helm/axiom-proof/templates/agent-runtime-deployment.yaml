@@ -52,6 +52,11 @@ spec:
               value: {{ .Values.config.s3EvidenceBucket }}
             - name: MODEL_GATEWAY_URL
               value: {{ .Values.config.modelGatewayUrl }}
+            - name: MODEL_GATEWAY_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "axiom-proof.fullname" . }}-internal
+                  key: model-gateway-key
             - name: AGENT_RUNTIME_INTERNAL_TOKEN
               valueFrom:
                 secretKeyRef:

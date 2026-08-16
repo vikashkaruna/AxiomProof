@@ -1,5 +1,4 @@
 import Link from 'next/link';
-import { createSupabaseAdmin } from '@axiom/supabase';
 import { redirect } from 'next/navigation';
 import {
   PageHeader,
@@ -22,8 +21,7 @@ export default async function PlansListPage() {
   } = await supabase.auth.getUser();
   if (!user) redirect('/login');
 
-  const admin = createSupabaseAdmin();
-  const { data: plans } = await admin
+  const { data: plans } = await supabase
     .from('remediation_plans')
     .select('id, title, status, version, created_at, tenant_id, engagement_id, library_version')
     .order('created_at', { ascending: false });

@@ -1,6 +1,6 @@
 # Axiom Proof — Repository Audit & Code Review Plan
 
-> Status: **Part A complete; Part B Phase 0 complete; Phase 1 pending sign-off.**
+> Status: **Part A complete; Part B Phases 0–2 complete; Phase 2 external TODOs pending.**
 > Author: prepared for Vikash Karuna · Axiom Minds
 > Date: 2026-08-16
 > Repo: https://github.com/vikashkaruna/AxiomProof.git
@@ -122,12 +122,12 @@ install` has happened, no test has been executed, no lint, no typecheck.
 
 4. **Branch protection was initially aspirational and is now configured.**
    During the first audit pass, `main` was unprotected. On 2026-08-16 the
-   authenticated GitHub session configured pull requests, zero required
-   approvals, strict required checks, linear history, conversation resolution,
-   and disabled force-pushes/deletions. PR #9 subsequently passed all five
-   required checks and merged without an approval gate.
-   Classic branch protection cannot express the documented path-specific
-   two-approval rule; that requires rulesets or an external review workflow.
+   authenticated GitHub session configured strict required checks, one
+   approving review, CODEOWNERS review, linear history, conversation
+   resolution, and disabled force-pushes/deletions. PR #9 subsequently passed
+   all five required checks and was correctly held in `REVIEW_REQUIRED`.
+   The configured single approving review is the repository policy. No
+   path-specific two-approval rule is required.
 
 5. **The 5 dependabot branches are stale relative to the 21,405-line commit.**
    They were created before the big commit existed, so their diffs do not
@@ -178,10 +178,10 @@ updated safe sequence described above:
 - `.github/dependabot.yml` on `origin/main` contains both
   `rebase-strategy: "auto"` and `delete-branch-after-merge: true` for every
   update block.
-- CI is wired and the Phase 0 remediation PR passed all five required checks.
-  It merged into `main` without requiring approval.
+- CI is wired and the Phase 0 remediation PR passes all five required checks.
+  Its merge is intentionally pending one independent human approval.
 - GitHub branch protection is enabled and verified through the protected PR
-  state; required checks remain enforced while review approval is disabled.
+  state (`MERGEABLE` plus `REVIEW_REQUIRED`).
 - No branch deletion was required during this execution because the stale
   branches had already been removed.
 
@@ -268,7 +268,7 @@ Without this, the other 3 phases are opinion, not evidence.
 | 0.6  | `cd services/model-gateway && uv run pytest`                                                     | all pass or documented failures                                     |
 | 0.7  | `pnpm format:check` passes                                                                       | exit 0                                                              |
 | 0.8  | `pnpm build` succeeds (turbo build)                                                              | exit 0 for all packages and apps                                    |
-| 0.9  | Verify a protected PR against `main` (PR #9; no-op verification remains optional)                | 5 required checks green; no approval required                       |
+| 0.9  | Verify a protected PR against `main` (PR #9; no-op verification can be repeated after merge)     | 5 required checks green; merge blocked until an independent review  |
 | 0.10 | Confirm the 3 prototype folders are reference-only (read their READMEs)                          | documented                                                          |
 | 0.11 | Inventory existing tests: 4 vitest + 4 Playwright. Map each test to the BRD/PRD module it covers | coverage map file produced                                          |
 
@@ -296,6 +296,18 @@ in code, not just claimed in docs.
 
 **Deliverable:** `docs/audits/01-security.md` — every claim from Doc 07 mapped
 to a code-trace result, with P0/P1/P2 severity for any gaps.
+
+### Phase 1 execution result — 2026-08-16
+
+`docs/audits/01-security.md` is complete. Locally actionable findings were
+fixed, including approval scope/replay enforcement, tenant-aware kill-switch
+behavior, production secret and residency validation, Object Lock provisioning,
+UPI/Presidio redaction coverage, and Karya plan/action binding. The remaining
+Supabase privilege verification, AWS apply/API verification, GitHub branch-
+protection/no-op-PR check, production secret population, and Presidio model
+readiness steps are explicit external TODOs in that report. The repository
+continues to require one approving review and does not enforce two different
+reviewers.
 
 ### Phase 2 — BRD/PRD module coverage (the 14 modules)
 

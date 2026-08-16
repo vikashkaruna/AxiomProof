@@ -94,7 +94,18 @@ class VibhaagAgent(BaseAgent[VibhaagInput, VibhaagOutput]):
         for system in input.inventory:
             sys_name = system.get("name", "unknown")
             data_categories = system.get("data_categories", []) or []
-            fields = input.field_hints.get(sys_name, {}).get("fields", [])
+            hint = input.field_hints.get(sys_name, {})
+            fields: list[Any]
+            if isinstance(hint.get("fields"), list):
+                fields = hint["fields"]
+            else:
+                # Accept the documented shape {field_name: {category, ...}}
+                # as well as the historical {fields: [...]} shape.
+                fields = [
+                    {"name": field_name, **(field_hint if isinstance(field_hint, dict) else {})}
+                    for field_name, field_hint in hint.items()
+                    if field_name != "fields"
+                ]
 
             for field in fields:
                 field_name = field if isinstance(field, str) else field.get("name", "")
