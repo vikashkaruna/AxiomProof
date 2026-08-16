@@ -7,7 +7,8 @@ The product application: Agent Workbench, Approval Console, Client Portal, Evide
 - `design/Axiom Proof App.dc.html` — the source-of-truth prototype pulled from Claude Design. 21 modular screens, in-app routing, 3 demo tenants, all flows wired with mock data. Open it directly in a browser (it's self-contained with `design/support.js`).
 - `design/support.js` — the Claude Design canvas runtime the prototype depends on. Generated, don't edit.
 
-Nothing else exists yet — this folder is where the real Next.js app gets scaffolded next.
+This folder is a frozen design reference. The real Next.js implementation now
+lives in `../apps/web/`; keep prototype edits isolated from production code.
 
 ## Build reference
 
@@ -17,12 +18,14 @@ Nothing else exists yet — this folder is where the real Next.js app gets scaff
 - **Non-negotiable safety rules** (approval tokens, dry-run before approval, generated rollback, hash-chained ledger, no write creds on the planning agent, blast-radius caps) apply to every screen that touches execution — see the Handoff Map's rules section and [Doc 04 §5.2](../docs/04_Solution_Architecture.md).
 - **Phase sequencing** — which screens/modules are real in which phase — [`../docs/02_Phase_Wise_Implementation_Plan.md`](../docs/02_Phase_Wise_Implementation_Plan.md).
 
-## Next step
+## Production implementation
 
-Scaffold the app (suggested, not yet run):
+Use the real app workspace for changes:
 
 ```bash
-npx create-next-app@latest . --typescript --tailwind --app --src-dir --import-alias "@/*"
+pnpm --filter @axiom/web dev
+pnpm --filter @axiom/web typecheck
 ```
 
-Then port screens out of `design/Axiom Proof App.dc.html` one route at a time, cross-checking each against the Handoff Map's route table.
+Cross-check new screens against the Handoff Map and the approval-safety rules
+before wiring them to real data.

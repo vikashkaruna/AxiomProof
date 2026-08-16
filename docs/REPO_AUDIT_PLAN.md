@@ -10,20 +10,24 @@
 
 ## 0. What this document is
 
-You asked for a comprehensive plan, not a code review yet. This is the plan. It is
-split into two parts:
+You asked for a comprehensive plan and an evidence-backed review. This document
+is now both the plan and the completion record. It is split into two parts:
 
 - **Part A — the branch / merge question** (small, can be done in one sitting)
 - **Part B — the end-to-end code review** (large, will take multiple sessions)
 
-Read Part A, give me a yes/no on the cleanup approach, and we'll decide together
-how aggressive to be on Part B.
+Part A and Part B Phases 0–3 are complete. Remaining external verification
+steps are recorded in the audit reports rather than left as implied work.
 
 ---
 
 # Part A — Branches & merge safety
 
 ## A.1 What I found in the repo
+
+The branch and Dependabot inventory below is the historical Part A snapshot
+from plan creation. The current authoritative state is the merged `main`
+commit `c259c42`; see `docs/audits/README.md` for the completed review index.
 
 ### Commits on `main` (local & remote, identical, working tree clean)
 
@@ -104,14 +108,15 @@ the current "single 21,405-line commit" shape?_
    introduced. **Mitigation:** Part B of this plan does a forensic review that
    re-derives the reasoning from the docs and the code.
 
-2. **No CI has run on it yet.** `node_modules` is not installed, no `pnpm
+2. **At the initial baseline, no CI had run on it yet.** `node_modules` was not installed, no `pnpm
 install` has happened, no test has been executed, no lint, no typecheck.
    The branch-protection document lists 5 required CI checks
    (`Lint + typecheck`, `TS unit tests`, `Python agent-runtime tests`,
    `Python model-gateway tests`, `Security scan`) but the green/red outcome
    for this commit is unknown. **The "is it safe to merge" question cannot be
    fully answered until CI is green.** Part B Phase 0 of the review is
-   exactly this: get CI green.
+   exactly this: get CI green. This historical finding is now closed; the
+   merged Phase 3 PR passed all five required checks.
 
 3. **No atomic review possible.** A 238-file / 21,405-line commit cannot be
    code-reviewed line-by-line by a human in one sitting. The realistic path
@@ -172,21 +177,22 @@ Total estimated Part A effort: ~1.5 hours wall-clock (excluding the Dependabot
 Part A was checked against the live GitHub repository and is complete under the
 updated safe sequence described above:
 
-- `main` and `origin/main` are both at `9e89ee5`.
+- `main` and `origin/main` are now at the merged Phase 3 commit `c259c42`.
 - Only `origin/main` remains; all five stale Dependabot branches are gone.
 - Dependabot PRs #1–#5 are closed. PRs #7 and #8 are merged.
 - `.github/dependabot.yml` on `origin/main` contains both
   `rebase-strategy: "auto"` and `delete-branch-after-merge: true` for every
   update block.
-- CI is wired and the Phase 0 remediation PR passes all five required checks.
-  Its merge is intentionally pending one independent human approval.
+- CI is wired and the Phase 3 documentation/remediation PR passed all five
+  required checks and merged under the configured single-review policy.
 - GitHub branch protection is enabled and verified through the protected PR
   state (`MERGEABLE` plus `REVIEW_REQUIRED`).
 - No branch deletion was required during this execution because the stale
   branches had already been removed.
 
-The remaining dependency-bump work is intentionally held until Part B Phase 0
-identifies and resolves the CI baseline failures.
+The Phase 0 baseline failures, Phase 1 security findings, Phase 2 module
+coverage findings, and Phase 3 quality findings are closed locally or have
+explicit external TODO instructions in `docs/audits/`.
 
 # Part B — End-to-end code review plan
 
@@ -404,14 +410,18 @@ docs/audits/
 Each report has the same shape: **what was checked · how · result · severity
 (P0/P1/P2) · recommended action**.
 
-A summary index at `docs/audits/README.md` will be updated after each phase
-so you can scan all findings in one place.
+A summary index is now maintained at `docs/audits/README.md`.
 
 ---
 
-# Sign-off needed from you
+# Historical sign-off section
 
-Before I touch any of this, I need decisions on three questions.
+The original plan requested decisions before work began. Those decisions were
+superseded by the completed execution: Part A and Part B Phases 0–3 are now
+complete, the repository policy remains one approving review, and the history
+rewrite option was not pursued.
+
+The original decision options are retained below for audit history only.
 
 ## Decision 1 — Part A scope
 
@@ -442,13 +452,12 @@ Before I touch any of this, I need decisions on three questions.
 
 ---
 
-## What I'll do after you reply
+## Current next step
 
-1. Save your 3 decisions on this doc.
-2. If Decision 2 = B, kick off Phase 0 immediately and report back when
-   `pnpm install` / typecheck / lint / test have either run green or have
-   a specific failure list to triage.
-3. Hold on Phase 1/2/3 until you sign off on the Phase 0 report.
+1. Complete the external TODOs in the numbered audit reports when the relevant
+   AWS, Supabase, Temporal, GitHub, or production-browser access is available.
+2. Start a new audit phase only when the product roadmap advances beyond the
+   current Phase 3 repository baseline.
 
 This doc will be versioned in git (under `docs/`) so the plan is reviewable
 and citable.

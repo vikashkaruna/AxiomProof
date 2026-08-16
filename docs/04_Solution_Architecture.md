@@ -350,11 +350,11 @@ Chain integrity is verifiable by recomputing hashes from genesis. Periodic chain
 
 ## 11. PHASE-TO-ARCHITECTURE MAPPING
 
-| Phase | Layers built                                                                                                                                   |
-| ----- | ---------------------------------------------------------------------------------------------------------------------------------------------- |
-| **0** | L1 (workbench, gap-scan) · L2 (basic API/auth) · L3 (Parikshan, Prativedan, Control Library) · L4 (Postgres, object store)                     |
-| **1** | L3 (+Drishti, Vibhaag, Sudhaar v0, Saakshi) · L1 (+review console)                                                                             |
-| **2** | L3 (+Connector Framework, Live Discovery, Lekha, Approval Engine, Event Bus, Model Gateway) · L4 (+audit ledger, evidence vault, pgvector)     |
-| **3** | L3 (+Dry-Run Simulator, Execution Engine, Rollback Engine, Blast-Radius Governor, Verification, Karya) · L1 (+Approval Console, Client Portal) |
-| **4** | L3 (+Policy Engine standing policies, multi-framework control library) · service extraction · L1 (+Partner Portal)                             |
-| **5** | Split-plane deployment · on-prem packaging · self-hosted model support · enterprise auth                                                       |
+| Phase | Layers built                                                                                                                                                                                              |
+| ----- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **0** | Current: L0/L1 workbench, gap-scan, Parikshan, Prativedan, control library, API/auth, and Postgres/object-store integrations.                                                                             |
+| **1** | Current: L1 Drishti, Vibhaag, Sudhaar, Saakshi, review console, and typed generator cores; production delivery integrations remain tracked TODOs.                                                         |
+| **2** | Current: approval engine, audit ledger, evidence client, model gateway, and shared repeatability paths; live connectors and full persistence are not yet production-complete.                             |
+| **3** | Current: approval-gated Karya path, dry-run/rollback safety contracts, client portal, and completed quality audit; mTLS, live connector execution, and external infrastructure verification remain TODOs. |
+| **4** | Planned: standing-policy autonomy, multi-framework control library, service extraction, and partner portal.                                                                                               |
+| **5** | Planned: split-plane deployment, on-prem packaging, self-hosted model support, and enterprise auth.                                                                                                       |

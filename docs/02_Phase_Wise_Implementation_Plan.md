@@ -4,6 +4,13 @@
 
 **Document:** 02 of 05 · **Horizon:** Month 0 → Month 36 · **Date:** August 2026
 
+> **Repository status (2026-08-16):** The Phase 0–2 implementation paths have
+> been reviewed and locally remediated, and the Phase 3 quality/cross-document
+> audit is complete. This document remains the target-state roadmap: a module
+> listed in a phase is not automatically a production deployment claim. See
+> `docs/audits/02-module-coverage.md` and
+> `docs/audits/03-quality-and-coverage.md` for current evidence and TODOs.
+
 > **Operating principle throughout:** _Agents discover. Agents assess. Agents collect evidence. Agents generate reports. Agents propose remediation plans. **The human reviews and approves.** Only then do agents execute — in batches or individually — with full traceability, audit logging and a rollback plan generated for every single action._
 
 ---

@@ -1,6 +1,6 @@
 # Security Review — Axiom Proof
 
-**Status:** Phase 0/1 release candidate
+**Status:** Phase 3 repository audit baseline; external production controls pending
 **Reviewer:** Founder + automated tooling
 **Date:** August 2026
 **Scope:** All in-repo code (apps/, services/, packages/, infra/) at the v0.1.0 build.
@@ -192,8 +192,10 @@ load-bearing.
 - **Default-deny NetworkPolicies** in the axiom-proof namespace
   (see `infra/helm/axiom-proof/templates/network-policies.yaml`).
 - **TLS 1.3 minimum** at the edge.
-- **mTLS** between the BFF and the agent runtime is Phase 3 (the
-  internal-token check is Phase 0/1).
+- **mTLS** between the BFF and the agent runtime remains a Phase 3 production
+  TODO; the repository currently uses the validated internal-token check.
+  The Phase 3 repository audit is complete, but mTLS requires deployment
+  certificates, trust distribution, rotation, and live-network verification.
 
 ### 3.8 Logging and observability
 
@@ -265,15 +267,15 @@ load-bearing.
 
 ## 5. Known gaps and roadmap
 
-| Gap                                                                     | Phase | Notes                                                                                   |
-| ----------------------------------------------------------------------- | ----- | --------------------------------------------------------------------------------------- |
-| mTLS between BFF and agent runtime                                      | 3     | Currently using internal-token; mTLS via SPIFFE is the proper fix                       |
-| Per-tenant approval signing keys (currently shared default)             | 2     | Doc 06 §1 has the trigger: "client contractually requires 100%-in-house infrastructure" |
-| SOC 2 Type 2 / ISO 27001                                                | 5     | Revenue-triggered per Doc 02 §5                                                         |
-| Customer-managed encryption keys (CMEK) for the audit ledger            | 4     | Currently we own the keys; enterprise customers want their own                          |
-| Per-action RBAC (e.g. "approver Alice can only approve policy.publish") | 4     | `tenant_users.approval_scopes` exists in the schema but the BFF doesn't enforce it yet  |
-| Penetration test by an external firm                                    | 3     | Before Phase 3 (Karya) goes live with real client data                                  |
-| Bug-bounty program                                                      | 4     | After Phase 3 stabilises                                                                |
+| Gap                                                                     | Phase | Notes                                                                                               |
+| ----------------------------------------------------------------------- | ----- | --------------------------------------------------------------------------------------------------- |
+| mTLS between BFF and agent runtime                                      | 3     | Phase 3 audit complete; production mTLS via SPIFFE/certificates remains an external deployment TODO |
+| Per-tenant approval signing keys (currently shared default)             | 2     | Doc 06 §1 has the trigger: "client contractually requires 100%-in-house infrastructure"             |
+| SOC 2 Type 2 / ISO 27001                                                | 5     | Revenue-triggered per Doc 02 §5                                                                     |
+| Customer-managed encryption keys (CMEK) for the audit ledger            | 4     | Currently we own the keys; enterprise customers want their own                                      |
+| Per-action RBAC (e.g. "approver Alice can only approve policy.publish") | 4     | `tenant_users.approval_scopes` exists in the schema but the BFF doesn't enforce it yet              |
+| Penetration test by an external firm                                    | 3     | Before Phase 3 (Karya) goes live with real client data                                              |
+| Bug-bounty program                                                      | 4     | After Phase 3 stabilises                                                                            |
 
 ---
 

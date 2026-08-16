@@ -17,6 +17,15 @@ Proof to production. It covers:
 Target environment: AWS `ap-south-1` (Mumbai), single-CSP consolidation
 per Doc 06.
 
+## Current implementation status
+
+The repository has completed the Part A and Part B review through Phase 3.
+CI is green, but this guide describes production deployment of the target
+architecture, not proof that the external AWS, Supabase, Temporal, GitHub, or
+MFA settings are already configured. Complete the external TODOs in
+`docs/audits/02-module-coverage.md` and
+`docs/audits/03-quality-and-coverage.md` before enabling real Karya execution.
+
 ---
 
 ## 1. Architecture recap
@@ -672,7 +681,7 @@ traffic):
 | Route 53 + ACM                                             | 5             |
 | **Total**                                                  | **~480–760**  |
 
-Phase 3+ (Karya executing real remediation) will add significant
+Future Phase 3 production execution (Karya executing real remediation) will add significant
 cost for the GPU node group and per-tenant approval key storage.
 The Model Gateway's per-tenant cost attribution (NFR-11) tracks
 LLM spend; the dashboard shows it per client.

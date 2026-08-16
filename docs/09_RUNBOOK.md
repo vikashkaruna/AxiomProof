@@ -36,6 +36,9 @@ posture, see [`07_SECURITY_REVIEW.md`](./07_SECURITY_REVIEW.md).
 - [ ] Disaster recovery exercise: rebuild a non-prod environment
       from scratch using this guide.
 - [ ] Penetration test (Phase 3+).
+- [ ] Before enabling production Karya execution, complete the external
+      Phase 3 TODOs: mTLS, MFA assurance enforcement, AWS Object Lock,
+      Supabase privilege checks, and residency evidence.
 - [ ] SOC 2 / ISO 27001 audit prep (Phase 5+).
 
 ---
@@ -137,11 +140,12 @@ both chains are visible in the ledger for forensic comparison.
 
 ### Onboard a new tenant
 
-1. Create the tenant in the Supabase dashboard (or via the BFF admin API
-   when Phase 2 ships).
+1. Create the tenant in the Supabase dashboard (or via the configured BFF
+   admin path when that deployment capability is enabled).
 2. Insert into `tenants` (use the founder's session for now).
 3. Invite the user's first admin via the BFF `POST /v1/tenants/{id}/users`
-   (Phase 2) or directly in Supabase.
+   when enabled in the deployment, or directly in Supabase during the current
+   controlled rollout.
 4. Set the per-tenant approval signing key in Secrets Manager.
 5. Schedule the first discovery scan with the founder.
 
