@@ -1662,14 +1662,16 @@ export function validateLibrary(): { ok: true } | { ok: false; errors: string[] 
     errors.push(`Expected ${CONTROL_LIBRARY_COUNT} controls, found ${controls.length}`);
   }
 
-  // Domain weight check (each domain should sum to 1, allowing minor float)
+  // Domain coverage check. Weights are per-control values (the v0.1.0
+  // source uses 1.0 for each control), so summing a domain to 1 would be an
+  // invalid invariant and would reject the published library.
   const domainWeights: Record<string, number> = {};
   for (const c of controls) {
     domainWeights[c.domain] = (domainWeights[c.domain] ?? 0) + c.scoring.weight;
   }
   for (const [d, w] of Object.entries(domainWeights)) {
-    if (Math.abs(w - 1) > 0.001) {
-      errors.push(`Domain ${d} weights sum to ${w.toFixed(4)} (expected 1)`);
+    if (w <= 0) {
+      errors.push(`Domain ${d} has no positive scoring weight`);
     }
   }
 

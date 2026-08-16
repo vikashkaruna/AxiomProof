@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import { notFound, redirect } from 'next/navigation';
-import { createSupabaseServerClient, createSupabaseAdmin } from '@axiom/supabase';
+import { createSupabaseServerClient } from '@axiom/supabase';
 import {
   PageHeader,
   Card,
@@ -32,8 +32,7 @@ export default async function PlanDetailPage({ params }: PageProps) {
   } = await supabase.auth.getUser();
   if (!user) redirect('/login');
 
-  const admin = createSupabaseAdmin();
-  const { data: plan, error } = await admin
+  const { data: plan, error } = await supabase
     .from('remediation_plans')
     .select(
       `
@@ -66,7 +65,7 @@ export default async function PlanDetailPage({ params }: PageProps) {
         description={plan.description ?? 'No description provided.'}
         actions={
           <>
-            <KillSwitchButton planId={plan.id} />
+            <KillSwitchButton planId={plan.id} tenantId={plan.tenant_id} />
             <Button variant="outline" size="sm" asChild={false}>
               <Link href="/plans">Back to plans</Link>
             </Button>
@@ -128,6 +127,7 @@ export default async function PlanDetailPage({ params }: PageProps) {
         <CardContent>
           <ApprovalActions
             planId={plan.id}
+            tenantId={plan.tenant_id}
             actions={actions}
             eligible={eligible}
             blocked={blocked}

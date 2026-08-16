@@ -81,11 +81,19 @@ class ParikshanAgent(BaseAgent[ParikshanInput, ParikshanOutput]):
 
         for control in lib:
             answers = input.answers.get(control.id, {})
-            # Heuristic: if all boolean questions are answered "yes",
-            # full score; otherwise 0 for missing, 50 for partial.
-            yes = sum(1 for a in answers.values() if a is True)
-            no = sum(1 for a in answers.values() if a is False)
-            total_q = len(control.assessment_questions)
+            # Only boolean questions participate in the deterministic score.
+            # Evidence/text answers are recorded by the caller but must not be
+            # mistaken for compliant answers, and unknown question IDs must
+            # not inflate the score.
+            boolean_ids = {
+                str(q.get("id"))
+                for q in control.assessment_questions
+                if q.get("type") == "boolean" and q.get("id")
+            }
+            boolean_answers = {qid: answers[qid] for qid in boolean_ids if qid in answers}
+            yes = sum(1 for a in boolean_answers.values() if a is True)
+            no = sum(1 for a in boolean_answers.values() if a is False)
+            total_q = len(boolean_ids)
             if total_q == 0:
                 score = 50.0  # untestable; neutral
             elif yes == total_q:

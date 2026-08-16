@@ -48,3 +48,19 @@ async def test_parikshan_with_yes_answers_for_some_controls():
         )
     )
     assert out.status == "succeeded"
+
+
+@pytest.mark.asyncio
+async def test_parikshan_ignores_unknown_question_ids():
+    agent = ParikshanAgent()
+    out = await agent.invoke(
+        ParikshanInput(
+            tenant_id="t1",
+            engagement_id="e1",
+            answers={"DPDPA-GOV-001": {"not-a-question": True}},
+        )
+    )
+    assert out.status == "succeeded"
+    output = ParikshanOutput.model_validate(out.output)
+    finding = next(item for item in output.findings if item.control_id == "DPDPA-GOV-001")
+    assert finding.score <= 50

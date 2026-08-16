@@ -11,7 +11,7 @@ the controls it demonstrates.
 from __future__ import annotations
 
 from datetime import datetime, timezone
-from typing import Any, ClassVar
+from typing import Any, ClassVar, Literal
 
 from pydantic import BaseModel, Field
 
@@ -23,13 +23,22 @@ from .base import AgentName, AutonomyLevel, BaseAgent
 class SaakshiInput(BaseModel):
     tenant_id: str
     engagement_id: str | None = None
-    evidence_type: str  # 'document' | 'config' | 'screenshot' | 'log' | 'attestation' | 'interview' | 'inventory' | 'report'
+    evidence_type: Literal[
+        "document",
+        "config",
+        "screenshot",
+        "log",
+        "attestation",
+        "interview",
+        "inventory",
+        "report",
+    ]
     description: str = ""
     content: str | None = None
     filename: str | None = None
     mime_type: str = "text/plain"
     demonstrates_control_ids: list[str] = Field(default_factory=list)
-    retention_days: int = 2555  # 7 years default
+    retention_days: int = Field(default=2555, gt=0)  # 7 years default
     legal_hold: bool = False
 
 

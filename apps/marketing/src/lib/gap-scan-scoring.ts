@@ -39,7 +39,7 @@ export async function computeGapScanReport(
     q4: 'DPDPA-DAT-003',
     q5: 'DPDPA-RCD-001',
     q6: 'DPDPA-SEC-001',
-    q7: 'DPDPA-SEC-001',
+    q7: 'DPDPA-SEC-002',
     q8: 'DPDPA-BRCH-001',
     q9: 'DPDPA-RCD-002',
     q10: 'DPDPA-GOV-003',

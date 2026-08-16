@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Button } from '@axiom/ui';
 
-export function KillSwitchButton({ planId }: { planId: string }) {
+export function KillSwitchButton({ planId, tenantId }: { planId: string; tenantId: string }) {
   const router = useRouter();
   const [busy, setBusy] = useState(false);
 
@@ -21,7 +21,7 @@ export function KillSwitchButton({ planId }: { planId: string }) {
     try {
       await fetch('/api/bff/v1/kill-switch/engage', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', 'X-Tenant-Id': tenantId },
         body: JSON.stringify({ scope: 'tenant', reason: 'Manual engagement from UI' }),
       });
       router.refresh();

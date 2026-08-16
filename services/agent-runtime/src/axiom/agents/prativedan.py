@@ -15,6 +15,7 @@ data and uses the model gateway to draft the prose.
 from __future__ import annotations
 
 from enum import Enum
+from html import escape
 from typing import Any, ClassVar
 
 from pydantic import BaseModel, Field
@@ -136,31 +137,44 @@ class PrativedanAgent(BaseAgent[PrativedanInput, PrativedanOutput]):
             title=input.title,
             kind=input.kind.value if isinstance(input.kind, ReportKind) else str(input.kind),
             sections=sections,
-            cited_evidence_ids=[
-                eid
-                for f in input.findings
-                for eid in f.get("evidence_required", [])
-                if isinstance(eid, str)
-            ],
+            cited_evidence_ids=self._evidence_ids(input.findings),
             rendered_html=rendered,
         )
+
+    @staticmethod
+    def _evidence_ids(findings: list[dict[str, Any]]) -> list[str]:
+        """Extract explicit artifact IDs without treating requirements as IDs."""
+        ids: list[str] = []
+        for finding in findings:
+            for item in finding.get("evidence_ids", []):
+                if isinstance(item, str):
+                    ids.append(item)
+            for item in finding.get("evidence_required", []):
+                if isinstance(item, str):
+                    ids.append(item)
+                elif isinstance(item, dict):
+                    value = item.get("evidence_id") or item.get("id")
+                    if isinstance(value, str):
+                        ids.append(value)
+        return list(dict.fromkeys(ids))
 
     def _render_html(
         self, title: str, sections: list[dict[str, Any]], posture: float, verdict: str
     ) -> str:
-        out = [f"<h1>{title}</h1>"]
+        safe = lambda value: escape(str(value if value is not None else ""), quote=True)
+        out = [f"<h1>{safe(title)}</h1>"]
         out.append(
             f'<div class="axiom-cover"><p>Posture: <strong>{posture:.0f}/100 ({verdict})</strong></p></div>'
         )
         for s in sections:
-            out.append(f"<h2>{s.get('title', '')}</h2>")
+            out.append(f"<h2>{safe(s.get('title', ''))}</h2>")
             if s.get("body"):
-                out.append(f"<p>{s['body']}</p>")
+                out.append(f"<p>{safe(s['body'])}</p>")
             if s.get("type") == "findings_table" and s.get("items"):
                 rows = "".join(
-                    f"<tr><td>{i.get('control_id')}</td><td>{i.get('title')}</td>"
-                    f"<td>{i.get('severity')}</td><td>{i.get('score')}</td>"
-                    f"<td>{i.get('risk_points')}</td></tr>"
+                    f"<tr><td>{safe(i.get('control_id'))}</td><td>{safe(i.get('title'))}</td>"
+                    f"<td>{safe(i.get('severity'))}</td><td>{safe(i.get('score'))}</td>"
+                    f"<td>{safe(i.get('risk_points'))}</td></tr>"
                     for i in s["items"]
                 )
                 out.append(

@@ -25,8 +25,16 @@ export default async function WorkbenchPage() {
   } = await supabase.auth.getUser();
   if (!user) redirect('/login');
 
-  // For the workbench, use admin client (founder sees across tenants)
-  // In production, this is gated on is_axiom_internal
+  // The workbench is an Axiom-internal surface. Check this through the
+  // user-scoped client before using the service-role client for cross-tenant
+  // aggregates. A login alone must never grant cross-tenant visibility.
+  const { data: profile, error: profileError } = await supabase
+    .from('users')
+    .select('is_axiom_internal')
+    .eq('id', user.id)
+    .maybeSingle();
+  if (profileError || !profile?.is_axiom_internal) redirect('/portal');
+
   const admin = createSupabaseAdmin();
 
   const [tenantsRes, engagementsRes, plansRes, ledgerRes, breachRes, dsarRes] = await Promise.all([
