@@ -55,9 +55,31 @@ changes:
   corrected 46-control value. The generated prototype folders still contain
   historical 43-control copy and remain reference-only by scope.
 
-Phase 0 code/build/test acceptance is now green. The GitHub-only item (0.9 —
-confirming a no-op PR, required checks, and branch protection) remains an
-external repository-settings check and was not altered by the local fixes.
+Phase 0 code/build/test acceptance is now green. The source control library is
+46 controls; the 43-control strings that remain in the four generated
+prototype bundles are intentionally outside the production audit scope.
+
+### GitHub verification — 2026-08-16
+
+The repository settings were checked through the authenticated GitHub session.
+`main` now has branch protection enabled with strict/up-to-date required
+checks, one approving review, CODEOWNERS review, linear history, conversation
+resolution, and force-push/deletion disabled. The required checks are:
+
+- `Lint + typecheck`
+- `TS unit tests`
+- `Python (agent runtime) tests`
+- `Python (model gateway) tests`
+- `Security scan`
+
+PR #9 (`fix(ci): run Phase 0 checks in GitHub Actions`) completed all five
+required checks successfully. GitHub reports it as mergeable but
+`REVIEW_REQUIRED`, which confirms the protection rule is gating the PR. A
+second human reviewer is still required; the repository owner cannot satisfy
+the approval requirement by approving their own PR. The documented
+path-specific two-approval rule remains a policy limitation of classic branch
+protection and needs CODEOWNERS/rulesets or an external reviewer workflow if
+it must be enforced automatically.
 
 ## Failed test details
 

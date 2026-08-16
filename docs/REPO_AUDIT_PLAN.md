@@ -120,30 +120,15 @@ install` has happened, no test has been executed, no lint, no typecheck.
    (i.e. reset and recommit, preserving tree). **See Part B §B.3 for
    history-rewrite options.**
 
-4. **Branch protection rules are aspirational, not battle-tested.** The
-   `.github/branch-protection.md` document specifies a strong set of rules
-   (linear history, 2 approvals for security-sensitive paths, all 5 CI checks
-   required), but they have never gated a real PR. Part B Phase 0 will
-   exercise them with a no-op PR to confirm they're configured correctly in
-   the GitHub repo settings.
-
-   **DISCOVERY (2026-08-16, during Part A execution):** The repo is on the
-   **GitHub Free plan** (private repo, no plan field on the user account).
-   Branch protection is **not available** on the Free plan for private
-   repos — `GET /repos/.../branches/main/protection` returns 403. So
-   `.github/branch-protection.md` is documentation only; nothing it says is
-   actually enforced. Implications for Part A:
-   - The 5 dependabot PRs were not being held to any bar.
-   - The PR we opened for the plan doc also has no checks gating it.
-   - Admin-merge is available to the owner for any PR, with no approval or
-     CI requirement.
-   - For the merge-into-main of dependency bumps, the question becomes not
-     "does CI pass" but "is the dependency bump safe to apply blind." Until
-     CI is fixed, we cannot answer that question and the bumps should NOT
-     be merged. **Updated Part A plan: tighten config + close stale PRs +
-     delete branches, do NOT merge regenerated bumps until Phase 0 makes
-     CI green.** The regenerated PRs will also be closed (they will fail
-     CI for the same reason as the originals — missing `pnpm-lock.yaml`).
+4. **Branch protection was initially aspirational and is now configured.**
+   During the first audit pass, `main` was unprotected. On 2026-08-16 the
+   authenticated GitHub session configured strict required checks, one
+   approving review, CODEOWNERS review, linear history, conversation
+   resolution, and disabled force-pushes/deletions. PR #9 subsequently passed
+   all five required checks and was correctly held in `REVIEW_REQUIRED`.
+   A second human reviewer is still needed before the CI fixes can merge.
+   Classic branch protection cannot express the documented path-specific
+   two-approval rule; that requires rulesets or an external review workflow.
 
 5. **The 5 dependabot branches are stale relative to the 21,405-line commit.**
    They were created before the big commit existed, so their diffs do not
@@ -194,11 +179,10 @@ updated safe sequence described above:
 - `.github/dependabot.yml` on `origin/main` contains both
   `rebase-strategy: "auto"` and `delete-branch-after-merge: true` for every
   update block.
-- CI is wired and has run, but the latest `main` run failed. Dependency bumps
-  were therefore not regenerated or merged.
-- GitHub reports that `main` is not branch-protected, so the documented review
-  and status-check requirements are not currently enforced by repository
-  settings.
+- CI is wired and the Phase 0 remediation PR passes all five required checks.
+  Its merge is intentionally pending one independent human approval.
+- GitHub branch protection is enabled and verified through the protected PR
+  state (`MERGEABLE` plus `REVIEW_REQUIRED`).
 - No branch deletion was required during this execution because the stale
   branches had already been removed.
 
@@ -285,7 +269,7 @@ Without this, the other 3 phases are opinion, not evidence.
 | 0.6  | `cd services/model-gateway && uv run pytest`                                                     | all pass or documented failures                                     |
 | 0.7  | `pnpm format:check` passes                                                                       | exit 0                                                              |
 | 0.8  | `pnpm build` succeeds (turbo build)                                                              | exit 0 for all packages and apps                                    |
-| 0.9  | Open a no-op PR to confirm CI runs and branch protection rules are wired                         | CI green; 5 required checks present in PR UI                        |
+| 0.9  | Verify a protected PR against `main` (PR #9; no-op verification can be repeated after merge)     | 5 required checks green; merge blocked until an independent review  |
 | 0.10 | Confirm the 3 prototype folders are reference-only (read their READMEs)                          | documented                                                          |
 | 0.11 | Inventory existing tests: 4 vitest + 4 Playwright. Map each test to the BRD/PRD module it covers | coverage map file produced                                          |
 

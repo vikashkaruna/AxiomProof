@@ -8,9 +8,10 @@ export const dynamic = 'force-dynamic';
 export default async function EvidenceExplorerPage({
   searchParams,
 }: {
-  searchParams: { q?: string; tenant?: string };
+  searchParams: Promise<{ q?: string; tenant?: string }>;
 }) {
-  const supabase = createSupabaseServerClient();
+  const resolvedSearchParams = await searchParams;
+  const supabase = await createSupabaseServerClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
@@ -25,8 +26,8 @@ export default async function EvidenceExplorerPage({
     .order('collected_at', { ascending: false })
     .limit(50);
 
-  if (searchParams.q) {
-    query = query.ilike('description', `%${searchParams.q}%`);
+  if (resolvedSearchParams.q) {
+    query = query.ilike('description', `%${resolvedSearchParams.q}%`);
   }
 
   const { data: evidence } = await query;
@@ -42,7 +43,7 @@ export default async function EvidenceExplorerPage({
       <form action="/evidence" method="GET" className="flex gap-2">
         <input
           name="q"
-          defaultValue={searchParams.q ?? ''}
+          defaultValue={resolvedSearchParams.q ?? ''}
           placeholder="Search by description…"
           className="flex h-10 flex-1 rounded-md border border-slate-300 bg-white px-3 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-500"
         />

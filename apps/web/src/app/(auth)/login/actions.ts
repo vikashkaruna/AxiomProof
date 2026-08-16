@@ -14,7 +14,7 @@ export async function loginAction(formData: FormData) {
     redirect(`/login?error=${encodeURIComponent('Email and password are required.')}`);
   }
 
-  const supabase = createSupabaseServerClient();
+  const supabase = await createSupabaseServerClient();
   const { error } = await supabase.auth.signInWithPassword({ email, password });
 
   if (error) {
@@ -39,7 +39,7 @@ export async function signupAction(formData: FormData) {
     );
   }
 
-  const supabase = createSupabaseServerClient();
+  const supabase = await createSupabaseServerClient();
   const { data, error } = await supabase.auth.signUp({
     email,
     password,
@@ -74,7 +74,7 @@ export async function signupAction(formData: FormData) {
 }
 
 export async function logoutAction() {
-  const supabase = createSupabaseServerClient();
+  const supabase = await createSupabaseServerClient();
   await supabase.auth.signOut();
   revalidatePath('/', 'layout');
   redirect('/login');

@@ -17,12 +17,13 @@ import { formatINR } from '@axiom/ui';
 
 export const dynamic = 'force-dynamic';
 
-export default async function GapScanReportPage({ params }: { params: { id: string } }) {
+export default async function GapScanReportPage({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
   const supabase = createSupabaseAdmin();
   const { data: scan } = await supabase
     .from('gap_scan_responses')
     .select('*')
-    .eq('id', params.id)
+    .eq('id', id)
     .single();
 
   if (!scan) notFound();

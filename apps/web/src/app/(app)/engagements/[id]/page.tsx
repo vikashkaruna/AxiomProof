@@ -17,8 +17,13 @@ import { formatDate, formatINR } from '@axiom/ui';
 
 export const dynamic = 'force-dynamic';
 
-export default async function EngagementDetailPage({ params }: { params: { id: string } }) {
-  const supabase = createSupabaseServerClient();
+export default async function EngagementDetailPage({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}) {
+  const { id } = await params;
+  const supabase = await createSupabaseServerClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
@@ -28,7 +33,7 @@ export default async function EngagementDetailPage({ params }: { params: { id: s
   const { data: engagement } = await admin
     .from('engagements')
     .select('*, tenants:tenant_id(name, slug)')
-    .eq('id', params.id)
+    .eq('id', id)
     .single();
 
   if (!engagement) notFound();
@@ -36,13 +41,13 @@ export default async function EngagementDetailPage({ params }: { params: { id: s
   const { data: findings } = await admin
     .from('findings')
     .select('id, control_id, status, score, risk_points, rationale, library_version')
-    .eq('engagement_id', params.id)
+    .eq('engagement_id', id)
     .order('risk_points', { ascending: false });
 
   const { data: plans } = await admin
     .from('remediation_plans')
     .select('id, title, status, version, created_at')
-    .eq('engagement_id', params.id);
+    .eq('engagement_id', id);
 
   return (
     <div className="flex flex-col gap-6">

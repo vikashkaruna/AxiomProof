@@ -4,6 +4,19 @@ This document specifies the branch protection rules for the
 `main` branch. The settings are configured in the GitHub
 repository's Settings → Branches → Branch protection rules.
 
+## Current enforcement status — verified 2026-08-16
+
+The authenticated repository settings currently enforce the baseline rules
+below on `main`: one approving review, CODEOWNERS review, all five required CI
+checks, strict/up-to-date branches, linear history, conversation resolution,
+and no force-pushes or branch deletions. PR #9 demonstrated this state: all
+five checks passed, but GitHub kept the PR in `REVIEW_REQUIRED`.
+
+Classic branch protection does not support path-specific approval counts. The
+two-approval rule below is therefore a policy target, not fully automated
+enforcement. To enforce it, configure GitHub rulesets or an external review
+workflow that evaluates changed paths.
+
 ## `main` branch
 
 - **Require a pull request before merging** — ON
@@ -24,7 +37,7 @@ repository's Settings → Branches → Branch protection rules.
 - **Allow force pushes** — OFF
 - **Allow deletions** — OFF
 
-## Special: security-sensitive paths
+## Special: security-sensitive paths (policy target)
 
 PRs that touch any of these paths require **TWO** approvals, one of
 which must be the founder (`@vikashkaruna`):

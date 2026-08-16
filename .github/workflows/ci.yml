@@ -18,8 +18,6 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: pnpm/action-setup@v4
-        with:
-          version: 9
       - uses: actions/setup-node@v4
         with:
           node-version: 20
@@ -37,8 +35,6 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: pnpm/action-setup@v4
-        with:
-          version: 9
       - uses: actions/setup-node@v4
         with:
           node-version: 20
@@ -56,9 +52,10 @@ jobs:
         with:
           python-version: '3.11'
       - uses: astral-sh/setup-uv@v3
-      - working-directory: services/agent-runtime
-      - run: uv sync
+      - run: uv sync --extra dev
+        working-directory: services/agent-runtime
       - run: uv run pytest --cov --cov-report=xml
+        working-directory: services/agent-runtime
       - uses: actions/upload-artifact@v4
         with:
           name: coverage-agent-runtime
@@ -74,9 +71,10 @@ jobs:
         with:
           python-version: '3.11'
       - uses: astral-sh/setup-uv@v3
-      - working-directory: services/model-gateway
-      - run: uv sync
+      - run: uv sync --extra dev
+        working-directory: services/model-gateway
       - run: uv run pytest --cov --cov-report=xml
+        working-directory: services/model-gateway
 
   # ─── Security scanning ──────────────────────────────────────────
   security:
@@ -85,6 +83,12 @@ jobs:
     needs: lint-and-typecheck
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
       - name: Run Trivy vulnerability scanner
         uses: aquasecurity/trivy-action@master
         with:
