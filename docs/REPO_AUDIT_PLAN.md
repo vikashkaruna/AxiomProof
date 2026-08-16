@@ -269,7 +269,7 @@ Without this, the other 3 phases are opinion, not evidence.
 | 0.6  | `cd services/model-gateway && uv run pytest`                                                     | all pass or documented failures                                     |
 | 0.7  | `pnpm format:check` passes                                                                       | exit 0                                                              |
 | 0.8  | `pnpm build` succeeds (turbo build)                                                              | exit 0 for all packages and apps                                    |
-| 0.9  | Verify a protected PR against `main` (PR #9; no-op verification can be repeated after merge)   | 5 required checks green; merge blocked until an independent review      |
+| 0.9  | Verify a protected PR against `main` (PR #9; no-op verification can be repeated after merge)     | 5 required checks green; merge blocked until an independent review  |
 | 0.10 | Confirm the 3 prototype folders are reference-only (read their READMEs)                          | documented                                                          |
 | 0.11 | Inventory existing tests: 4 vitest + 4 Playwright. Map each test to the BRD/PRD module it covers | coverage map file produced                                          |
 
