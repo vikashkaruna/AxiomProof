@@ -27,11 +27,11 @@
     "agents:test": "cd services/agent-runtime && uv run pytest"
   },
   "devDependencies": {
-    "@types/node": "^20.14.10",
+    "@types/node": "^26.2.0",
     "husky": "^9.1.6",
     "prettier": "^3.3.3",
     "turbo": "^2.1.1",
-    "typescript": "^5.5.4"
+    "typescript": "^7.0.2"
   },
   "workspaces": [
     "apps/*",
