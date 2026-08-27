@@ -5,19 +5,21 @@ project_id = "axiom-proof"
 
 [api]
 enabled = true
-port = 54321
+# Port offset from Supabase defaults (54321-54327 → 55321-55327)
+# because another local Supabase project occupies the 5432x range.
+port = 55321
 schemas = ["public", "graphql_public"]
 extra_search_path = ["public", "extensions"]
 max_rows = 1000
 
 [db]
-port = 54322
-shadow_port = 54320
+port = 55322
+shadow_port = 55320
 major_version = 15
 
 [db.pooler]
 enabled = false
-port = 54329
+port = 55329
 pool_mode = "transaction"
 default_pool_size = 20
 max_client_conn = 100
@@ -27,20 +29,34 @@ enabled = true
 
 [studio]
 enabled = true
-port = 54323
+port = 55323
 
-[inbucket]
+[local_smtp]
 enabled = true
-port = 54324
+port = 55324
 
 [storage]
 enabled = true
 file_size_limit = "50MiB"
 
+[analytics]
+enabled = true
+port = 55327
+backend = "postgres"
+
 [auth]
 enabled = true
 site_url = "http://localhost:3000"
-additional_redirect_urls = ["https://axiomminds.ai", "https://app.axiomminds.ai"]
+additional_redirect_urls = [
+  "https://axiomminds.ai",
+  "https://app.axiomminds.ai",
+  "http://localhost:3000",
+  "http://localhost:3001",
+  "http://127.0.0.1:3000",
+  "http://127.0.0.1:3001",
+  "http://192.168.1.9:3000",
+  "http://192.168.1.9:3001",
+]
 jwt_expiry = 3600
 enable_signup = true
 

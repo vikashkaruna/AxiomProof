@@ -2,12 +2,19 @@ import path from 'node:path';
 import { defineConfig, devices } from '@playwright/test';
 
 const repoRoot = path.resolve(__dirname, '..', '..');
+const SUPABASE_PORT = process.env.SUPABASE_PORT ?? '55321';
+const SUPABASE_URL =
+  process.env.SUPABASE_URL ??
+  process.env.NEXT_PUBLIC_SUPABASE_URL ??
+  `http://localhost:${SUPABASE_PORT}`;
+
 const e2eSupabaseEnv = {
-  NEXT_PUBLIC_SUPABASE_URL: 'http://localhost:54321',
-  NEXT_PUBLIC_SUPABASE_ANON_KEY: 'test-anon-key-for-e2e',
-  SUPABASE_URL: 'http://localhost:54321',
-  SUPABASE_ANON_KEY: 'test-anon-key-for-e2e',
-  SUPABASE_SERVICE_KEY: 'test-service-key-for-e2e',
+  NEXT_PUBLIC_SUPABASE_URL: SUPABASE_URL,
+  NEXT_PUBLIC_SUPABASE_ANON_KEY:
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ?? 'test-anon-key-for-e2e',
+  SUPABASE_URL: SUPABASE_URL,
+  SUPABASE_ANON_KEY: process.env.SUPABASE_ANON_KEY ?? 'test-anon-key-for-e2e',
+  SUPABASE_SERVICE_KEY: process.env.SUPABASE_SERVICE_KEY ?? 'test-service-key-for-e2e',
   AXIOM_E2E_BYPASS_AUTH: 'true',
 };
 

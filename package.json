@@ -22,20 +22,22 @@
     "seed:controls": "tsx packages/control-library/scripts/seed.ts",
     "infra:plan": "cd infra/terraform/envs/prod && terraform plan",
     "infra:apply": "cd infra/terraform/envs/prod && terraform apply",
-    "db:migrate": "supabase db push --db-url $SUPABASE_DB_URL",
-    "db:reset": "supabase db reset",
+    "db:migrate": "if [ -n \"$SUPABASE_DB_URL\" ]; then supabase db push --db-url \"$SUPABASE_DB_URL\" --workdir infra; else supabase db push --local --workdir infra; fi",
+    "db:reset": "supabase db reset --workdir infra",
     "agents:test": "cd services/agent-runtime && uv run pytest"
   },
   "devDependencies": {
     "@types/node": "^20.14.10",
     "husky": "^9.1.6",
     "prettier": "^3.3.3",
+    "tsx": "^4.23.12",
     "turbo": "^2.1.1",
     "typescript": "^5.5.4"
   },
   "workspaces": [
     "apps/*",
-    "packages/*"
+    "packages/*",
+    "services/*"
   ],
   "pnpm": {
     "overrides": {

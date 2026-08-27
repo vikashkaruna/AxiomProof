@@ -8,10 +8,7 @@ import { GapScanForm } from './gap-scan/form';
 
 export default function HomePage() {
   return (
-    <div className="flex min-h-screen flex-col">
-      <SiteHeader />
-
-      <main className="flex-1">
+    <>
         {/* HERO */}
         <section className="relative overflow-hidden border-b border-slate-200 bg-mist-50">
           <div className="mx-auto max-w-7xl px-4 py-20 sm:px-6 lg:py-28">
@@ -191,111 +188,7 @@ export default function HomePage() {
             </div>
           </div>
         </section>
-      </main>
-
-      <SiteFooter />
-    </div>
-  );
-}
-
-function SiteHeader() {
-  return (
-    <header className="sticky top-0 z-10 border-b border-slate-200 bg-white/90 backdrop-blur">
-      <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6">
-        <Link href="/" className="flex items-center gap-2">
-          <span className="inline-block h-7 w-7 rounded-md bg-indigo-500" />
-          <div>
-            <p className="font-heading text-base font-semibold text-indigo-500">{BRAND.name}</p>
-            <p className="text-[10px] uppercase tracking-wider text-slate-500">
-              {BRAND.jurisdiction} · {BRAND.dataResidencyRegion}
-            </p>
-          </div>
-        </Link>
-        <nav className="flex items-center gap-1 sm:gap-3">
-          <Link
-            href="#how-it-works"
-            className="hidden text-sm text-slate-700 hover:text-indigo-500 sm:inline"
-          >
-            How it works
-          </Link>
-          <Link
-            href="/agents"
-            className="hidden text-sm text-slate-700 hover:text-indigo-500 sm:inline"
-          >
-            Agents
-          </Link>
-          <Link
-            href="/pricing"
-            className="hidden text-sm text-slate-700 hover:text-indigo-500 sm:inline"
-          >
-            Pricing
-          </Link>
-          <Button variant="ghost" size="sm" asChild={false}>
-            <Link href="https://app.axiomminds.ai/login">Sign in</Link>
-          </Button>
-          <Button variant="accent" size="sm" asChild={false}>
-            <Link href="#gap-scan">Free gap-scan</Link>
-          </Button>
-        </nav>
-      </div>
-    </header>
-  );
-}
-
-function SiteFooter() {
-  return (
-    <footer className="border-t border-slate-200 bg-mist-50">
-      <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6">
-        <div className="grid grid-cols-2 gap-8 sm:grid-cols-4">
-          <div className="col-span-2">
-            <div className="flex items-center gap-2">
-              <span className="inline-block h-7 w-7 rounded-md bg-indigo-500" />
-              <p className="font-heading text-base font-semibold text-indigo-500">{BRAND.name}</p>
-            </div>
-            <p className="mt-2 max-w-md text-sm text-slate-600">{BRAND.tagline}</p>
-            <p className="mt-3 text-xs text-slate-500">
-              {BRAND.copyright}
-              <br />
-              {BRAND.jurisdiction} · {BRAND.dataResidencyRegion}
-            </p>
-          </div>
-          <div>
-            <p className="text-xs font-medium uppercase tracking-wider text-slate-500">Product</p>
-            <ul className="mt-2 flex flex-col gap-1.5 text-sm text-slate-700">
-              <li>
-                <Link href="#how-it-works">How it works</Link>
-              </li>
-              <li>
-                <Link href="#gap-scan">Gap-scan</Link>
-              </li>
-              <li>
-                <Link href="/agents">Agents</Link>
-              </li>
-              <li>
-                <Link href="/pricing">Pricing</Link>
-              </li>
-            </ul>
-          </div>
-          <div>
-            <p className="text-xs font-medium uppercase tracking-wider text-slate-500">Company</p>
-            <ul className="mt-2 flex flex-col gap-1.5 text-sm text-slate-700">
-              <li>
-                <Link href="/about">About</Link>
-              </li>
-              <li>
-                <Link href="/contact">Contact</Link>
-              </li>
-              <li>
-                <Link href="/privacy">Privacy</Link>
-              </li>
-              <li>
-                <Link href="/terms">Terms</Link>
-              </li>
-            </ul>
-          </div>
-        </div>
-      </div>
-    </footer>
+    </>
   );
 }
 

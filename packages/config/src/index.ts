@@ -12,9 +12,19 @@ const EnvSchema = z
     LOG_LEVEL: z.enum(['debug', 'info', 'warn', 'error']).default('info'),
 
     // Supabase
-    SUPABASE_URL: z.string().url(),
-    SUPABASE_ANON_KEY: z.string().min(20),
-    SUPABASE_SERVICE_KEY: z.string().min(20),
+    SUPABASE_URL: z.string().url().default('http://127.0.0.1:55321'),
+    SUPABASE_ANON_KEY: z
+      .string()
+      .min(20)
+      .default(
+        'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS1kZW1vIiwicm9sZSI6ImFub24iLCJleHAiOjE5ODM4MTI5OTZ9.CRXP1A7WOeoJeXxjNni43kdQwgnWNReilDMblYTn_I0',
+      ),
+    SUPABASE_SERVICE_KEY: z
+      .string()
+      .min(20)
+      .default(
+        'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS1kZW1vIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImV4cCI6MTk4MzgxMjk5Nn0.EGIM96RAZx35lJzdJsyH-qQwv8Hdp7fsn3W0YpN81IU',
+      ),
     SUPABASE_DB_URL: z.string().url().optional(),
 
     // AWS / S3
@@ -81,6 +91,29 @@ const EnvSchema = z
   .superRefine((env, ctx) => {
     if (env.NODE_ENV !== 'production') return;
 
+    if (
+      !env.SUPABASE_URL ||
+      env.SUPABASE_URL.includes('localhost') ||
+      env.SUPABASE_URL.includes('127.0.0.1')
+    ) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ['SUPABASE_URL'],
+        message: 'Valid production SUPABASE_URL is required',
+      });
+    }
+    if (
+      !env.SUPABASE_SERVICE_KEY ||
+      env.SUPABASE_SERVICE_KEY.startsWith(
+        'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS1kZW1v',
+      )
+    ) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ['SUPABASE_SERVICE_KEY'],
+        message: 'Valid production SUPABASE_SERVICE_KEY is required',
+      });
+    }
     if (env.AWS_REGION !== 'ap-south-1') {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,

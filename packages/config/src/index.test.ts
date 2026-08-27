@@ -14,9 +14,9 @@ describe('loadEnv', () => {
     expect(env.SUPABASE_URL).toBe('http://localhost:54321');
   });
 
-  it('throws on missing required fields', () => {
+  it('throws on invalid production configuration', () => {
     resetEnvCache();
-    expect(() => loadEnv({})).toThrow(/Invalid environment configuration/);
+    expect(() => loadEnv({ NODE_ENV: 'production' })).toThrow(/Invalid environment configuration/);
   });
 
   it('defaults NODE_ENV to development', () => {

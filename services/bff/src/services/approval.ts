@@ -2,6 +2,8 @@ import { ApprovalEngine } from '@axiom/approval-engine';
 import { loadEnv } from '@axiom/config';
 import { createClient } from '@supabase/supabase-js';
 
+export { ApprovalEngine };
+
 /**
  * Construct an ApprovalEngine, loading per-tenant signing secrets
  * from Supabase. The default secret is a dev fallback; in production,
@@ -21,10 +23,9 @@ export function createApprovalEngine(env: ReturnType<typeof loadEnv>) {
   // For Phase 0/1, we use a per-tenant secret in a `tenant_secrets` table.
   // (That table is created in a future migration; for now, all tenants
   // share the default secret in dev / use a per-tenant config in staging+.)
-  supabase
-    .from('tenants')
-    .select('id, slug')
-    .then(({ data }) => {
+  void (async () => {
+    try {
+      const { data } = await supabase.from('tenants').select('id, slug');
       if (!data) return;
       for (const t of data) {
         const perTenantKey = process.env[`APPROVAL_KEY_${t.slug.toUpperCase().replace(/-/g, '_')}`];
@@ -32,10 +33,10 @@ export function createApprovalEngine(env: ReturnType<typeof loadEnv>) {
           engine.setTenantSecret(t.id, perTenantKey);
         }
       }
-    })
-    .catch(() => {
+    } catch {
       // best-effort
-    });
+    }
+  })();
 
   return engine;
 }

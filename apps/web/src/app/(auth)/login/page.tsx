@@ -10,7 +10,7 @@ export const dynamic = 'force-dynamic';
 export default async function LoginPage({
   searchParams,
 }: {
-  searchParams: Promise<{ mode?: 'signup' | 'login'; error?: string; redirect?: string }>;
+  searchParams: Promise<{ mode?: 'signup' | 'login'; error?: string; message?: string; redirect?: string }>;
 }) {
   const resolvedSearchParams = await searchParams;
   const supabase = await createSupabaseServerClient();
@@ -40,6 +40,12 @@ export default async function LoginPage({
               ? 'Welcome to Axiom Proof. Set up your founder / partner access.'
               : 'Welcome back. Sign in to continue.'}
           </p>
+
+          {resolvedSearchParams.message && (
+            <div className="mt-4 rounded-md border border-teal-500 bg-teal-50 p-3 text-sm text-teal-800">
+              {resolvedSearchParams.message}
+            </div>
+          )}
 
           {resolvedSearchParams.error && (
             <div className="mt-4 rounded-md border border-ember-500 bg-ember-50 p-3 text-sm text-ember-700">

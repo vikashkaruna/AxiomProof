@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { CONTROL_LIBRARY_COUNT } from '@axiom/control-library';
-import { Button, Input, Label, Textarea } from '@axiom/ui';
+import { Button, Input, Label, Textarea, generateUUID } from '@axiom/ui';
 
 const QUESTIONS = [
   {
@@ -131,7 +131,7 @@ export function GapScanForm() {
           contactCompany: followUp ? contactCompany : undefined,
           followUpRequested: followUp,
           marketingConsent,
-          sessionId: crypto.randomUUID(),
+          sessionId: generateUUID(),
         }),
       });
       if (!res.ok) {

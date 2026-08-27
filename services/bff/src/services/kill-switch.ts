@@ -40,7 +40,7 @@ export function createKillSwitchService(): KillSwitchService {
   };
 
   return {
-    isActive() {
+    isActive(tenantId?: string) {
       if (!state.engaged) return false;
       if (state.scope === 'global') return true;
       return Boolean(tenantId && state.tenantId === tenantId);

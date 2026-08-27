@@ -1,5 +1,6 @@
 import { LedgerClient } from '@axiom/ledger';
 import { loadEnv } from '@axiom/config';
+import { createClient } from '@supabase/supabase-js';
 import type { AppendLedgerInput, AppendLedgerResult } from '@axiom/ledger';
 
 export interface LedgerService {
@@ -16,7 +17,10 @@ export interface LedgerService {
 
 export function createLedgerService(): LedgerService {
   const env = loadEnv();
-  const client = new LedgerClient(env.SUPABASE_URL, env.SUPABASE_SERVICE_KEY);
+  const supabase = createClient(env.SUPABASE_URL, env.SUPABASE_SERVICE_KEY, {
+    auth: { persistSession: false },
+  });
+  const client = new LedgerClient(supabase);
 
   return {
     append: (input) => client.append(input),

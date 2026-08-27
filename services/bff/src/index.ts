@@ -48,9 +48,9 @@ app.get('/ready', (c) => c.json({ status: 'ready', killSwitch: killSwitch.isActi
 app.route('/public', publicRoutes({ ledger }));
 
 // Authenticated routes
-app.use('/v1/*', authMiddleware());
-app.use('/v1/*', tenantResolver());
-app.use('/v1/*', idempotency());
+app.use('/v1/*', authMiddleware);
+app.use('/v1/*', tenantResolver);
+app.use('/v1/*', idempotency);
 
 app.route(
   '/v1',

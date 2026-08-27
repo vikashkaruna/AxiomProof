@@ -33,8 +33,14 @@ class Settings(BaseSettings):
     http_host: str = "0.0.0.0"
 
     # ─── Supabase ──────────────────────────────────────────────────
-    supabase_url: str = Field(..., description="Supabase project URL")
-    supabase_service_key: str = Field(..., description="Supabase service-role key (server-side only)")
+    supabase_url: str = Field(
+        default="http://127.0.0.1:55321",
+        description="Supabase project URL",
+    )
+    supabase_service_key: str = Field(
+        default="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS1kZW1vIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImV4cCI6MTk4MzgxMjk5Nn0.EGIM96RAZx35lJzdJsyH-qQwv8Hdp7fsn3W0YpN81IU",
+        description="Supabase service-role key (server-side only)",
+    )
     supabase_db_url: str | None = None
 
     # ─── AWS / S3 ───────────────────────────────────────────────────
@@ -78,6 +84,10 @@ class Settings(BaseSettings):
     @model_validator(mode="after")
     def validate_production_security(self) -> "Settings":
         if self.environment == "production":
+            if not self.supabase_url or "localhost" in self.supabase_url or "127.0.0.1" in self.supabase_url:
+                raise ValueError("Valid production SUPABASE_URL is required")
+            if not self.supabase_service_key or self.supabase_service_key.startswith("eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS1kZW1v"):
+                raise ValueError("Valid production SUPABASE_SERVICE_KEY is required")
             if self.aws_region != "ap-south-1":
                 raise ValueError("Production data-plane services must run in ap-south-1")
             if not self.internal_token:

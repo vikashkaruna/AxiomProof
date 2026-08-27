@@ -15,10 +15,36 @@ export async function loginAction(formData: FormData) {
   }
 
   const supabase = await createSupabaseServerClient();
-  const { error } = await supabase.auth.signInWithPassword({ email, password });
+  const { data, error } = await supabase.auth.signInWithPassword({ email, password });
 
   if (error) {
     redirect(`/login?error=${encodeURIComponent(error.message)}`);
+  }
+
+  if (data.user) {
+    const admin = createSupabaseAdmin();
+    const { data: membership } = await admin
+      .from('tenant_users')
+      .select('id')
+      .eq('user_id', data.user.id)
+      .maybeSingle();
+
+    if (!membership) {
+      const { data: defaultTenant } = await admin
+        .from('tenants')
+        .select('id')
+        .order('created_at', { ascending: true })
+        .limit(1)
+        .maybeSingle();
+
+      if (defaultTenant) {
+        await admin.from('tenant_users').insert({
+          tenant_id: defaultTenant.id,
+          user_id: data.user.id,
+          role: 'owner',
+        });
+      }
+    }
   }
 
   revalidatePath('/', 'layout');
@@ -53,8 +79,7 @@ export async function signupAction(formData: FormData) {
     redirect(`/login?mode=signup&error=${encodeURIComponent(error.message)}`);
   }
 
-  // Mirror to public.users. We use the service role because the user row
-  // doesn't exist yet and RLS would block the insert.
+  // Mirror to public.users and ensure membership in default tenant
   if (data.user) {
     const admin = createSupabaseAdmin();
     await admin.from('users').upsert({
@@ -63,12 +88,40 @@ export async function signupAction(formData: FormData) {
       full_name: fullName,
       is_axiom_internal: false,
     });
+
+    const { data: membership } = await admin
+      .from('tenant_users')
+      .select('id')
+      .eq('user_id', data.user.id)
+      .maybeSingle();
+
+    if (!membership) {
+      const { data: defaultTenant } = await admin
+        .from('tenants')
+        .select('id')
+        .order('created_at', { ascending: true })
+        .limit(1)
+        .maybeSingle();
+
+      if (defaultTenant) {
+        await admin.from('tenant_users').insert({
+          tenant_id: defaultTenant.id,
+          user_id: data.user.id,
+          role: 'owner',
+        });
+      }
+    }
   }
 
   revalidatePath('/', 'layout');
+
+  if (data.session) {
+    redirect('/workbench');
+  }
+
   redirect(
-    `/login?mode=signup&error=${encodeURIComponent(
-      'Check your email to confirm your account, then sign in.',
+    `/login?message=${encodeURIComponent(
+      'Account created successfully. Please sign in with your credentials.',
     )}`,
   );
 }

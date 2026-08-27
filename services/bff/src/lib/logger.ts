@@ -35,17 +35,26 @@ class Logger {
     }
   }
 
-  debug(msg: string, ctx?: LogContext): void {
-    this.log('debug', msg, ctx);
+  private logArg(level: Level, a: string | LogContext, b?: LogContext | string): void {
+    if (typeof a === 'string') {
+      this.log(level, a, typeof b === 'object' && b !== null ? (b as LogContext) : undefined);
+    } else {
+      const msg = typeof b === 'string' ? b : '';
+      this.log(level, msg, a);
+    }
   }
-  info(msg: string, ctx?: LogContext): void {
-    this.log('info', msg, ctx);
+
+  debug(msgOrCtx: string | LogContext, ctxOrMsg?: LogContext | string): void {
+    this.logArg('debug', msgOrCtx, ctxOrMsg);
   }
-  warn(msg: string, ctx?: LogContext): void {
-    this.log('warn', msg, ctx);
+  info(msgOrCtx: string | LogContext, ctxOrMsg?: LogContext | string): void {
+    this.logArg('info', msgOrCtx, ctxOrMsg);
   }
-  error(msg: string, ctx?: LogContext): void {
-    this.log('error', msg, ctx);
+  warn(msgOrCtx: string | LogContext, ctxOrMsg?: LogContext | string): void {
+    this.logArg('warn', msgOrCtx, ctxOrMsg);
+  }
+  error(msgOrCtx: string | LogContext, ctxOrMsg?: LogContext | string): void {
+    this.logArg('error', msgOrCtx, ctxOrMsg);
   }
 }
 

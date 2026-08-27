@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Button, Input, Label, Textarea } from '@axiom/ui';
+import { Button, Input, Label, Textarea, generateUUID } from '@axiom/ui';
 
 interface Action {
   id: string;
@@ -88,7 +88,7 @@ export function ApprovalActions({ planId, tenantId, actions, eligible, blocked }
         headers: {
           'Content-Type': 'application/json',
           'X-Tenant-Id': tenantId,
-          'Idempotency-Key': crypto.randomUUID(),
+          'Idempotency-Key': generateUUID(),
         },
         body: JSON.stringify({
           planId,

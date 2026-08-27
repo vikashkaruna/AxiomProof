@@ -51,10 +51,19 @@ export const metadata: Metadata = {
   },
 };
 
+import { SiteHeader } from '@/components/SiteHeader';
+import { SiteFooter } from '@/components/SiteFooter';
+
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en-IN" className="h-full">
-      <body className="min-h-full bg-white font-body text-slate-700 antialiased">{children}</body>
+      <body className="min-h-full bg-white font-body text-slate-700 antialiased">
+        <div className="flex min-h-screen flex-col">
+          <SiteHeader />
+          <main className="flex-1">{children}</main>
+          <SiteFooter />
+        </div>
+      </body>
     </html>
   );
 }

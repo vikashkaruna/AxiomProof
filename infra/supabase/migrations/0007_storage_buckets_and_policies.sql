@@ -12,7 +12,7 @@ values (
   'tenant-logos',
   'tenant-logos',
   true,
-  '2MiB',
+  2097152, -- 2 MiB
   array['image/png', 'image/jpeg', 'image/svg+xml', 'image/webp']
 )
 on conflict (id) do nothing;
@@ -24,7 +24,7 @@ values (
   'report-attachments',
   'report-attachments',
   false,
-  '25MiB',
+  26214400, -- 25 MiB
   array[
     'application/pdf', 'image/png', 'image/jpeg', 'image/webp',
     'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
@@ -40,7 +40,7 @@ values (
   'marketing',
   'marketing',
   true,
-  '10MiB',
+  10485760, -- 10 MiB
   array['application/pdf', 'image/png', 'image/jpeg', 'image/svg+xml']
 )
 on conflict (id) do nothing;
@@ -50,9 +50,17 @@ on conflict (id) do nothing;
 
 -- Helper to extract tenant_id from storage path
 create or replace function public.storage_path_tenant(name text) returns uuid
-language sql immutable
+language plpgsql immutable
 as $$
-  select nullif(split_part(name, '/', 1), '')::uuid;
+declare
+  first_part text;
+begin
+  first_part := split_part(name, '/', 1);
+  if first_part ~* '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$' then
+    return first_part::uuid;
+  end if;
+  return null;
+end;
 $$;
 
 -- tenant-logos: public read, authenticated write per tenant

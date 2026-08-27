@@ -346,6 +346,7 @@ $$;
 alter table public.approval_tokens enable row level security;
 alter table public.approval_token_usages enable row level security;
 alter table public.audit_ledger enable row level security;
+alter table public.tenant_ledger_counters enable row level security;
 
 -- Approval tokens: only the approver and Axiom internal can see/issue
 create policy "approval_tokens_select_own" on public.approval_tokens
@@ -391,8 +392,15 @@ create policy "audit_ledger_select_member" on public.audit_ledger
     or exists (select 1 from public.users where id = auth.uid() and is_axiom_internal)
   );
 
+create policy "tenant_ledger_counters_select_member" on public.tenant_ledger_counters
+  for select using (
+    public.is_tenant_member(tenant_id)
+    or exists (select 1 from public.users where id = auth.uid() and is_axiom_internal)
+  );
+
 -- No INSERT policy: all writes must go through append_ledger() which is
 -- SECURITY DEFINER (it inserts as the function owner, bypassing RLS).
 
 -- No UPDATE or DELETE policy: the table is append-only at the RLS layer
 -- (and the DB role layer, set up in 0006).
+

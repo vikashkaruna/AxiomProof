@@ -62,3 +62,7 @@ charts/*/charts/
 
 # Docker
 .dockerignore-tmp
+
+# Supabase
+infra/supabase/.branches/
+infra/supabase/.temp/
