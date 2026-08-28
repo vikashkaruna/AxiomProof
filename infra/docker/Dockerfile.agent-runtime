@@ -18,12 +18,13 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 RUN pip install uv
 
 # Python deps first (better layer caching)
-COPY services/agent-runtime/pyproject.toml ./services/agent-runtime/
+COPY services/agent-runtime/pyproject.toml services/agent-runtime/README.md ./services/agent-runtime/
 COPY services/agent-runtime/src ./services/agent-runtime/src
 WORKDIR /app/services/agent-runtime
 RUN uv pip install --system -e .
 
-WORKDIR /app
+ENV PYTHONPATH="/app/services/agent-runtime/src"
+WORKDIR /app/services/agent-runtime
 EXPOSE 8000
 
 # Non-root

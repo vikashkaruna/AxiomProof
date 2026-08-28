@@ -1,0 +1,35 @@
+# Axiom Proof — Staging Docker Compose Overlay
+# Use with: docker compose -f docker-compose.yml -f infra/docker/docker-compose.staging.yml --env-file infra/docker/environments/.env.staging up -d
+name: axiom-proof-staging
+
+services:
+  model-gateway:
+    image: axiom-model-gateway:staging
+    environment:
+      - ENVIRONMENT=staging
+      - LOG_LEVEL=info
+
+  agent-runtime:
+    image: axiom-agent-runtime:staging
+    environment:
+      - ENVIRONMENT=staging
+      - LOG_LEVEL=info
+
+  bff:
+    image: axiom-bff:staging
+    environment:
+      - NODE_ENV=staging
+      - LOG_LEVEL=info
+
+  temporal-worker:
+    image: axiom-temporal-worker:staging
+
+  web:
+    image: axiom-web:staging
+    environment:
+      - NODE_ENV=production
+
+  marketing:
+    image: axiom-marketing:staging
+    environment:
+      - NODE_ENV=production

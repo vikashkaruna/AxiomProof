@@ -27,6 +27,24 @@ export default defineConfig({
   reporter: process.env.CI ? [['list'], ['html', { open: 'never' }]] : 'list',
   use: {
     baseURL: process.env.PLAYWRIGHT_BASE_URL ?? 'http://localhost:3001',
+    extraHTTPHeaders: {
+      'x-e2e-bypass-auth': 'true',
+    },
+    storageState: {
+      cookies: [
+        {
+          name: 'axiom_e2e_bypass',
+          value: 'true',
+          domain: 'localhost',
+          path: '/',
+          expires: -1,
+          httpOnly: false,
+          secure: false,
+          sameSite: 'Lax',
+        },
+      ],
+      origins: [],
+    },
     trace: 'on-first-retry',
     screenshot: 'only-on-failure',
     video: 'retain-on-failure',

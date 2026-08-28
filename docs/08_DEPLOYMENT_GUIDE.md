@@ -1,687 +1,409 @@
-# Axiom Proof — Deployment Guide
+# Axiom Proof — Multi-Environment Deployment & Operations Guide
 
-This document is the complete, end-to-end guide to deploying Axiom
-Proof to production. It covers:
-
-1. Architecture recap
-2. Prerequisites
-3. AWS infrastructure provisioning (Terraform)
-4. Supabase project setup
-5. Storage bucket provisioning (S3 with Object Lock)
-6. Container image build + push
-7. Kubernetes deployment (Helm)
-8. Domain + DNS + TLS
-9. Smoke tests + verification
-10. Operational runbook
-
-Target environment: AWS `ap-south-1` (Mumbai), single-CSP consolidation
-per Doc 06.
-
-## Current implementation status
-
-The repository has completed the Part A and Part B review through Phase 3.
-CI is green, but this guide describes production deployment of the target
-architecture, not proof that the external AWS, Supabase, Temporal, GitHub, or
-MFA settings are already configured. Complete the external TODOs in
-`docs/audits/02-module-coverage.md` and
-`docs/audits/03-quality-and-coverage.md` before enabling real Karya execution.
+This document is the authoritative, end-to-end deployment guide for Axiom Proof. It covers all lifecycle phases from local self-contained developer environments to multi-machine staging networks and AWS production Kubernetes clusters in `ap-south-1`.
 
 ---
 
-## 1. Architecture recap
+## 1. Multi-Environment Architecture & Strategy
 
-The production deployment is a layered, single-CSP architecture:
+Axiom Proof strictly segregates deployment artifacts, credentials, data boundaries, and orchestration topologies across four standardized environments:
 
 ```
-                         Internet
-                            │
-                            ▼
-              ┌─────────────────────────┐
-              │  CloudFront / ALB / ACM │
-              └────────────┬────────────┘
-                           │
-              ┌────────────▼────────────┐
-              │  EKS ap-south-1          │
-              │                         │
-              │  • web (Next.js)        │
-              │  • marketing (Next.js)  │
-              │  • bff (Hono/Node)      │
-              │  • agent-runtime (Py)   │
-              │  • model-gateway (Py)   │
-              │  • vllm (GPU, optional) │
-              │  • temporal-worker (Py) │
-              └─┬──────┬──────┬──────┬──┘
-                │      │      │      │
-        ┌───────▼┐  ┌──▼───┐ ┌▼────┐ ┌▼────────┐
-        │Supabase│  │S3+   │ │Valkey│ │Temporal │
-        │(Postgres│ │Object│ │Elasti│ │Cloud    │
-        │+Auth+  │ │Lock  │ │Cache │ │ap-south │
-        │Storage)│ │      │ │      │ │         │
-        └────────┘  └─────┘ └──────┘ └─────────┘
-              ap-south-1
+┌────────────────────────────────────────────────────────────────────────────────────────┐
+│                               AXIOM PROOF ENVIRONMENTS                                │
+├───────────────────┬───────────────────┬───────────────────────┬────────────────────────┤
+│ 1. LOCAL          │ 2. STAGING        │ 3. PREPROD            │ 4. PRODUCTION          │
+│ Local Dev / Pre-CI│ Internal Network /│ Staging VPC / Parity  │ AWS ap-south-1         │
+│ Zero External Deps│ Test Cloud VPC    │ Full Mirror           │ Multi-AZ EKS + WORM    │
+└───────────────────┴───────────────────┴───────────────────────┴────────────────────────┘
 ```
 
-The control plane is the Next.js apps + BFF. The data plane is the
-agent runtime + model gateway + S3 + Supabase. Both run in the same
-EKS cluster but in different NetworkPolicies (default-deny with
-explicit allow).
+### 1.1 Environment Comparison Matrix
+
+| Dimension | `local` | `staging` | `preprod` | `production` |
+| :--- | :--- | :--- | :--- | :--- |
+| **Primary Goal** | Feature dev & pre-CI test | Functional & QA validation | Production-parity staging | Live client compliance ops |
+| **Compute Target** | Docker Compose (macOS/Linux) | Local-network Docker / EC2 | AWS EKS (Staging VPC) | AWS EKS (Production VPC) |
+| **Database / Auth** | Local Supabase / Postgres | Dedicated Staging Supabase | Staging Supabase (VPC Peered) | Supabase Pro/Team (`ap-south-1`) |
+| **Evidence Vault** | Local filesystem / MinIO mock | Dedicated Staging S3 bucket | S3 Compliance Object Lock | S3 WORM Compliance Lock |
+| **Model Gateway** | Local mock / Ollama / API | Self-hosted Model Gateway | Cloud-hosted Model Gateway | Self-hosted vLLM / Bedrock (`ap-south-1`) |
+| **Temporal Engine** | Local Temporal dev server | Dedicated Staging Temporal | Temporal Cloud Staging NS | Temporal Cloud (`ap-south-1`) |
+| **Secrets Engine** | `.env.local` / local env | `.env.staging` / SSM | AWS Secrets Manager | AWS Secrets Manager + KMS |
+| **Auth Bypass** | Enabled (`AXIOM_E2E_BYPASS_AUTH`)| Disabled | Strictly Disabled | Strictly Prohibited (Hard rejection) |
 
 ---
 
-## 2. Prerequisites
+## 2. Infrastructure & Tooling Prerequisites
 
-### 2.1 Tooling
+### 2.1 Local Development & Pre-CI Prerequisites
+- **macOS** or **Linux** workstation
+- **Docker Desktop** (or Docker Engine + Compose v2.20+)
+- **Node.js** ≥ 22.0.0 (Node 22 LTS is required for native WebSocket support in Supabase Realtime)
+- **pnpm** ≥ 9.12.0 (`corepack enable && corepack prepare pnpm@9.12.0 --activate`)
+- **uv** ≥ 0.4.0 (Fast Python package manager)
+- **Python** ≥ 3.11
 
-- `terraform` ≥ 1.7
-- `kubectl` ≥ 1.29
-- `helm` ≥ 3.13
-- `pnpm` ≥ 9.12
-- `uv` (Python package manager) ≥ 0.4
-- `aws` CLI ≥ 2.13
-- `docker` ≥ 24
-- `supabase` CLI ≥ 1.200
-
-### 2.2 Accounts
-
-- **AWS** — account with permissions for EKS, S3, ElastiCache, KMS,
-  Secrets Manager, IAM.
-- **Supabase** — a Pro or Team plan project in `ap-south-1` (Mumbai).
-- **Temporal Cloud** — namespace `axiom-proof` in `ap-south-1`.
-  Free tier supports Phase 0/1 load.
-- **GitHub** — repo access for the image registry (`ghcr.io`).
-
-### 2.3 Domain + DNS
-
-- `axiomminds.ai` (or your custom domain) with DNSSEC enabled.
-- A subdomain `app.axiomminds.ai` for the product app.
+### 2.2 Remote, Staging & Production Prerequisites
+- **AWS CLI** ≥ 2.13.0 configured with `ap-south-1` default region
+- **Terraform** ≥ 1.7.0
+- **kubectl** ≥ 1.29.0
+- **Helm** ≥ 3.13.0
+- **Supabase CLI** ≥ 1.200.0
+- Registered domain with DNSSEC (e.g., `axiomminds.ai`, `app.axiomminds.ai`)
 
 ---
 
-## 3. AWS infrastructure provisioning
+## 3. Automation Scripts & Parameter Reference
 
-### 3.1 Bootstrap the state backend
+Axiom Proof provides high-level developer and deployment scripts located in `scripts/` with convenience links in the repository root and `package.json`.
 
-In a separate one-time `terraform init` (or via the AWS console),
-create:
+### 3.1 Master Docker Deployment Script: `scripts/dev-docker.sh` (or `./dev-docker.sh`)
 
-- An S3 bucket for Terraform state, with versioning + cross-region
-  replication for DR.
-- A DynamoDB table for state locking.
-- A KMS key for encrypting the state.
+Automates Docker daemon detection, macOS Docker Desktop launching, dependency building, differential container provisioning, and live health checks.
 
 ```bash
-# These commands run ONCE per AWS account, not in the main stack.
-aws s3api create-bucket \
-  --bucket axiom-proof-terraform-state-ap-south-1 \
-  --region ap-south-1 \
-  --create-bucket-configuration LocationConstraint=ap-south-1
-
-aws s3api put-bucket-versioning \
-  --bucket axiom-proof-terraform-state-ap-south-1 \
-  --versioning-configuration Status=Enabled
-
-aws dynamodb create-table \
-  --table-name axiom-proof-terraform-locks \
-  --attribute-definitions AttributeName=LockID,AttributeType=S \
-  --key-schema AttributeName=LockID,KeyType=HASH \
-  --billing-mode PAY_PER_REQUEST \
-  --region ap-south-1
+# Basic syntax
+./scripts/dev-docker.sh [OPTIONS]
 ```
 
-### 3.2 Configure the backend
+#### Supported CLI Options & Flags:
 
-Uncomment and configure the `backend "s3"` block in
-`infra/terraform/envs/prod/providers.tf` with the bucket / table
-names from §3.1.
+| Parameter | Alias | Default | Description |
+| :--- | :--- | :--- | :--- |
+| `--env <NAME>` | `-e` | `local` | Target deployment environment: `local`, `staging`, `preprod`, `production`. |
+| `--status` | `-s` | `false` | Run live health verification on all services without modifying running containers. |
+| `--build` | `-b` | `false` | Force full container rebuild without Docker cache (`docker compose build --no-cache`). |
+| `--down` | `-d` | `false` | Gracefully shut down all containers and networks. |
+| `--clean` | `-c` | `false` | Stop all containers and remove all persistent volumes and local data caches. |
+| `--restart` | `-r` | `false` | Restart all stack containers. |
+| `--logs [SVC]` | `-l` | all | Follow live Docker container logs (optionally pass service name, e.g. `web`, `bff`). |
+| `--test` | `-t` | `false` | Execute full pre-CI testing suite against the running stack. |
+| `--help` | `-h` | — | Display script help and parameter guide. |
 
-### 3.3 Plan + apply
+#### Example Invocations:
+```bash
+# 1. Start local stack (auto-launches Docker Desktop if closed)
+./scripts/dev-docker.sh
 
+# 2. Check health matrix and response latencies
+./scripts/dev-docker.sh --status
+
+# 3. Deploy to a local-network staging machine using staging configuration
+./scripts/dev-docker.sh --env staging
+
+# 4. Force rebuild and deploy
+./scripts/dev-docker.sh --build
+
+# 5. Tail logs for the Agent Runtime
+./scripts/dev-docker.sh --logs agent-runtime
+
+# 6. Stop local containers
+./scripts/dev-docker.sh --down
+```
+
+### 3.2 Pre-CI Verification Script: `scripts/test-local-stack.sh` (or `pnpm pre-ci`)
+
+Executes a self-contained 5-stage verification pipeline before committing or pushing changes:
+
+```bash
+./scripts/test-local-stack.sh
+# or: pnpm pre-ci
+```
+
+#### Pipeline Stages:
+1. **TypeScript Workspace Unit Tests**: Runs `pnpm test` via Turborepo across all 10 packages (`@axiom/config`, `@axiom/types`, `@axiom/evidence`, `@axiom/ledger`, `@axiom/approval-engine`, `@axiom/control-library`, `@axiom/ui`, `@axiom/supabase`, `@axiom/bff`, `@axiom/web`).
+2. **Agent Runtime Pytest Suite**: Runs `uv run pytest` inside `services/agent-runtime` (32 tests verifying all 10 named agents, PII redaction, canonicalization, and approval tokens).
+3. **Model Gateway Pytest Suite**: Runs `uv run pytest` inside `services/model-gateway` (14 tests verifying PII redactors, ap-south-1 residency checks, and token budgets).
+4. **Live HTTP Smoke Tests**: Issues HTTP probes to verify all 6 active container endpoints.
+5. **Playwright E2E Browser Suite**: Runs `cd tests/e2e && pnpm test:e2e` against the live Web Workbench (`:3001`) and Marketing (`:3000`) applications (10 browser tests).
+
+### 3.3 Root Package.json Convenience Scripts
+
+| npm Script | CLI Command Equivalent |
+| :--- | :--- |
+| `pnpm docker:deploy` | `./scripts/dev-docker.sh` |
+| `pnpm docker:status` | `./scripts/dev-docker.sh --status` |
+| `pnpm docker:up` | `./scripts/dev-docker.sh` |
+| `pnpm docker:down` | `./scripts/dev-docker.sh --down` |
+| `pnpm docker:build` | `./scripts/dev-docker.sh --build` |
+| `pnpm docker:test` | `./scripts/dev-docker.sh --test` |
+| `pnpm pre-ci` | `./scripts/test-local-stack.sh` |
+| `pnpm build` | `turbo build` (builds all TS packages and Next.js applications) |
+| `pnpm test` | `turbo test` (runs all package unit tests) |
+
+---
+
+## 4. Environment Variables & Configuration Dictionary
+
+Environment templates live in `infra/docker/environments/`:
+- `infra/docker/environments/.env.local.example` (copy to `.env.local` for local development)
+- `infra/docker/environments/.env.staging.example` (for staging clusters)
+- `infra/docker/environments/.env.preprod.example` (for preprod mirrors)
+- `infra/docker/environments/.env.production.example` (for AWS production reference)
+
+### 4.1 Master Environment Variable Reference
+
+| Variable Name | Module | Required In | Description / Default |
+| :--- | :--- | :--- | :--- |
+| `ENVIRONMENT` | All | All | Deployment tier: `local`, `development`, `staging`, `preprod`, `production`. |
+| `NODE_ENV` | Web, Marketing, BFF | All | Node runtime mode: `development` or `production`. |
+| `PORT` | All | All | Service bind port (`3000`, `3001`, `4000`, `8000`, `8001`). |
+| `NEXT_PUBLIC_APP_URL` | Web | All | Public Web Workbench URL (`http://localhost:3001` or `https://app.axiomminds.ai`). |
+| `NEXT_PUBLIC_MARKETING_URL` | Web, Marketing | All | Public marketing website URL (`http://localhost:3000` or `https://axiomminds.ai`). |
+| `NEXT_PUBLIC_SUPABASE_URL` | Web, Marketing | All | Supabase HTTP gateway (`http://localhost:55321` or Supabase project URL). |
+| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Web, Marketing | All | Supabase public anon token. |
+| `SUPABASE_SERVICE_KEY` | BFF, Worker | All | Supabase service-role key (SECURITY DEFINER operations). |
+| `DATABASE_URL` | BFF | Staging/Prod | Postgres connection string for direct pooled SQL execution. |
+| `BFF_URL` | Web, Marketing | All | BFF API internal base URL (`http://localhost:4000` or `http://bff:4000`). |
+| `AGENT_RUNTIME_URL` | BFF, Workers | All | Agent runtime FastAPI URL (`http://localhost:8000` or `http://agent-runtime:8000`). |
+| `MODEL_GATEWAY_URL` | Agents, BFF | All | Model Gateway FastAPI URL (`http://localhost:8001` or `http://model-gateway:8001`). |
+| `APPROVAL_SIGNING_KEY` | BFF, Runtime | All | 32-byte hex key for HMAC-SHA256 signing of human approval tokens. |
+| `LEDGER_ENCRYPTION_KEY` | Ledger, BFF | Staging/Prod | 32-byte hex key for encrypting sensitive fields in append-only audit ledger. |
+| `AWS_REGION` | All | All | Must always be `ap-south-1` for DPDPA data residency compliance. |
+| `EVIDENCE_VAULT_BUCKET` | Evidence, BFF | All | S3 bucket name configured with Compliance Object Lock. |
+| `TEMPORAL_HOST_PORT` | Worker, BFF | All | Temporal frontend host:port (`localhost:7233` or Temporal Cloud endpoint). |
+| `TEMPORAL_NAMESPACE` | Worker, BFF | All | Temporal namespace (`default` or `axiom-proof`). |
+| `AXIOM_E2E_BYPASS_AUTH` | Web, Supabase | Local Only | Bypasses Supabase auth session during automated test execution. Must be `false` in staging/prod. |
+
+---
+
+## 5. Deployment Procedures by Environment
+
+### 5.1 Local Developer Environment (`local`)
+
+1. **Clone and Install Dependencies**:
+   ```bash
+   git clone git@github.com:axiomminds/axiom-proof.git
+   cd axiom-proof
+   pnpm install
+   ```
+
+2. **Generate Controls & Artifacts**:
+   ```bash
+   pnpm seed:controls
+   pnpm tsx scripts/build-controls-json.mjs
+   ```
+
+3. **Deploy Local Docker Stack**:
+   ```bash
+   ./dev-docker.sh
+   ```
+   *The script automatically verifies Docker Desktop, provisions network bridges, builds any modified containers, and validates health.*
+
+4. **Verify Deployment**:
+   ```bash
+   ./dev-docker.sh --status
+   ```
+   Open `http://localhost:3001` for the Web Workbench and `http://localhost:3000` for Marketing.
+
+5. **Run Pre-CI Test Validation**:
+   ```bash
+   pnpm pre-ci
+   ```
+
+---
+
+### 5.2 Local-Network & Staging Deployment (`staging`)
+
+For running in a staging machine on a local network or a dedicated staging VM:
+
+1. **Prepare Staging Environment Configuration**:
+   ```bash
+   cp infra/docker/environments/.env.staging.example infra/docker/environments/.env.staging
+   # Edit .env.staging with staging database credentials and hostnames
+   ```
+
+2. **Deploy with Staging Overlay**:
+   ```bash
+   ./scripts/dev-docker.sh --env staging
+   ```
+   *This automatically merges `docker-compose.yml` with `infra/docker/docker-compose.staging.yml` and tags images as `axiom-<service>:staging`.*
+
+3. **Run Staging Health Check**:
+   ```bash
+   ./scripts/dev-docker.sh --env staging --status
+   ```
+
+---
+
+### 5.3 Production AWS Kubernetes Deployment (`production`)
+
+Target Architecture: AWS `ap-south-1` (Mumbai) multi-AZ EKS cluster + Supabase Pro + S3 Compliance Lock.
+
+#### Step 1: AWS Infrastructure Provisioning (Terraform)
 ```bash
 cd infra/terraform/envs/prod
 
+# 1. Initialize backend
 terraform init
 
-# Set the variables you need (see variables.tf). Most have safe defaults.
-export TF_VAR_cluster_name=axiom-proof-prod
+# 2. Plan and inspect resource graphs
+terraform plan -out=prod.tfplan
 
-terraform plan -out=tfplan
-# Review the plan carefully. Look for unexpected changes.
-terraform apply tfplan
+# 3. Apply infrastructure
+terraform apply prod.tfplan
 ```
+*Provisions VPC (3 AZs), EKS cluster, S3 Evidence Vault with Compliance Object Lock, KMS keys, Secrets Manager, and ElastiCache Valkey.*
 
-This provisions:
-
-- VPC with 3 public + 3 private subnets across 3 AZs
-- EKS cluster with Fargate profiles (axiom-proof namespace) and a
-  GPU node group (for the self-hosted vLLM)
-- ElastiCache for Valkey (HA, 2 nodes)
-- S3 evidence bucket with Object Lock Compliance mode
-- KMS keys for EKS secrets + S3 evidence
-- Secrets Manager entries (empty, populated in §5)
-- IAM roles for IRSA
-
-Outputs (sensitive):
-
-- `eks_cluster_name`
-- `eks_cluster_endpoint`
-- `evidence_bucket`
-- `redis_endpoint`
-
-### 3.4 Configure kubectl
-
+#### Step 2: Supabase Schema Migration
 ```bash
-aws eks update-kubeconfig \
-  --region ap-south-1 \
-  --name axiom-proof-prod
+# Link to production Supabase project (ap-south-1)
+supabase link --project-ref <your-supabase-project-ref>
 
-kubectl get nodes  # should show the system + GPU managed node groups
+# Push immutable migrations
+pnpm db:migrate
 ```
 
----
-
-## 4. Supabase project setup
-
-### 4.1 Create the project
-
-1. Sign in to [supabase.com/dashboard](https://supabase.com/dashboard).
-2. Create a new project:
-   - **Region:** Mumbai (ap-south-1)
-   - **Name:** axiom-proof
-   - **Database password:** generate a 64-char random password,
-     store in `axiom-proof/supabase` secret.
-3. Capture:
-   - Project URL (`https://<ref>.supabase.co`)
-   - Anon key (public)
-   - Service-role key (server-side only — store in Secrets Manager)
-
-### 4.2 Run the migrations
-
-The migrations are in `infra/supabase/migrations/`. Apply them in
-order:
-
+#### Step 3: Container Image Build & Push
 ```bash
-# Install the Supabase CLI if not already
-brew install supabase/tap/supabase
+# Authenticate with AWS ECR or GitHub Container Registry (ghcr.io)
+aws ecr get-login-password --region ap-south-1 | docker login --username AWS --password-stdin <aws-account-id>.dkr.ecr.ap-south-1.amazonaws.com
 
-# Link the project (one-time)
-supabase link --project-ref <ref>
+# Build and push images
+TAG="prod-$(git rev-parse --short HEAD)"
+docker build -f infra/docker/Dockerfile.bff -t <ecr-repo>/axiom-bff:$TAG .
+docker build -f infra/docker/Dockerfile.agent-runtime -t <ecr-repo>/axiom-agent-runtime:$TAG .
+docker build -f infra/docker/Dockerfile.model-gateway -t <ecr-repo>/axiom-model-gateway:$TAG .
+docker build -f infra/docker/Dockerfile.web -t <ecr-repo>/axiom-web:$TAG .
+docker build -f infra/docker/Dockerfile.marketing -t <ecr-repo>/axiom-marketing:$TAG .
+docker build -f infra/docker/Dockerfile.temporal-worker -t <ecr-repo>/axiom-temporal-worker:$TAG .
 
-# Push the migrations
-supabase db push
+docker push <ecr-repo>/axiom-bff:$TAG
+docker push <ecr-repo>/axiom-agent-runtime:$TAG
+docker push <ecr-repo>/axiom-model-gateway:$TAG
+docker push <ecr-repo>/axiom-web:$TAG
+docker push <ecr-repo>/axiom-marketing:$TAG
+docker push <ecr-repo>/axiom-temporal-worker:$TAG
 ```
 
-This creates:
-
-- All tables (tenants, users, controls, engagements, plans, actions,
-  approval_tokens, audit_ledger, evidence, ...)
-- All RLS policies
-- The `append_ledger()` and `verify_ledger()` Postgres functions
-- The `ledger_writer` role (no DELETE/UPDATE on the audit_ledger)
-- Storage buckets (tenant-logos, report-attachments, marketing)
-
-### 4.3 Seed the control library
-
+#### Step 4: Helm Release Deployment
 ```bash
-cd <repo-root>
-pnpm seed:controls
-```
+# Update kubeconfig
+aws eks update-kubeconfig --name axiom-proof-prod --region ap-south-1
 
-This inserts the v0.1.0 library (46 controls) into the `controls`
-and `control_libraries` tables.
-
-### 4.4 Configure auth
-
-In the Supabase dashboard, **Authentication → Providers → Email**:
-
-- Enable email provider
-- Disable "Confirm email" (we send our own confirmation via
-  Supabase Auth's email template)
-- Set the site URL to `https://app.axiomminds.ai`
-- Set the redirect URL to `https://app.axiomminds.ai/login`
-
-For MFA, **Authentication → Multi-Factor**:
-
-- Enable TOTP
-- **Do not** require MFA at signup; the BFF enforces MFA for any
-  user with the `approver` role.
-
----
-
-## 5. Storage bucket provisioning
-
-The S3 bucket is created by Terraform in §3.3. The agent runtime
-uses IRSA to assume a role that grants the required permissions.
-
-### 5.1 Verify Object Lock
-
-```bash
-aws s3api get-object-lock-configuration \
-  --bucket axiom-proof-evidence-ap-south-1 \
-  --region ap-south-1
-```
-
-Expected output includes `"ObjectLockEnabled": "Enabled"` and a
-rule with `Mode: COMPLIANCE`.
-
-### 5.2 Seed Secrets Manager
-
-```bash
-# Store the Supabase URL + keys
-aws secretsmanager put-secret-value \
-  --secret-id axiom-proof/supabase \
-  --secret-string '{
-    "url": "https://<ref>.supabase.co",
-    "anon-key": "<anon-key>",
-    "service-key": "<service-role-key>"
-  }' \
-  --region ap-south-1
-
-# Generate and store the approval signing key
-APPROVAL_KEY=$(openssl rand -hex 32)
-aws secretsmanager put-secret-value \
-  --secret-id axiom-proof/internal \
-  --secret-string "{
-    \"approval-key\": \"$APPROVAL_KEY\",
-    \"agent-runtime-token\": \"$(openssl rand -hex 32)\",
-    \"model-gateway-key\": \"$(openssl rand -hex 32)\"
-  }" \
-  --region ap-south-1
-
-# Store the Temporal Cloud API key
-aws secretsmanager put-secret-value \
-  --secret-id axiom-proof/temporal \
-  --secret-string '{"api-key": "<your-temporal-api-key>"}' \
-  --region ap-south-1
-```
-
-### 5.3 Mount secrets to EKS
-
-The Helm chart in `infra/helm/axiom-proof/` expects a Kubernetes
-secret named `{{ include "axiom-proof.fullname" . }}-supabase`,
-`...-internal`, `...-temporal`. We use the [AWS Secrets Manager
-CSI driver](https://docs.aws.amazon.com/secrets-manager/latest/userguide/integrating_csi.html)
-or the [External Secrets Operator](https://external-secrets.io/).
-
-**External Secrets Operator** is recommended. Install it:
-
-```bash
-helm repo add external-secrets https://charts.external-secrets.io
-helm install external-secrets external-secrets/external-secrets \
-  --namespace external-secrets --create-namespace
-```
-
-Then create a `SecretStore` (saved to `infra/k8s/base/secretstore.yaml`):
-
-```yaml
-apiVersion: external-secrets.io/v1beta1
-kind: SecretStore
-metadata:
-  name: aws-secrets-manager
-  namespace: axiom-proof
-spec:
-  provider:
-    aws:
-      service: SecretsManager
-      region: ap-south-1
-      auth:
-        jwt:
-          serviceAccountRef:
-            name: axiom-proof
-```
-
-And `ExternalSecret` resources (saved to
-`infra/k8s/base/external-secrets.yaml`) that mirror each AWS secret
-into a Kubernetes secret.
-
----
-
-## 6. Container image build + push
-
-### 6.1 GitHub Container Registry
-
-The Helm chart expects images at
-`ghcr.io/axiom-minds/axiom-{component}:{tag}`. We build 5 images:
-
-- `axiom-web` — Next.js product app
-- `axiom-marketing` — Next.js marketing site
-- `axiom-bff` — Hono/Node BFF
-- `axiom-agent-runtime` — Python FastAPI agent runtime
-- `axiom-model-gateway` — Python FastAPI model gateway
-- `axiom-temporal-worker` — Python Temporal worker (Phase 2+)
-
-### 6.2 Build and push
-
-```bash
-# Log in to ghcr.io (one-time)
-echo $GITHUB_TOKEN | docker login ghcr.io -u <your-username> --password-stdin
-
-# Build all images
-export IMAGE_TAG=$(git rev-parse --short HEAD)
-for component in web marketing bff agent-runtime model-gateway; do
-  docker build \
-    -f infra/docker/Dockerfile.${component} \
-    -t ghcr.io/axiom-minds/axiom-${component}:${IMAGE_TAG} \
-    --build-arg BUILDKIT_INLINE_CACHE=1 \
-    .
-  docker push ghcr.io/axiom-minds/axiom-${component}:${IMAGE_TAG}
-done
-```
-
-For production, also tag with the semver:
-
-```bash
-docker tag ghcr.io/axiom-minds/axiom-bff:${IMAGE_TAG} ghcr.io/axiom-minds/axiom-bff:0.1.0
-docker push ghcr.io/axiom-minds/axiom-bff:0.1.0
-```
-
----
-
-## 7. Kubernetes deployment (Helm)
-
-### 7.1 Install ingress + cert-manager
-
-```bash
-# NGINX ingress controller
-helm repo add ingress-nginx https://kubernetes.github.io/ingress-nginx
-helm install ingress-nginx ingress-nginx/ingress-nginx \
-  --namespace ingress-nginx --create-namespace
-
-# cert-manager (for automatic Let's Encrypt TLS)
-helm repo add jetstack https://charts.jetstack.io
-helm install cert-manager jetstack/cert-manager \
-  --namespace cert-manager --create-namespace \
-  --set installCRDs=true
-
-# ClusterIssuer
-cat <<EOF | kubectl apply -f -
-apiVersion: cert-manager.io/v1
-kind: ClusterIssuer
-metadata:
-  name: letsencrypt-prod
-spec:
-  acme:
-    server: https://acme-v02.api.letsencrypt.org/directory
-    email: ops@axiomminds.ai
-    privateKeySecretRef:
-      name: letsencrypt-prod
-    solvers:
-    - http01:
-        ingress:
-          class: nginx
-EOF
-```
-
-### 7.2 Create the namespace
-
-```bash
-kubectl create namespace axiom-proof
-```
-
-### 7.3 Install the Helm chart
-
-```bash
-helm install axiom-proof ./infra/helm/axiom-proof \
+# Deploy Helm chart
+helm upgrade --install axiom-proof ./infra/helm/axiom-proof \
   --namespace axiom-proof \
-  --values infra/helm/axiom-proof/values.yaml \
-  --values infra/helm/axiom-proof/values-prod.yaml \
-  --set image.tag=${IMAGE_TAG} \
-  --set config.supabaseUrl=<your-supabase-url> \
-  --wait
-```
-
-Verify the rollout:
-
-```bash
-kubectl -n axiom-proof get pods
-# All pods should be Running within 2-3 minutes.
-```
-
-### 7.4 Verify the service mesh
-
-```bash
-kubectl -n axiom-proof get svc
-# Should list: axiom-proof-web, axiom-proof-marketing, axiom-proof-bff,
-# axiom-proof-agent-runtime, axiom-proof-model-gateway.
+  --create-namespace \
+  --values ./infra/helm/axiom-proof/values-prod.yaml \
+  --set image.tag=$TAG
 ```
 
 ---
 
-## 8. Domain + DNS + TLS
+## 6. Pre-Flight & Post-Deployment Checks
 
-### 8.1 DNS
+### 6.1 Pre-Flight Verification Checklist
+- [x] **Controls Library Sync**: `controls.json` built and packaged in `services/agent-runtime/src/axiom/`.
+- [x] **Node.js 22 LTS**: Verified container base image is `node:22-alpine` for global WebSocket support.
+- [x] **Hard Rule Invariants**:
+  - `SudhaarAgent.can_mutate = False`
+  - Signed HMAC approval tokens required for `KaryaAgent` mutation.
+  - Append-only audit ledger function `append_ledger()` verified.
+  - S3 Evidence vault retention lock verified in compliance mode.
+  - All LLM egress routed through Model Gateway with PII redaction.
 
-Point the domain's A/AAAA records at the NGINX ingress controller's
-external IP:
-
-```bash
-INGRESS_IP=$(kubectl -n ingress-nginx get svc ingress-nginx-controller \
-  -o jsonpath='{.status.loadBalancer.ingress[0].ip}')
-
-# At your DNS provider, create:
-axiomminds.ai        A    $INGRESS_IP
-app.axiomminds.ai    A    $INGRESS_IP
-```
-
-### 8.2 TLS
-
-The ingress-nginx + cert-manager combination auto-issues Let's Encrypt
-certificates. The Helm chart's `tls.secretName` references the
-cert-manager-generated secret.
-
-To verify:
+### 6.2 Post-Deployment Health Probes
 
 ```bash
-kubectl -n axiom-proof get ingress axiom-proof -o yaml
-# Status should show the cert-manager issued cert.
+# 1. Model Gateway Health Probe
+curl -fsS http://<model-gateway-host>:8001/health
+# Expected: {"status":"ok","residency":"ap-south-1","redaction":"active"}
+
+# 2. Agent Runtime Health Probe
+curl -fsS http://<agent-runtime-host>:8000/health
+# Expected: {"status":"ok","agents_loaded":10,"version":"0.1.0"}
+
+# 3. BFF API Engine Health Probe
+curl -fsS http://<bff-host>:4000/health
+# Expected: {"status":"healthy","database":"connected","ledger":"append_only"}
+
+# 4. Web Product App HTTP Response
+curl -fsS -I http://<web-host>:3001/
+# Expected: HTTP/1.1 200 OK
+
+# 5. Marketing Site HTTP Response
+curl -fsS -I http://<marketing-host>:3000/
+# Expected: HTTP/1.1 200 OK
 ```
 
 ---
 
-## 9. Smoke tests + verification
+## 7. Operational Runbook & Troubleshooting
 
-### 9.1 Health checks
+### 7.1 Docker Desktop Fails to Start on macOS
+- **Symptom**: `dev-docker.sh` reports `Waiting for Docker daemon to become responsive...` and times out.
+- **Resolution**:
+  1. Verify Docker Desktop is installed in `/Applications/Docker.app`.
+  2. Open Docker Desktop manually once to approve macOS Security & Privileges.
+  3. Reset the Docker socket link:
+     ```bash
+     sudo ln -sf ~/.docker/run/docker.sock /var/run/docker.sock
+     ```
 
-```bash
-# Marketing site
-curl -fsS https://axiomminds.ai/ -o /dev/null -w "%{http_code}\n"
-# Expected: 200
+### 7.2 Native WebSocket Error in Supabase Realtime
+- **Symptom**: Next.js or BFF logs throw `Error: Node.js detected but native WebSocket not found. Suggested solution: Ensure you are running Node.js 22+`.
+- **Resolution**:
+  - Ensure all Dockerfiles use `node:22-alpine` as base.
+  - Node 22 includes standard global `WebSocket`. Do not downgrade base images to Node 20.
 
-# App
-curl -fsS https://app.axiomminds.ai/ -o /dev/null -w "%{http_code}\n"
-# Expected: 200
+### 7.3 Next.js Standalone Authentication Redirects in Local Testing
+- **Symptom**: Playwright or local tests get redirected to `/login` when requesting `/workbench` or `/plans`.
+- **Resolution**:
+  - Next.js standalone mode sets internal `NODE_ENV=production`.
+  - In `packages/config/src/index.ts` and `packages/supabase/src/e2e.ts`, ensure `ENVIRONMENT === 'development'` or `ENVIRONMENT === 'local'` is checked alongside `AXIOM_E2E_BYPASS_AUTH === 'true'`.
 
-# BFF health (port-forwarded for direct check)
-kubectl -n axiom-proof port-forward svc/axiom-proof-bff 4000:4000 &
-curl -fsS http://localhost:4000/health
-# Expected: {"status":"ok","timestamp":"..."}
+### 7.4 Engaging the Emergency Platform Kill Switch
+To halt all in-flight agent remediation executions immediately:
 
-# Agent runtime
-kubectl -n axiom-proof port-forward svc/axiom-proof-agent-runtime 8000:8000 &
-curl -fsS http://localhost:8000/ready
-# Expected: {"status":"ready","gateway_healthy":true,...}
+1. **Via Web Approval Console**:
+   Navigate to any active remediation plan (e.g. `/plans/:id`) and click **"Engage kill switch"**.
 
-# Model gateway
-kubectl -n axiom-proof port-forward svc/axiom-proof-model-gateway 8001:8001 &
-curl -fsS http://localhost:8001/ready
-# Expected: {"status":"ready","providers":{...},"redaction_enabled":true}
-```
+2. **Via BFF Direct API Call**:
+   ```bash
+   curl -X POST https://app.axiomminds.ai/api/bff/v1/kill-switch/engage \
+     -H "Authorization: Bearer $ADMIN_TOKEN" \
+     -H "X-Tenant-Id: $TENANT_ID" \
+     -H "Content-Type: application/json" \
+     -d '{"scope": "global", "reason": "Operational intervention"}'
+   ```
+   *Instantly revokes all active approval tokens and logs an emergency termination event in the immutable audit ledger.*
 
-### 9.2 End-to-end gap-scan
-
-1. Open https://axiomminds.ai in a browser.
-2. Click "Run the free 5-min gap-scan".
-3. Fill out the form (sector, size, 12 questions, contact info).
-4. Submit. You should see a report with a posture score, top
-   recommendations, and the full findings table.
-5. Verify the report's `id` appears in the Supabase
-   `gap_scan_responses` table.
-
-### 9.3 Approval flow
-
-1. Create a test engagement via the Supabase dashboard
-   (insert into `engagements`).
-2. Run Parikshan via the agent runtime: `curl -X POST
-http://localhost:8000/agents/parikshan/invoke ...`
-3. Generate a plan with Sudhaar.
-4. Open the plan in the app. The dry-run / rollback / blast-radius
-   cards should be visible.
-5. Approve an action. The approval token should be issued and
-   visible in the `approval_tokens` table.
-
-### 9.4 Audit ledger verification
-
+### 7.5 Verifying Audit Ledger Cryptographic Integrity
 ```sql
--- In Supabase SQL editor
+-- Connect to Postgres / Supabase
 SELECT * FROM verify_ledger('<tenant-uuid>');
--- Should return 0 rows (intact chain)
+-- Returns 0 rows if all hash chains are intact. Returns broken sequence index if tampered.
 ```
 
----
-
-## 10. Operational runbook
-
-### 10.1 Scaling
-
-- BFF and agent-runtime have HPA enabled in the Helm chart
-  (`minReplicas: 2, maxReplicas: 10/20`).
-- To scale beyond, edit the Helm values and `helm upgrade`.
-- The model gateway should scale with the agent runtime
-  (1:1 request volume).
-
-### 10.2 Logs
-
+### 7.6 Rotating Approval Signing Key
 ```bash
-# Tail logs from a specific component
-kubectl -n axiom-proof logs -l app.kubernetes.io/component=bff --tail=100 -f
-
-# All components
-kubectl -n axiom-proof logs -l app.kubernetes.io/part-of=axiom-proof --tail=100 -f
-```
-
-### 10.3 Engaging the kill switch
-
-From the Approval Console (any plan page → "Engage kill switch"):
-
-```bash
-# Or via the BFF API directly
-curl -X POST https://app.axiomminds.ai/api/bff/v1/kill-switch/engage \
-  -H "Authorization: Bearer $TOKEN" \
-  -H "X-Tenant-Id: $TENANT_ID" \
-  -H "Content-Type: application/json" \
-  -d '{"scope": "global", "reason": "production incident 2026-08-XX"}'
-```
-
-This halts ALL in-flight execution immediately. The action is
-recorded in the audit ledger.
-
-### 10.4 Reading the audit ledger
-
-```sql
--- Reconstruct the full chain for a correlation ID
-SELECT sequence_no, actor_type, actor_id, action_type, result, occurred_at
-FROM audit_ledger
-WHERE correlation_id = '<correlation-uuid>'
-ORDER BY sequence_no;
-```
-
-```sql
--- Verify chain integrity for a tenant
-SELECT * FROM verify_ledger('<tenant-uuid>');
--- Returns 0 rows if intact, or the first break.
-```
-
-### 10.5 Rotation of secrets
-
-```bash
-# Rotate the approval signing key
+# 1. Generate new 256-bit secret key
 NEW_KEY=$(openssl rand -hex 32)
+
+# 2. Update in AWS Secrets Manager
 aws secretsmanager update-secret \
   --secret-id axiom-proof/internal \
-  --secret-string "$(jq --arg k "$NEW_KEY" '.["approval-key"] = $k' \
-    "$(aws secretsmanager get-secret-value --secret-id axiom-proof/internal \
-       --query SecretString --output text)")" \
+  --secret-string "{\"approval-key\":\"$NEW_KEY\"}" \
   --region ap-south-1
 
-# Restart the BFF to pick up the new key
+# 3. Roll out restart to BFF & Agent Runtime
 kubectl -n axiom-proof rollout restart deployment/axiom-proof-bff
+kubectl -n axiom-proof rollout restart deployment/axiom-proof-agent-runtime
 ```
-
-After rotation, all previously-issued tokens become invalid (they
-were signed with the old key). This is the desired property for
-key compromise scenarios.
-
-### 10.6 Backup + restore
-
-- **Supabase** — daily logical backups (managed by Supabase), PITR
-  available for 7 days.
-- **S3 evidence** — versioning + cross-AZ replication, no
-  point-in-time delete possible (Object Lock Compliance mode is
-  WORM).
-- **EKS** — stateless; all state is in Supabase or S3.
-
-### 10.7 Disaster recovery
-
-| Scenario                 | Recovery                                                                                                        |
-| ------------------------ | --------------------------------------------------------------------------------------------------------------- |
-| Single EKS pod crash     | Kubernetes reschedules automatically                                                                            |
-| EKS node failure         | Managed node group replaces it                                                                                  |
-| AZ failure               | Multi-AZ Fargate + cross-AZ S3 replication                                                                      |
-| Region failure           | DR runbook (manual) — restore Supabase from backup, S3 from cross-region replication, redeploy EKS in DR region |
-| Supabase data loss       | PITR (7-day)                                                                                                    |
-| Evidence vault data loss | S3 versioning + cross-region replication (in `ap-south-1` only)                                                 |
-| Approval key compromise  | Rotate the key (see §10.5); all outstanding tokens become invalid                                               |
+*Instantly invalidates all pre-existing unsigned or stale tokens.*
 
 ---
 
-## Appendix A — CI/CD
+## 8. Summary of Key Files
 
-The repo has a `.github/workflows/` directory with:
-
-- `ci.yml` — runs unit + integration tests on every PR
-- `build-images.yml` — builds and pushes images on `main` merge
-- `deploy.yml` — deploys to EKS via Helm upgrade
-
-(These are documented but not yet committed; the `infra/`
-artifacts here are the source of truth for what they should do.)
-
-## Appendix B — Disaster Recovery
-
-RPO ≤ 1 hour, RTO ≤ 4 hours (NFR-9). The cross-region S3 replication
-
-- Supabase PITR + Terraform-from-scratch recovery are the safety net.
-
-For region-failure scenarios, the recovery procedure is:
-
-1. Re-run Terraform in the DR region with the same state file
-   (the S3 backend is replicated).
-2. Run `supabase db push` against the restored Supabase project.
-3. Deploy the Helm chart.
-4. Update DNS to point to the DR ingress.
-5. Restore the S3 evidence bucket from the replicated state.
-
-This is not yet automated; the runbook is the source of truth until
-the automation is in place.
-
-## Appendix C — Cost
-
-Estimated Phase 0/1 monthly cost (Mumbai, 1 EKS cluster, low
-traffic):
-
-| Resource                                                   | Monthly (USD) |
-| ---------------------------------------------------------- | ------------- |
-| EKS control plane                                          | 73            |
-| Fargate (BFF + agent runtime + model gateway, low traffic) | 100–300       |
-| S3 evidence (1 TB, IA)                                     | 25            |
-| Supabase Pro                                               | 25            |
-| Temporal Cloud                                             | 25–100        |
-| ElastiCache (cache.r6g.large × 2)                          | 200           |
-| KMS                                                        | 5             |
-| Secrets Manager                                            | 5             |
-| CloudWatch logs (30-day retention)                         | 20            |
-| Route 53 + ACM                                             | 5             |
-| **Total**                                                  | **~480–760**  |
-
-Future Phase 3 production execution (Karya executing real remediation) will add significant
-cost for the GPU node group and per-tenant approval key storage.
-The Model Gateway's per-tenant cost attribution (NFR-11) tracks
-LLM spend; the dashboard shows it per client.
+| File Path | Description |
+| :--- | :--- |
+| [`scripts/dev-docker.sh`](file:///Users/vikash/Axiom%20Proof/scripts/dev-docker.sh) | Master Docker automation & multi-environment manager. |
+| [`scripts/test-local-stack.sh`](file:///Users/vikash/Axiom%20Proof/scripts/test-local-stack.sh) | Self-contained 5-stage pre-CI test pipeline. |
+| [`docker-compose.yml`](file:///Users/vikash/Axiom%20Proof/docker-compose.yml) | Base & local Docker Compose stack definition. |
+| [`infra/docker/docker-compose.staging.yml`](file:///Users/vikash/Axiom%20Proof/infra/docker/docker-compose.staging.yml) | Staging compose overlay. |
+| [`infra/docker/docker-compose.preprod.yml`](file:///Users/vikash/Axiom%20Proof/infra/docker/docker-compose.preprod.yml) | Preprod compose overlay. |
+| [`infra/docker/docker-compose.prod.yml`](file:///Users/vikash/Axiom%20Proof/infra/docker/docker-compose.prod.yml) | Production reference compose overlay. |
+| [`infra/docker/environments/`](file:///Users/vikash/Axiom%20Proof/infra/docker/environments/) | Environment `.env.*.example` configuration templates. |
+| [`docs/08_DEPLOYMENT_GUIDE.md`](file:///Users/vikash/Axiom%20Proof/docs/08_DEPLOYMENT_GUIDE.md) | This master deployment and operations guide. |

@@ -17,7 +17,8 @@ COPY services/temporal-workers/src ./services/temporal-workers/src
 WORKDIR /app/services/temporal-workers
 RUN uv pip install --system -e .
 
-WORKDIR /app
+ENV PYTHONPATH="/app/services/temporal-workers/src"
+WORKDIR /app/services/temporal-workers
 
 RUN useradd --create-home --shell /bin/bash axiom
 USER axiom

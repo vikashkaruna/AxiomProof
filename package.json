@@ -24,7 +24,14 @@
     "infra:apply": "cd infra/terraform/envs/prod && terraform apply",
     "db:migrate": "if [ -n \"$SUPABASE_DB_URL\" ]; then supabase db push --db-url \"$SUPABASE_DB_URL\" --workdir infra; else supabase db push --local --workdir infra; fi",
     "db:reset": "supabase db reset --workdir infra",
-    "agents:test": "cd services/agent-runtime && uv run pytest"
+    "agents:test": "cd services/agent-runtime && uv run pytest",
+    "docker:deploy": "./scripts/dev-docker.sh",
+    "docker:up": "./scripts/dev-docker.sh",
+    "docker:down": "./scripts/dev-docker.sh --down",
+    "docker:status": "./scripts/dev-docker.sh --status",
+    "docker:build": "./scripts/dev-docker.sh --build",
+    "docker:test": "./scripts/dev-docker.sh --test",
+    "pre-ci": "./scripts/dev-docker.sh --test"
   },
   "devDependencies": {
     "@types/node": "^20.14.10",

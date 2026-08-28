@@ -31,6 +31,13 @@ const E2E_PLAN = {
   tenants: { id: '00000000-0000-0000-0000-000000000002', name: 'E2E tenant', slug: 'e2e' },
 };
 
+const E2E_USER_PROFILE = {
+  id: '00000000-0000-0000-0000-000000000001',
+  email: 'founder@axiomminds.ai',
+  full_name: 'Founder',
+  is_axiom_internal: true,
+};
+
 type QueryResult = {
   data: unknown[];
   error: null;
@@ -43,15 +50,20 @@ type QueryBuilder = {
   limit: (...args: unknown[]) => QueryBuilder;
   eq: (...args: unknown[]) => QueryBuilder;
   in: (...args: unknown[]) => QueryBuilder;
-  single: () => Promise<{ data: typeof E2E_PLAN; error: null }>;
+  single: () => Promise<{ data: unknown; error: null }>;
+  maybeSingle: () => Promise<{ data: unknown; error: null }>;
   then: Promise<QueryResult>['then'];
 };
 
 function createQuery(table: string): QueryBuilder {
+  const resultData =
+    table === 'users' ? [E2E_USER_PROFILE] : table === 'remediation_plans' ? [E2E_PLAN] : [];
+  const singleData = table === 'users' ? E2E_USER_PROFILE : E2E_PLAN;
+
   const result: QueryResult = {
-    data: [],
+    data: resultData,
     error: null,
-    count: 0,
+    count: resultData.length,
   };
 
   const query = {} as QueryBuilder;
@@ -61,7 +73,11 @@ function createQuery(table: string): QueryBuilder {
   query.eq = () => query;
   query.in = () => query;
   query.single = async () => ({
-    data: table === 'remediation_plans' ? E2E_PLAN : E2E_PLAN,
+    data: singleData,
+    error: null,
+  });
+  query.maybeSingle = async () => ({
+    data: singleData,
     error: null,
   });
   query.then = Promise.resolve(result).then.bind(Promise.resolve(result));
@@ -69,7 +85,12 @@ function createQuery(table: string): QueryBuilder {
 }
 
 export function isE2EBypassEnabled(): boolean {
-  return process.env.NODE_ENV !== 'production' && process.env.AXIOM_E2E_BYPASS_AUTH === 'true';
+  return (
+    (process.env.NODE_ENV !== 'production' ||
+      process.env.ENVIRONMENT === 'development' ||
+      process.env.ENVIRONMENT === 'local') &&
+    process.env.AXIOM_E2E_BYPASS_AUTH === 'true'
+  );
 }
 
 /**

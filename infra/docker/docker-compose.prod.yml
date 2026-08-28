@@ -1,0 +1,46 @@
+# Axiom Proof — Production Docker Compose Reference
+# Use with: docker compose -f docker-compose.yml -f infra/docker/docker-compose.prod.yml --env-file infra/docker/environments/.env.production up -d
+name: axiom-proof-prod
+
+services:
+  model-gateway:
+    image: axiom-model-gateway:prod
+    environment:
+      - ENVIRONMENT=production
+      - LOG_LEVEL=warn
+    restart: always
+
+  agent-runtime:
+    image: axiom-agent-runtime:prod
+    environment:
+      - ENVIRONMENT=production
+      - LOG_LEVEL=warn
+    restart: always
+
+  bff:
+    image: axiom-bff:prod
+    environment:
+      - NODE_ENV=production
+      - LOG_LEVEL=warn
+    restart: always
+
+  temporal:
+    # In production, Temporal Cloud (ap-south-1) is used per Solution Architecture Doc 04
+    profiles:
+      - donotstart
+
+  temporal-worker:
+    image: axiom-temporal-worker:prod
+    restart: always
+
+  web:
+    image: axiom-web:prod
+    environment:
+      - NODE_ENV=production
+    restart: always
+
+  marketing:
+    image: axiom-marketing:prod
+    environment:
+      - NODE_ENV=production
+    restart: always

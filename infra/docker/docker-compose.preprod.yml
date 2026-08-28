@@ -1,0 +1,35 @@
+# Axiom Proof — Preprod Docker Compose Overlay
+# Use with: docker compose -f docker-compose.yml -f infra/docker/docker-compose.preprod.yml --env-file infra/docker/environments/.env.preprod up -d
+name: axiom-proof-preprod
+
+services:
+  model-gateway:
+    image: axiom-model-gateway:preprod
+    environment:
+      - ENVIRONMENT=staging
+      - LOG_LEVEL=info
+
+  agent-runtime:
+    image: axiom-agent-runtime:preprod
+    environment:
+      - ENVIRONMENT=staging
+      - LOG_LEVEL=info
+
+  bff:
+    image: axiom-bff:preprod
+    environment:
+      - NODE_ENV=production
+      - LOG_LEVEL=info
+
+  temporal-worker:
+    image: axiom-temporal-worker:preprod
+
+  web:
+    image: axiom-web:preprod
+    environment:
+      - NODE_ENV=production
+
+  marketing:
+    image: axiom-marketing:preprod
+    environment:
+      - NODE_ENV=production

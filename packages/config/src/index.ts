@@ -9,6 +9,7 @@ import { z } from 'zod';
 const EnvSchema = z
   .object({
     NODE_ENV: z.enum(['development', 'staging', 'production', 'test']).default('development'),
+    ENVIRONMENT: z.enum(['development', 'staging', 'preprod', 'production', 'local']).default('development').optional(),
     LOG_LEVEL: z.enum(['debug', 'info', 'warn', 'error']).default('info'),
 
     // Supabase
@@ -89,7 +90,7 @@ const EnvSchema = z
       .transform((v) => v === 'true'),
   })
   .superRefine((env, ctx) => {
-    if (env.NODE_ENV !== 'production') return;
+    if (env.NODE_ENV !== 'production' || env.ENVIRONMENT === 'development' || env.ENVIRONMENT === 'local') return;
 
     if (
       !env.SUPABASE_URL ||

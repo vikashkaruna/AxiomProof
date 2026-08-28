@@ -1,0 +1,233 @@
+# Axiom Proof — Multi-Module Docker Compose Orchestration
+# Supports Local Development, Pre-CI verification, Staging, Preprod & Prod environments.
+name: axiom-proof
+
+services:
+  # ─── Model Gateway (Self-hosted LLM & PII Redaction) ───────────
+  model-gateway:
+    build:
+      context: .
+      dockerfile: infra/docker/Dockerfile.model-gateway
+    image: axiom-model-gateway:${ENVIRONMENT:-local}
+    container_name: axiom-model-gateway
+    restart: unless-stopped
+    ports:
+      - "${MODEL_GATEWAY_PORT:-8001}:8001"
+    environment:
+      - ENVIRONMENT=${ENVIRONMENT:-development}
+      - HTTP_PORT=8001
+      - HTTP_HOST=0.0.0.0
+      - LOG_LEVEL=${LOG_LEVEL:-info}
+      - REDACT_PII=true
+      - DEFAULT_MODEL=${DEFAULT_MODEL:-anthropic.claude-3-5-sonnet@20240620}
+      - FALLBACK_MODEL=${FALLBACK_MODEL:-anthropic.claude-3-haiku@20240307}
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fsS http://localhost:8001/health || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    networks:
+      - axiom-network
+
+  # ─── Agent Runtime (10 Named Agents) ───────────────────────────
+  agent-runtime:
+    build:
+      context: .
+      dockerfile: infra/docker/Dockerfile.agent-runtime
+    image: axiom-agent-runtime:${ENVIRONMENT:-local}
+    container_name: axiom-agent-runtime
+    restart: unless-stopped
+    ports:
+      - "${AGENT_RUNTIME_PORT:-8000}:8000"
+    environment:
+      - ENVIRONMENT=${ENVIRONMENT:-development}
+      - HTTP_PORT=8000
+      - HTTP_HOST=0.0.0.0
+      - LOG_LEVEL=${LOG_LEVEL:-info}
+      - SUPABASE_URL=${SUPABASE_URL:-http://host.docker.internal:55321}
+      - SUPABASE_ANON_KEY=${SUPABASE_ANON_KEY:-eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS1kZW1vIiwicm9sZSI6ImFub24iLCJleHAiOjE5ODM4MTI5OTZ9.CRXP1A7WOeoJeXxjNni43kdQwgnWNReilDMblYTn_I0}
+      - SUPABASE_SERVICE_KEY=${SUPABASE_SERVICE_KEY:-eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS1kZW1vIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImV4cCI6MTk4MzgxMjk5Nn0.EGIM96RAZx35lJzdJsyH-qQwv8Hdp7fsn3W0YpN81IU}
+      - MODEL_GATEWAY_URL=${MODEL_GATEWAY_URL:-http://model-gateway:8001}
+      - MODEL_GATEWAY_API_KEY=${MODEL_GATEWAY_API_KEY:-dev-model-gateway-key-axiom}
+      - INTERNAL_TOKEN=${AGENT_RUNTIME_INTERNAL_TOKEN:-dev-agent-runtime-token-axiom}
+      - APPROVAL_SIGNING_KEY=${APPROVAL_SIGNING_KEY:-dev-signing-secret-key-at-least-32-chars-long-12345}
+      - TEMPORAL_ADDRESS=${TEMPORAL_ADDRESS:-temporal:7233}
+      - TEMPORAL_NAMESPACE=${TEMPORAL_NAMESPACE:-axiom-proof}
+      - TEMPORAL_TLS=${TEMPORAL_TLS:-false}
+      - AWS_REGION=${AWS_REGION:-ap-south-1}
+      - S3_EVIDENCE_BUCKET=${AWS_S3_EVIDENCE_BUCKET:-axiom-proof-evidence-local}
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    depends_on:
+      model-gateway:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fsS http://localhost:8000/health || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 15s
+    networks:
+      - axiom-network
+
+  # ─── BFF (Hono API & Execution Gate) ───────────────────────────
+  bff:
+    build:
+      context: .
+      dockerfile: infra/docker/Dockerfile.bff
+    image: axiom-bff:${ENVIRONMENT:-local}
+    container_name: axiom-bff
+    restart: unless-stopped
+    ports:
+      - "${BFF_PORT:-4000}:4000"
+    environment:
+      - NODE_ENV=${NODE_ENV:-development}
+      - BFF_PORT=4000
+      - LOG_LEVEL=${LOG_LEVEL:-info}
+      - SUPABASE_URL=${SUPABASE_URL:-http://host.docker.internal:55321}
+      - SUPABASE_ANON_KEY=${SUPABASE_ANON_KEY:-eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS1kZW1vIiwicm9sZSI6ImFub24iLCJleHAiOjE5ODM4MTI5OTZ9.CRXP1A7WOeoJeXxjNni43kdQwgnWNReilDMblYTn_I0}
+      - SUPABASE_SERVICE_KEY=${SUPABASE_SERVICE_KEY:-eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS1kZW1vIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImV4cCI6MTk4MzgxMjk5Nn0.EGIM96RAZx35lJzdJsyH-qQwv8Hdp7fsn3W0YpN81IU}
+      - AGENT_RUNTIME_URL=${AGENT_RUNTIME_URL:-http://agent-runtime:8000}
+      - AGENT_RUNTIME_INTERNAL_TOKEN=${AGENT_RUNTIME_INTERNAL_TOKEN:-dev-agent-runtime-token-axiom}
+      - MODEL_GATEWAY_URL=${MODEL_GATEWAY_URL:-http://model-gateway:8001}
+      - MODEL_GATEWAY_API_KEY=${MODEL_GATEWAY_API_KEY:-dev-model-gateway-key-axiom}
+      - APPROVAL_SIGNING_KEY=${APPROVAL_SIGNING_KEY:-dev-signing-secret-key-at-least-32-chars-long-12345}
+      - BFF_CORS_ORIGINS=${BFF_CORS_ORIGINS:-http://localhost:3000,http://localhost:3001,http://127.0.0.1:3000,http://127.0.0.1:3001}
+      - TEMPORAL_ADDRESS=${TEMPORAL_ADDRESS:-temporal:7233}
+      - TEMPORAL_NAMESPACE=${TEMPORAL_NAMESPACE:-axiom-proof}
+      - TEMPORAL_TLS=${TEMPORAL_TLS:-false}
+      - AWS_REGION=${AWS_REGION:-ap-south-1}
+      - AWS_S3_EVIDENCE_BUCKET=${AWS_S3_EVIDENCE_BUCKET:-axiom-proof-evidence-local}
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    depends_on:
+      agent-runtime:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "wget --no-verbose --tries=1 --spider http://localhost:4000/health || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    networks:
+      - axiom-network
+
+  # ─── Temporal Server (Durable Orchestration Dev Engine) ────────
+  temporal:
+    image: temporalio/auto-setup:1.24.2
+    container_name: axiom-temporal
+    restart: unless-stopped
+    ports:
+      - "${TEMPORAL_PORT:-7233}:7233"
+      - "${TEMPORAL_UI_PORT:-8233}:8233"
+    environment:
+      - DB=sqlite
+      - DYNAMIC_CONFIG_FILE_PATH=config/dynamicconfig/development-sql.yaml
+      - ENABLE_ES=false
+      - BIND_ON_IP=0.0.0.0
+    networks:
+      - axiom-network
+
+  # ─── Temporal Worker (Compliance Workflows) ────────────────────
+  temporal-worker:
+    build:
+      context: .
+      dockerfile: infra/docker/Dockerfile.temporal-worker
+    image: axiom-temporal-worker:${ENVIRONMENT:-local}
+    container_name: axiom-temporal-worker
+    restart: unless-stopped
+    environment:
+      - TEMPORAL_ADDRESS=${TEMPORAL_ADDRESS:-temporal:7233}
+      - TEMPORAL_NAMESPACE=${TEMPORAL_NAMESPACE:-axiom-proof}
+      - TEMPORAL_TLS=${TEMPORAL_TLS:-false}
+      - TEMPORAL_API_KEY=${TEMPORAL_API_KEY:-}
+      - AGENT_RUNTIME_URL=${AGENT_RUNTIME_URL:-http://agent-runtime:8000}
+      - AGENT_RUNTIME_INTERNAL_TOKEN=${AGENT_RUNTIME_INTERNAL_TOKEN:-dev-agent-runtime-token-axiom}
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    depends_on:
+      temporal:
+        condition: service_started
+      agent-runtime:
+        condition: service_healthy
+    networks:
+      - axiom-network
+
+  # ─── Web App (Product Workbench, Console, Portal) ──────────────
+  web:
+    build:
+      context: .
+      dockerfile: infra/docker/Dockerfile.web
+    image: axiom-web:${ENVIRONMENT:-local}
+    container_name: axiom-web
+    restart: unless-stopped
+    ports:
+      - "${WEB_PORT:-3001}:3001"
+    environment:
+      - NODE_ENV=${NODE_ENV:-development}
+      - PORT=3001
+      - HOSTNAME=0.0.0.0
+      - NEXT_TELEMETRY_DISABLED=1
+      - NEXT_PUBLIC_SUPABASE_URL=${NEXT_PUBLIC_SUPABASE_URL:-http://127.0.0.1:55321}
+      - NEXT_PUBLIC_SUPABASE_ANON_KEY=${NEXT_PUBLIC_SUPABASE_ANON_KEY:-eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS1kZW1vIiwicm9sZSI6ImFub24iLCJleHAiOjE5ODM4MTI5OTZ9.CRXP1A7WOeoJeXxjNni43kdQwgnWNReilDMblYTn_I0}
+      - SUPABASE_URL=${SUPABASE_URL:-http://host.docker.internal:55321}
+      - SUPABASE_ANON_KEY=${SUPABASE_ANON_KEY:-eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS1kZW1vIiwicm9sZSI6ImFub24iLCJleHAiOjE5ODM4MTI5OTZ9.CRXP1A7WOeoJeXxjNni43kdQwgnWNReilDMblYTn_I0}
+      - SUPABASE_SERVICE_KEY=${SUPABASE_SERVICE_KEY:-eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS1kZW1vIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImV4cCI6MTk4MzgxMjk5Nn0.EGIM96RAZx35lJzdJsyH-qQwv8Hdp7fsn3W0YpN81IU}
+      - ENVIRONMENT=${ENVIRONMENT:-development}
+      - AXIOM_E2E_BYPASS_AUTH=${AXIOM_E2E_BYPASS_AUTH:-true}
+      - BFF_PUBLIC_URL=${NEXT_PUBLIC_BFF_URL:-http://localhost:4000}
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    depends_on:
+      bff:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "wget --no-verbose --tries=1 --spider http://localhost:3001 || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 15s
+    networks:
+      - axiom-network
+
+  # ─── Marketing Public Site (Gap Scan, Landing) ──────────────────
+  marketing:
+    build:
+      context: .
+      dockerfile: infra/docker/Dockerfile.marketing
+    image: axiom-marketing:${ENVIRONMENT:-local}
+    container_name: axiom-marketing
+    restart: unless-stopped
+    ports:
+      - "${MARKETING_PORT:-3000}:3000"
+    environment:
+      - NODE_ENV=${NODE_ENV:-development}
+      - PORT=3000
+      - HOSTNAME=0.0.0.0
+      - NEXT_TELEMETRY_DISABLED=1
+      - NEXT_PUBLIC_SUPABASE_URL=${NEXT_PUBLIC_SUPABASE_URL:-http://127.0.0.1:55321}
+      - NEXT_PUBLIC_SUPABASE_ANON_KEY=${NEXT_PUBLIC_SUPABASE_ANON_KEY:-eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS1kZW1vIiwicm9sZSI6ImFub24iLCJleHAiOjE5ODM4MTI5OTZ9.CRXP1A7WOeoJeXxjNni43kdQwgnWNReilDMblYTn_I0}
+      - SUPABASE_URL=${SUPABASE_URL:-http://host.docker.internal:55321}
+      - SUPABASE_ANON_KEY=${SUPABASE_ANON_KEY:-eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS1kZW1vIiwicm9sZSI6ImFub24iLCJleHAiOjE5ODM4MTI5OTZ9.CRXP1A7WOeoJeXxjNni43kdQwgnWNReilDMblYTn_I0}
+      - SUPABASE_SERVICE_KEY=${SUPABASE_SERVICE_KEY:-eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS1kZW1vIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImV4cCI6MTk4MzgxMjk5Nn0.EGIM96RAZx35lJzdJsyH-qQwv8Hdp7fsn3W0YpN81IU}
+      - BFF_PUBLIC_URL=${NEXT_PUBLIC_BFF_URL:-http://localhost:4000}
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    depends_on:
+      bff:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "wget --no-verbose --tries=1 --spider http://localhost:3000 || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 15s
+    networks:
+      - axiom-network
+
+networks:
+  axiom-network:
+    driver: bridge

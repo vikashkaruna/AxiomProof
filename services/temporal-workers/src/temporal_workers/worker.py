@@ -23,13 +23,13 @@ async def main():
     api_key = os.environ.get("TEMPORAL_API_KEY")
     tls = os.environ.get("TEMPORAL_TLS", "true").lower() == "true"
 
-    if not api_key:
-        raise RuntimeError("TEMPORAL_API_KEY is required")
+    if not api_key and ("temporal.io" in address or tls):
+        raise RuntimeError("TEMPORAL_API_KEY is required for Temporal Cloud connections")
 
     client = await Client.connect(
         address,
         namespace=namespace,
-        api_key=api_key,
+        api_key=api_key if api_key else None,
         tls=tls,
     )
 

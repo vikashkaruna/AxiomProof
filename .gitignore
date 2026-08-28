@@ -25,6 +25,8 @@ venv/
 .env.local
 .env.*.local
 !.env.example
+infra/docker/environments/.env.*
+!infra/docker/environments/.env.*.example
 *.pem
 *.key
 *.crt
