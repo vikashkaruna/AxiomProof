@@ -10,7 +10,12 @@ export const dynamic = 'force-dynamic';
 export default async function LoginPage({
   searchParams,
 }: {
-  searchParams: Promise<{ mode?: 'signup' | 'login'; error?: string; message?: string; redirect?: string }>;
+  searchParams: Promise<{
+    mode?: 'signup' | 'login';
+    error?: string;
+    message?: string;
+    redirect?: string;
+  }>;
 }) {
   const resolvedSearchParams = await searchParams;
   const supabase = await createSupabaseServerClient();

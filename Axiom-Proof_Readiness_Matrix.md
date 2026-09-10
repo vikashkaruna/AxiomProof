@@ -5,7 +5,7 @@
 **Company:** Axiom Minds Private Limited (`axiomminds.ai`)  
 **Audit Baseline:** Monorepo commit tree (`7631b1f` / `main`)  
 **Evaluation Date:** August 2026  
-**Primary Region:** `ap-south-1` (Mumbai, India — Mandatory Residency)  
+**Primary Region:** `ap-south-1` (Mumbai, India — Mandatory Residency)
 
 ---
 
@@ -28,6 +28,7 @@ However, the platform is **NOT yet ready for autonomous Tier B enterprise produc
 ```
 
 ### 1.2 Core Architectural Strengths
+
 1. **Architectural Separation of Duties (ADR-3 & BR-2):**
    - The planning agent (**Sudhaar**) has `can_mutate = False` and `plan.propose` tool scope with zero write credentials.
    - The execution agent (**Karya**) is L2 autonomy and strictly refuses execution without a cryptographically signed, scope-bound HMAC-SHA256 token validated per individual action.
@@ -40,6 +41,7 @@ However, the platform is **NOT yet ready for autonomous Tier B enterprise produc
    - 46 DPDPA controls codified in TypeScript and Python (`@axiom/control-library` v0.1.0) mapping Sections 4–17 of DPDPA 2023 and Rules 5–24 of DPDP Rules 2025.
 
 ### 1.3 Key Blockers Preventing Immediate Production Deployment
+
 1. **Physical AWS Infrastructure & S3 Object Lock Verification:** Terraform manifests exist in `infra/terraform/envs/prod`, but S3 Compliance WORM locking, AWS Secrets Manager, and EKS clusters require live account deployment and verification.
 2. **Missing Kubernetes Manifests in Helm:** `infra/helm/axiom-proof/templates` contains services and configs for `marketing` and `temporal-worker`, but lacks their corresponding `Deployment` manifests.
 3. **Database Schema Parity for Secondary Modules:** `ropa_records`, `policy_drafts`, and `playbook_entries` exist as typed Python models in `agent-runtime`, but lack Supabase PostgreSQL migrations (0008+) and Web UI CRUD persistence.
@@ -50,20 +52,20 @@ However, the platform is **NOT yet ready for autonomous Tier B enterprise produc
 
 ## 2. Deployment Readiness by Tier
 
-| Dimension | Tier 0: Local Dev / Offline Sandbox | Tier A: Staging / Live Pilot / Demo | Tier B: Production K8s / Enterprise Cloud |
-| :--- | :--- | :--- | :--- |
-| **Operational State** | **100% Operational (Green)** | **80% Ready (Requires Cloud Secrets)** | **48% Ready (Requires Cloud & Infra Work)** |
-| **Deployment Target** | Docker Compose on macOS/Linux workstation | Single-node EC2 / Docker Compose Staging VPC | Multi-AZ AWS EKS in `ap-south-1` via Helm |
-| **Authentication & IAM** | Local Supabase / `AXIOM_E2E_BYPASS_AUTH=true` | Dedicated Staging Supabase / Real Email Auth | Supabase Pro / SAML SSO / Enforced MFA |
-| **Approval Engine** | In-memory + Local DB HMAC signing (`dev-key`) | Per-tenant HMAC-SHA256 tokens | HSM / KMS-backed Key Rotation + Replay Guard |
-| **Evidence Vault** | Local Filesystem / Docker MinIO mock | Dedicated Staging S3 Bucket | S3 Object Lock **Compliance Mode** (7-yr WORM) |
-| **Audit Ledger** | Local PostgreSQL `append_ledger()` RPC | Staging Supabase with RLS & Role Isolation | Dedicated `ledger_writer` Role + Cold Archival |
-| **Model Gateway** | Local Router / Mock / Fast Regex Redaction | Self-hosted Model Gateway + Anthropic API | High-Throughput vLLM / AWS Bedrock (`ap-south-1`)|
-| **Temporal Workers** | Local Temporal Dev Server (SQLite) | Dedicated Staging Temporal Server | Managed Temporal Cloud (`ap-south-1` NS) |
-| **Data Connectors** | Synthetic Schema Dumps & JSON Fixtures | Read-only Test DB & S3 Bucket Scanners | High-throughput VPC Peered Connectors |
-| **Secrets Engine** | `.env.local` / Docker Compose defaults | `.env.staging` / AWS SSM Parameter Store | AWS Secrets Manager + External Secrets Operator |
-| **Rate Limiting** | In-memory BFF middleware | In-memory / Nginx ingress limits | Distributed Redis (`ioredis`) on API Gateways |
-| **Suitable For** | Day-to-day developer coding & Pre-CI tests | Controlled client demos & Pilot POCs | Mission-critical enterprise compliance workloads |
+| Dimension                | Tier 0: Local Dev / Offline Sandbox           | Tier A: Staging / Live Pilot / Demo          | Tier B: Production K8s / Enterprise Cloud         |
+| :----------------------- | :-------------------------------------------- | :------------------------------------------- | :------------------------------------------------ |
+| **Operational State**    | **100% Operational (Green)**                  | **80% Ready (Requires Cloud Secrets)**       | **48% Ready (Requires Cloud & Infra Work)**       |
+| **Deployment Target**    | Docker Compose on macOS/Linux workstation     | Single-node EC2 / Docker Compose Staging VPC | Multi-AZ AWS EKS in `ap-south-1` via Helm         |
+| **Authentication & IAM** | Local Supabase / `AXIOM_E2E_BYPASS_AUTH=true` | Dedicated Staging Supabase / Real Email Auth | Supabase Pro / SAML SSO / Enforced MFA            |
+| **Approval Engine**      | In-memory + Local DB HMAC signing (`dev-key`) | Per-tenant HMAC-SHA256 tokens                | HSM / KMS-backed Key Rotation + Replay Guard      |
+| **Evidence Vault**       | Local Filesystem / Docker MinIO mock          | Dedicated Staging S3 Bucket                  | S3 Object Lock **Compliance Mode** (7-yr WORM)    |
+| **Audit Ledger**         | Local PostgreSQL `append_ledger()` RPC        | Staging Supabase with RLS & Role Isolation   | Dedicated `ledger_writer` Role + Cold Archival    |
+| **Model Gateway**        | Local Router / Mock / Fast Regex Redaction    | Self-hosted Model Gateway + Anthropic API    | High-Throughput vLLM / AWS Bedrock (`ap-south-1`) |
+| **Temporal Workers**     | Local Temporal Dev Server (SQLite)            | Dedicated Staging Temporal Server            | Managed Temporal Cloud (`ap-south-1` NS)          |
+| **Data Connectors**      | Synthetic Schema Dumps & JSON Fixtures        | Read-only Test DB & S3 Bucket Scanners       | High-throughput VPC Peered Connectors             |
+| **Secrets Engine**       | `.env.local` / Docker Compose defaults        | `.env.staging` / AWS SSM Parameter Store     | AWS Secrets Manager + External Secrets Operator   |
+| **Rate Limiting**        | In-memory BFF middleware                      | In-memory / Nginx ingress limits             | Distributed Redis (`ioredis`) on API Gateways     |
+| **Suitable For**         | Day-to-day developer coding & Pre-CI tests    | Controlled client demos & Pilot POCs         | Mission-critical enterprise compliance workloads  |
 
 ---
 
@@ -180,56 +182,58 @@ flowchart TB
 
 ### 4.1 10 Named Agents Roster
 
-| Agent Name | Role / One-Liner | Autonomy Level | Tool Scopes | `can_mutate` | Verification Status | Tests Passed |
-| :--- | :--- | :--- | :--- | :--- | :--- | :--- |
-| **Drishti** | System Discovery & Inventory | L1 | `discovery.read`, `catalog.write` | `False` | **Green** | Discovery classification tests |
-| **Vibhaag** | DPDPA Data Classification | L1 | `classification.read`, `catalog.write` | `False` | **Green** | Field hint & pattern tests |
-| **Parikshan**| 46-Control Gap Assessment | L1 | `control_library.read`, `findings.write` | `False` | **Green** | Full/partial compliance tests |
-| **Sudhaar** | Remediation Planning (ADR-3) | L1 | `plan.propose` | `False` | **Green** | Rollback & blast-radius tests |
-| **Karya** | Remediation Execution (ADR-2)| L2 | `connector.write`, `evidence.write`, `rollback.execute` | `True` | **Green** | Token refusal & scope checks |
-| **Saakshi** | Evidence Sealing & Hashing | L1 | `evidence.seal`, `s3.write` | `False` | **Green** | Retention & SHA-256 checks |
-| **Lekha** | Append-Only Ledger Integrity | L1 | `ledger.append`, `ledger.verify` | `False` | **Green** | Hash-chaining tests |
-| **Nazar** | Continuous Posture Monitoring| L1 | `monitoring.read`, `alerts.write` | `False` | **Green** | Drift detection tests |
-| **Sanket** | Telemetry & Signals | L1 | `telemetry.emit` | `False` | **Green** | Telemetry stream tests |
-| **Prativedan**| Scorecard & Report Generation| L1 | `report.generate`, `pdf.render` | `False` | **Green** | HTML escaping & citation tests |
+| Agent Name     | Role / One-Liner              | Autonomy Level | Tool Scopes                                             | `can_mutate` | Verification Status | Tests Passed                   |
+| :------------- | :---------------------------- | :------------- | :------------------------------------------------------ | :----------- | :------------------ | :----------------------------- |
+| **Drishti**    | System Discovery & Inventory  | L1             | `discovery.read`, `catalog.write`                       | `False`      | **Green**           | Discovery classification tests |
+| **Vibhaag**    | DPDPA Data Classification     | L1             | `classification.read`, `catalog.write`                  | `False`      | **Green**           | Field hint & pattern tests     |
+| **Parikshan**  | 46-Control Gap Assessment     | L1             | `control_library.read`, `findings.write`                | `False`      | **Green**           | Full/partial compliance tests  |
+| **Sudhaar**    | Remediation Planning (ADR-3)  | L1             | `plan.propose`                                          | `False`      | **Green**           | Rollback & blast-radius tests  |
+| **Karya**      | Remediation Execution (ADR-2) | L2             | `connector.write`, `evidence.write`, `rollback.execute` | `True`       | **Green**           | Token refusal & scope checks   |
+| **Saakshi**    | Evidence Sealing & Hashing    | L1             | `evidence.seal`, `s3.write`                             | `False`      | **Green**           | Retention & SHA-256 checks     |
+| **Lekha**      | Append-Only Ledger Integrity  | L1             | `ledger.append`, `ledger.verify`                        | `False`      | **Green**           | Hash-chaining tests            |
+| **Nazar**      | Continuous Posture Monitoring | L1             | `monitoring.read`, `alerts.write`                       | `False`      | **Green**           | Drift detection tests          |
+| **Sanket**     | Telemetry & Signals           | L1             | `telemetry.emit`                                        | `False`      | **Green**           | Telemetry stream tests         |
+| **Prativedan** | Scorecard & Report Generation | L1             | `report.generate`, `pdf.render`                         | `False`      | **Green**           | HTML escaping & citation tests |
 
 ### 4.2 Workspace Packages & Applications
 
-| Package / App | Path | Type / Framework | Tests | Build Status | Health Notes |
-| :--- | :--- | :--- | :--- | :--- | :--- |
-| `@axiom/control-library` | `packages/control-library` | TypeScript | 2 tests (Vitest) | **Clean** | 46 controls (v0.1.0); unique IDs validated |
-| `@axiom/approval-engine` | `packages/approval-engine` | TypeScript | 8 tests (Vitest) | **Clean** | Canonical JSON, token signing, nonce replay |
-| `@axiom/ledger` | `packages/ledger` | TypeScript | 8 tests (Vitest) | **Clean** | Canonical sorting, SHA-256 hash chains |
-| `@axiom/evidence` | `packages/evidence` | TypeScript | 3 tests (Vitest) | **Clean** | S3 metadata hashing, WORM retention |
-| `@axiom/types` | `packages/types` | TypeScript | 2 tests (Vitest) | **Clean** | Zod schemas, domain models, agent contracts |
-| `@axiom/config` | `packages/config` | TypeScript | 6 tests (Vitest) | **Clean** | Strict env validation, residency gate |
-| `@axiom/supabase` | `packages/supabase` | TypeScript | Typechecked | **Clean** | Server, admin, and browser RLS clients |
-| `@axiom/design-tokens` | `packages/design-tokens` | CSS / TS | Typechecked | **Clean** | Brand tokens (Indigo, Teal, Gold, Ember) |
-| `@axiom/ui` | `packages/ui` | React 18 / Tailwind | Typechecked | **Clean** | Component primitives, accessible UI |
-| `@axiom/bff` | `services/bff` | Hono / TypeScript | Typechecked | **Clean** | REST API, approval gate, kill switch |
-| `@axiom/web` | `apps/web` | Next.js 14 (App Router) | Typechecked | **Clean** | Workbench, approval console, ledger verify |
-| `@axiom/marketing` | `apps/marketing` | Next.js 14 (App Router) | Typechecked | **Clean** | Public site, interactive 12-Q gap scan |
-| `agent-runtime` | `services/agent-runtime` | Python 3.11+ / FastAPI | 32 tests (pytest) | **Clean** | All 10 agents, PII redactor, RoPA/policy core |
-| `model-gateway` | `services/model-gateway` | Python 3.11+ / FastAPI | 14 tests (pytest) | **Clean** | Router, PII redactor, ap-south-1 residency |
-| `temporal-workers` | `services/temporal-workers` | Python 3.11+ / Temporal | Scaffolded | **Clean** | Compliance workflow definitions |
-| `tests/e2e` | `tests/e2e` | Playwright | 10 tests (E2E) | **Clean** | Full browser flows (Workbench, Gap Scan) |
+| Package / App            | Path                        | Type / Framework        | Tests             | Build Status | Health Notes                                  |
+| :----------------------- | :-------------------------- | :---------------------- | :---------------- | :----------- | :-------------------------------------------- |
+| `@axiom/control-library` | `packages/control-library`  | TypeScript              | 2 tests (Vitest)  | **Clean**    | 46 controls (v0.1.0); unique IDs validated    |
+| `@axiom/approval-engine` | `packages/approval-engine`  | TypeScript              | 8 tests (Vitest)  | **Clean**    | Canonical JSON, token signing, nonce replay   |
+| `@axiom/ledger`          | `packages/ledger`           | TypeScript              | 8 tests (Vitest)  | **Clean**    | Canonical sorting, SHA-256 hash chains        |
+| `@axiom/evidence`        | `packages/evidence`         | TypeScript              | 3 tests (Vitest)  | **Clean**    | S3 metadata hashing, WORM retention           |
+| `@axiom/types`           | `packages/types`            | TypeScript              | 2 tests (Vitest)  | **Clean**    | Zod schemas, domain models, agent contracts   |
+| `@axiom/config`          | `packages/config`           | TypeScript              | 6 tests (Vitest)  | **Clean**    | Strict env validation, residency gate         |
+| `@axiom/supabase`        | `packages/supabase`         | TypeScript              | Typechecked       | **Clean**    | Server, admin, and browser RLS clients        |
+| `@axiom/design-tokens`   | `packages/design-tokens`    | CSS / TS                | Typechecked       | **Clean**    | Brand tokens (Indigo, Teal, Gold, Ember)      |
+| `@axiom/ui`              | `packages/ui`               | React 18 / Tailwind     | Typechecked       | **Clean**    | Component primitives, accessible UI           |
+| `@axiom/bff`             | `services/bff`              | Hono / TypeScript       | Typechecked       | **Clean**    | REST API, approval gate, kill switch          |
+| `@axiom/web`             | `apps/web`                  | Next.js 14 (App Router) | Typechecked       | **Clean**    | Workbench, approval console, ledger verify    |
+| `@axiom/marketing`       | `apps/marketing`            | Next.js 14 (App Router) | Typechecked       | **Clean**    | Public site, interactive 12-Q gap scan        |
+| `agent-runtime`          | `services/agent-runtime`    | Python 3.11+ / FastAPI  | 32 tests (pytest) | **Clean**    | All 10 agents, PII redactor, RoPA/policy core |
+| `model-gateway`          | `services/model-gateway`    | Python 3.11+ / FastAPI  | 14 tests (pytest) | **Clean**    | Router, PII redactor, ap-south-1 residency    |
+| `temporal-workers`       | `services/temporal-workers` | Python 3.11+ / Temporal | Scaffolded        | **Clean**    | Compliance workflow definitions               |
+| `tests/e2e`              | `tests/e2e`                 | Playwright              | 10 tests (E2E)    | **Clean**    | Full browser flows (Workbench, Gap Scan)      |
 
 ---
 
 ## 5. Detailed Gap Analysis & Critical Blockers
 
 ### 5.1 Missing Codebase & Functional Stubs
+
 1. **Live Cloud & Database Connectors (Drishti / Karya):**
-   - *Current State:* Drishti discovers systems through structured questionnaire payloads and synthetic JSON mocks. Karya simulates connector mutations advisory-first.
-   - *Production Requirement:* Build live read-only database catalog scrapers (PostgreSQL `information_schema`, MySQL catalog, Snowflake metadata) and AWS IAM/S3 policy auditors using IAM assumed roles.
+   - _Current State:_ Drishti discovers systems through structured questionnaire payloads and synthetic JSON mocks. Karya simulates connector mutations advisory-first.
+   - _Production Requirement:_ Build live read-only database catalog scrapers (PostgreSQL `information_schema`, MySQL catalog, Snowflake metadata) and AWS IAM/S3 policy auditors using IAM assumed roles.
 2. **Persistent Human Review Queue (Vibhaag):**
-   - *Current State:* Vibhaag flags fields with confidence $< 0.80$ as `needs_review: true`.
-   - *Production Requirement:* Database table `classification_reviews` with Web UI console allowing Data Protection Officers (DPOs) to reclassify fields, which updates continuous learning embeddings.
+   - _Current State:_ Vibhaag flags fields with confidence $< 0.80$ as `needs_review: true`.
+   - _Production Requirement:_ Database table `classification_reviews` with Web UI console allowing Data Protection Officers (DPOs) to reclassify fields, which updates continuous learning embeddings.
 3. **Prativedan PDF Generation Engine:**
-   - *Current State:* Emits server-rendered HTML reports with escaped user inputs.
-   - *Production Requirement:* Headless Chromium / WeasyPrint pipeline inside Docker to generate cryptographically signed, sealed PDF evidence packs.
+   - _Current State:_ Emits server-rendered HTML reports with escaped user inputs.
+   - _Production Requirement:_ Headless Chromium / WeasyPrint pipeline inside Docker to generate cryptographically signed, sealed PDF evidence packs.
 
 ### 5.2 PostgreSQL Persistence Parity Gaps
+
 While core tables exist for tenants, controls, assessments, findings, plans, actions, and ledger events, the following secondary tables must be added in migration `0008_phase2_artifacts.sql`:
 
 ```sql
@@ -282,6 +286,7 @@ CREATE TABLE IF NOT EXISTS public.playbook_entries (
 ```
 
 ### 5.3 BM25 Okapi Confidence Fusion Dampening on Small Knowledge Bases
+
 When combining lexical retrieval (BM25 Okapi) with semantic vector search (cosine similarity) to classify fields or match evidence to controls, small knowledge bases ($N < 100$ items, such as the 46 DPDPA controls) encounter severe mathematical skew:
 
 1. **The Small-$N$ BM25 Anomaly:**
@@ -298,15 +303,16 @@ When combining lexical retrieval (BM25 Okapi) with semantic vector search (cosin
      preventing edge-case classification spikes on sparse tables.
 
 ### 5.4 Production Secrets & Security Hardening
+
 In local development, default keys are provided for zero-setup execution. Production deployment strictly requires replacing all defaults with AWS Secrets Manager entries:
 
-| Secret Identifier | Target Service | Entropy Requirement | Security Impact |
-| :--- | :--- | :--- | :--- |
-| `APPROVAL_SIGNING_KEY` | BFF & Agent Runtime | $\ge 256$-bit hex/base64 | Prevents forgery of Karya mutation approval tokens |
-| `AGENT_RUNTIME_INTERNAL_TOKEN` | BFF $\leftrightarrow$ Runtime | $\ge 256$-bit CSPRNG | Restricts `/internal/execute` and `/agents/run` endpoints |
-| `MODEL_GATEWAY_API_KEY` | Runtime $\leftrightarrow$ Gateway | $\ge 256$-bit CSPRNG | Prevents unauthorized LLM consumption and egress |
-| `SUPABASE_SERVICE_KEY` | BFF & Admin Worker | Supabase JWT Secret | Restricted to backend containers; never leaked to web client |
-| `TEMPORAL_TLS_KEY` / `CERT` | Temporal Workers | X.509 Certificate | Secures durable orchestration queue over mTLS |
+| Secret Identifier              | Target Service                    | Entropy Requirement      | Security Impact                                              |
+| :----------------------------- | :-------------------------------- | :----------------------- | :----------------------------------------------------------- |
+| `APPROVAL_SIGNING_KEY`         | BFF & Agent Runtime               | $\ge 256$-bit hex/base64 | Prevents forgery of Karya mutation approval tokens           |
+| `AGENT_RUNTIME_INTERNAL_TOKEN` | BFF $\leftrightarrow$ Runtime     | $\ge 256$-bit CSPRNG     | Restricts `/internal/execute` and `/agents/run` endpoints    |
+| `MODEL_GATEWAY_API_KEY`        | Runtime $\leftrightarrow$ Gateway | $\ge 256$-bit CSPRNG     | Prevents unauthorized LLM consumption and egress             |
+| `SUPABASE_SERVICE_KEY`         | BFF & Admin Worker                | Supabase JWT Secret      | Restricted to backend containers; never leaked to web client |
+| `TEMPORAL_TLS_KEY` / `CERT`    | Temporal Workers                  | X.509 Certificate        | Secures durable orchestration queue over mTLS                |
 
 ---
 
@@ -339,6 +345,7 @@ gantt
 ```
 
 ### Phase 1: Tier A Hardening & Pilot Deployment (Target: Weeks 1–2) [P0]
+
 - [ ] **1.1 Deploy Staging Stack:** Deploy `infra/docker/docker-compose.staging.yml` on a dedicated EC2 instance (`t4g.xlarge`) in `ap-south-1`.
 - [ ] **1.2 Real Supabase Staging Project:** Provision a managed Supabase project, execute migrations `0001` through `0007`, and verify `append_ledger()` permissions.
 - [ ] **1.3 Secret Injection:** Inject real Anthropic/Bedrock API keys and 256-bit CSPRNG tokens into staging environment configs.
@@ -346,6 +353,7 @@ gantt
 - [ ] **1.5 Execute Live Pilot POC:** Run end-to-end 12-question gap scan and plan remediation walkthrough with selected pilot enterprise partners.
 
 ### Phase 2: Core Persistence & Data Connectors (Target: Weeks 3–4) [P1]
+
 - [ ] **2.1 Migration 0008:** Apply `ropa_records`, `policy_drafts`, and `playbook_entries` schema to database.
 - [ ] **2.2 Drishti Read-Only Connectors:** Implement PostgreSQL and AWS S3 read-only catalog extraction adapters.
 - [ ] **2.3 Vibhaag Review Queue:** Build Web UI for manual classification override and persistent audit history.
@@ -353,6 +361,7 @@ gantt
 - [ ] **2.5 Distributed Rate Limiting:** Mount Redis (`ioredis`) in BFF for distributed IP rate limiting on public gap scan.
 
 ### Phase 3: Production Infrastructure & WORM Compliance (Target: Weeks 5–6) [P0]
+
 - [ ] **3.1 Terraform EKS Deployment:** Run `terraform apply` in `infra/terraform/envs/prod` to provision VPC, EKS, ElastiCache, and KMS keys in `ap-south-1`.
 - [ ] **3.2 S3 Object Lock Verification:** Provision production S3 evidence bucket with `ObjectLockEnabled=true` and `DefaultRetention=COMPLIANCE, 7 Years`.
 - [ ] **3.3 Helm Chart Completion:** Add missing `marketing-deployment.yaml` and `temporal-worker-deployment.yaml` templates to `infra/helm/axiom-proof/templates/`.
@@ -360,6 +369,7 @@ gantt
 - [ ] **3.5 Disaster Recovery Drill:** Simulate pod eviction and verify that append-only ledger chain passes `verify_chain()` check.
 
 ### Phase 4: Enterprise Hardening & GTM Onboarding (Target: Weeks 7–8) [P1]
+
 - [ ] **4.1 Enterprise SSO / SAML:** Enable SAML 2.0 / Okta / Azure AD authentication via Supabase Auth.
 - [ ] **4.2 Granular RBAC:** Configure DPO, Compliance Officer, Auditor, and Executive read-only roles with tenant-isolated RLS.
 - [ ] **4.3 Automated Client Onboarding:** Create automated tenant provisioning scripts with pre-seeded 46-control baseline.
@@ -369,27 +379,27 @@ gantt
 
 ## 7. Configuration & Secrets Reference
 
-| Variable Name | Component | Tier Required | Sensitive? | Default / Example Value | Production Recommendation |
-| :--- | :--- | :--- | :--- | :--- | :--- |
-| `ENVIRONMENT` | All | All | No | `local` | Set to `production` (enforces strict boot checks) |
-| `NODE_ENV` | Web, Mkt, BFF | All | No | `development` | Set to `production` |
-| `AWS_REGION` | All | All | No | `ap-south-1` | Must remain `ap-south-1` (residency locked) |
-| `SUPABASE_URL` | Web, BFF, Runtime| All | No | `http://host.docker.internal:55321` | Managed Supabase URL (`https://<proj>.supabase.co`) |
-| `NEXT_PUBLIC_SUPABASE_URL` | Web, Marketing | All | No | `http://127.0.0.1:55321` | Publicly resolvable Supabase URL |
-| `SUPABASE_ANON_KEY` | Web, Mkt, BFF | All | Yes (Client) | `eyJhbGci...` (dev JWT) | Production Supabase Publishable Anon Key |
-| `SUPABASE_SERVICE_KEY` | BFF, Runtime | Staging / Prod | **CRITICAL** | `eyJhbGci...` (dev JWT) | Injected via AWS Secrets Manager |
-| `APPROVAL_SIGNING_KEY` | BFF, Runtime | Staging / Prod | **CRITICAL** | `dev-signing-secret...` | 256-bit random secret; rotate quarterly |
-| `AGENT_RUNTIME_INTERNAL_TOKEN`| BFF, Runtime | Staging / Prod | **CRITICAL** | `dev-agent-runtime-token...` | Injected via External Secrets Operator |
-| `MODEL_GATEWAY_API_KEY`| Runtime, Gateway| Staging / Prod | **CRITICAL** | `dev-model-gateway-key...` | Injected via External Secrets Operator |
-| `MODEL_GATEWAY_URL` | Runtime, BFF | All | No | `http://model-gateway:8001` | In-cluster Service DNS (`http://axiom-model-gateway:8001`) |
-| `AGENT_RUNTIME_URL` | BFF, Web | All | No | `http://agent-runtime:8000` | In-cluster Service DNS (`http://axiom-agent-runtime:8000`) |
-| `AWS_S3_EVIDENCE_BUCKET` | Saakshi, BFF | Staging / Prod | No | `axiom-proof-evidence-local` | `axiom-proof-evidence-prod-ap-south-1` |
-| `TEMPORAL_ADDRESS` | BFF, Runtime | Staging / Prod | No | `temporal:7233` | Temporal Cloud Endpoint in `ap-south-1` |
-| `TEMPORAL_NAMESPACE` | BFF, Runtime | All | No | `axiom-proof` | Production namespace |
-| `TEMPORAL_API_KEY` | Temporal Workers| Staging / Prod | **CRITICAL** | `""` | Temporal Cloud API Key |
-| `REDACT_PII` | Model Gateway | All | No | `true` | Must remain `true` in all environments |
-| `AXIOM_E2E_BYPASS_AUTH` | Web | Local Only | No | `true` | **MUST BE `false` IN STAGING & PRODUCTION** |
-| `BFF_CORS_ORIGINS` | BFF | Staging / Prod | No | `http://localhost:3000,...` | `https://axiomminds.ai,https://app.axiomminds.ai` |
+| Variable Name                  | Component         | Tier Required  | Sensitive?   | Default / Example Value             | Production Recommendation                                  |
+| :----------------------------- | :---------------- | :------------- | :----------- | :---------------------------------- | :--------------------------------------------------------- |
+| `ENVIRONMENT`                  | All               | All            | No           | `local`                             | Set to `production` (enforces strict boot checks)          |
+| `NODE_ENV`                     | Web, Mkt, BFF     | All            | No           | `development`                       | Set to `production`                                        |
+| `AWS_REGION`                   | All               | All            | No           | `ap-south-1`                        | Must remain `ap-south-1` (residency locked)                |
+| `SUPABASE_URL`                 | Web, BFF, Runtime | All            | No           | `http://host.docker.internal:55321` | Managed Supabase URL (`https://<proj>.supabase.co`)        |
+| `NEXT_PUBLIC_SUPABASE_URL`     | Web, Marketing    | All            | No           | `http://127.0.0.1:55321`            | Publicly resolvable Supabase URL                           |
+| `SUPABASE_ANON_KEY`            | Web, Mkt, BFF     | All            | Yes (Client) | `eyJhbGci...` (dev JWT)             | Production Supabase Publishable Anon Key                   |
+| `SUPABASE_SERVICE_KEY`         | BFF, Runtime      | Staging / Prod | **CRITICAL** | `eyJhbGci...` (dev JWT)             | Injected via AWS Secrets Manager                           |
+| `APPROVAL_SIGNING_KEY`         | BFF, Runtime      | Staging / Prod | **CRITICAL** | `dev-signing-secret...`             | 256-bit random secret; rotate quarterly                    |
+| `AGENT_RUNTIME_INTERNAL_TOKEN` | BFF, Runtime      | Staging / Prod | **CRITICAL** | `dev-agent-runtime-token...`        | Injected via External Secrets Operator                     |
+| `MODEL_GATEWAY_API_KEY`        | Runtime, Gateway  | Staging / Prod | **CRITICAL** | `dev-model-gateway-key...`          | Injected via External Secrets Operator                     |
+| `MODEL_GATEWAY_URL`            | Runtime, BFF      | All            | No           | `http://model-gateway:8001`         | In-cluster Service DNS (`http://axiom-model-gateway:8001`) |
+| `AGENT_RUNTIME_URL`            | BFF, Web          | All            | No           | `http://agent-runtime:8000`         | In-cluster Service DNS (`http://axiom-agent-runtime:8000`) |
+| `AWS_S3_EVIDENCE_BUCKET`       | Saakshi, BFF      | Staging / Prod | No           | `axiom-proof-evidence-local`        | `axiom-proof-evidence-prod-ap-south-1`                     |
+| `TEMPORAL_ADDRESS`             | BFF, Runtime      | Staging / Prod | No           | `temporal:7233`                     | Temporal Cloud Endpoint in `ap-south-1`                    |
+| `TEMPORAL_NAMESPACE`           | BFF, Runtime      | All            | No           | `axiom-proof`                       | Production namespace                                       |
+| `TEMPORAL_API_KEY`             | Temporal Workers  | Staging / Prod | **CRITICAL** | `""`                                | Temporal Cloud API Key                                     |
+| `REDACT_PII`                   | Model Gateway     | All            | No           | `true`                              | Must remain `true` in all environments                     |
+| `AXIOM_E2E_BYPASS_AUTH`        | Web               | Local Only     | No           | `true`                              | **MUST BE `false` IN STAGING & PRODUCTION**                |
+| `BFF_CORS_ORIGINS`             | BFF               | Staging / Prod | No           | `http://localhost:3000,...`         | `https://axiomminds.ai,https://app.axiomminds.ai`          |
 
 ---
 
@@ -400,4 +410,5 @@ Axiom Proof possesses an exceptionally well-engineered core architecture. The ma
 By executing the **4-Phase Launch Roadmap**—specifically closing the infrastructure, database migration, and connector gaps—Axiom Proof will achieve full enterprise-grade operational readiness for the Digital Personal Data Protection Act.
 
 ---
-*Report generated by Antigravity Autonomous Systems Architecture Auditor for Axiom Minds Private Limited.*
+
+_Report generated by Antigravity Autonomous Systems Architecture Auditor for Axiom Minds Private Limited._

@@ -12,7 +12,7 @@ services:
     container_name: axiom-model-gateway
     restart: unless-stopped
     ports:
-      - "${MODEL_GATEWAY_PORT:-8001}:8001"
+      - '${MODEL_GATEWAY_PORT:-8001}:8001'
     environment:
       - ENVIRONMENT=${ENVIRONMENT:-development}
       - HTTP_PORT=8001
@@ -22,9 +22,9 @@ services:
       - DEFAULT_MODEL=${DEFAULT_MODEL:-anthropic.claude-3-5-sonnet@20240620}
       - FALLBACK_MODEL=${FALLBACK_MODEL:-anthropic.claude-3-haiku@20240307}
     extra_hosts:
-      - "host.docker.internal:host-gateway"
+      - 'host.docker.internal:host-gateway'
     healthcheck:
-      test: ["CMD-SHELL", "curl -fsS http://localhost:8001/health || exit 1"]
+      test: ['CMD-SHELL', 'curl -fsS http://localhost:8001/health || exit 1']
       interval: 10s
       timeout: 5s
       retries: 5
@@ -41,7 +41,7 @@ services:
     container_name: axiom-agent-runtime
     restart: unless-stopped
     ports:
-      - "${AGENT_RUNTIME_PORT:-8000}:8000"
+      - '${AGENT_RUNTIME_PORT:-8000}:8000'
     environment:
       - ENVIRONMENT=${ENVIRONMENT:-development}
       - HTTP_PORT=8000
@@ -60,12 +60,12 @@ services:
       - AWS_REGION=${AWS_REGION:-ap-south-1}
       - S3_EVIDENCE_BUCKET=${AWS_S3_EVIDENCE_BUCKET:-axiom-proof-evidence-local}
     extra_hosts:
-      - "host.docker.internal:host-gateway"
+      - 'host.docker.internal:host-gateway'
     depends_on:
       model-gateway:
         condition: service_healthy
     healthcheck:
-      test: ["CMD-SHELL", "curl -fsS http://localhost:8000/health || exit 1"]
+      test: ['CMD-SHELL', 'curl -fsS http://localhost:8000/health || exit 1']
       interval: 10s
       timeout: 5s
       retries: 5
@@ -82,7 +82,7 @@ services:
     container_name: axiom-bff
     restart: unless-stopped
     ports:
-      - "${BFF_PORT:-4000}:4000"
+      - '${BFF_PORT:-4000}:4000'
     environment:
       - NODE_ENV=${NODE_ENV:-development}
       - BFF_PORT=4000
@@ -102,12 +102,13 @@ services:
       - AWS_REGION=${AWS_REGION:-ap-south-1}
       - AWS_S3_EVIDENCE_BUCKET=${AWS_S3_EVIDENCE_BUCKET:-axiom-proof-evidence-local}
     extra_hosts:
-      - "host.docker.internal:host-gateway"
+      - 'host.docker.internal:host-gateway'
     depends_on:
       agent-runtime:
         condition: service_healthy
     healthcheck:
-      test: ["CMD-SHELL", "wget --no-verbose --tries=1 --spider http://localhost:4000/health || exit 1"]
+      test:
+        ['CMD-SHELL', 'wget --no-verbose --tries=1 --spider http://localhost:4000/health || exit 1']
       interval: 10s
       timeout: 5s
       retries: 5
@@ -129,7 +130,7 @@ services:
     volumes:
       - temporal-db-data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres -d temporal"]
+      test: ['CMD-SHELL', 'pg_isready -U postgres -d temporal']
       interval: 5s
       timeout: 3s
       retries: 10
@@ -143,8 +144,8 @@ services:
     container_name: axiom-temporal
     restart: unless-stopped
     ports:
-      - "${TEMPORAL_PORT:-7233}:7233"
-      - "${TEMPORAL_UI_PORT:-8233}:8233"
+      - '${TEMPORAL_PORT:-7233}:7233'
+      - '${TEMPORAL_UI_PORT:-8233}:8233'
     environment:
       - DB=postgres12
       - DB_PORT=5432
@@ -161,7 +162,7 @@ services:
       temporal-db:
         condition: service_healthy
     healthcheck:
-      test: ["CMD-SHELL", "wget --no-verbose --tries=1 --spider http://localhost:7233 || exit 1"]
+      test: ['CMD-SHELL', 'wget --no-verbose --tries=1 --spider http://localhost:7233 || exit 1']
       interval: 10s
       timeout: 5s
       retries: 10
@@ -185,7 +186,7 @@ services:
       - AGENT_RUNTIME_URL=${AGENT_RUNTIME_URL:-http://agent-runtime:8000}
       - AGENT_RUNTIME_INTERNAL_TOKEN=${AGENT_RUNTIME_INTERNAL_TOKEN:-dev-agent-runtime-token-axiom}
     extra_hosts:
-      - "host.docker.internal:host-gateway"
+      - 'host.docker.internal:host-gateway'
     depends_on:
       temporal:
         condition: service_healthy
@@ -203,7 +204,7 @@ services:
     container_name: axiom-web
     restart: unless-stopped
     ports:
-      - "${WEB_PORT:-3001}:3001"
+      - '${WEB_PORT:-3001}:3001'
     environment:
       - NODE_ENV=${NODE_ENV:-development}
       - PORT=3001
@@ -218,12 +219,12 @@ services:
       - AXIOM_E2E_BYPASS_AUTH=${AXIOM_E2E_BYPASS_AUTH:-true}
       - BFF_PUBLIC_URL=${NEXT_PUBLIC_BFF_URL:-http://localhost:4000}
     extra_hosts:
-      - "host.docker.internal:host-gateway"
+      - 'host.docker.internal:host-gateway'
     depends_on:
       bff:
         condition: service_healthy
     healthcheck:
-      test: ["CMD-SHELL", "wget --no-verbose --tries=1 --spider http://localhost:3001 || exit 1"]
+      test: ['CMD-SHELL', 'wget --no-verbose --tries=1 --spider http://localhost:3001 || exit 1']
       interval: 10s
       timeout: 5s
       retries: 5
@@ -240,7 +241,7 @@ services:
     container_name: axiom-marketing
     restart: unless-stopped
     ports:
-      - "${MARKETING_PORT:-3000}:3000"
+      - '${MARKETING_PORT:-3000}:3000'
     environment:
       - NODE_ENV=${NODE_ENV:-development}
       - PORT=3000
@@ -253,12 +254,12 @@ services:
       - SUPABASE_SERVICE_KEY=${SUPABASE_SERVICE_KEY:-eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS1kZW1vIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImV4cCI6MTk4MzgxMjk5Nn0.EGIM96RAZx35lJzdJsyH-qQwv8Hdp7fsn3W0YpN81IU}
       - BFF_PUBLIC_URL=${NEXT_PUBLIC_BFF_URL:-http://localhost:4000}
     extra_hosts:
-      - "host.docker.internal:host-gateway"
+      - 'host.docker.internal:host-gateway'
     depends_on:
       bff:
         condition: service_healthy
     healthcheck:
-      test: ["CMD-SHELL", "wget --no-verbose --tries=1 --spider http://localhost:3000 || exit 1"]
+      test: ['CMD-SHELL', 'wget --no-verbose --tries=1 --spider http://localhost:3000 || exit 1']
       interval: 10s
       timeout: 5s
       retries: 5

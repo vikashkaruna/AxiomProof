@@ -12,38 +12,38 @@ Last verified: 2026-08-18 against `main` @ `16bd83b`.
 
 ### GitHub
 
-| Item | State |
-|---|---|
-| `main` HEAD | `16bd83b` |
-| Total commits on main | 15 (4 original + 11 audit/remediation) |
-| Branch protection | Not enforceable — repo is on GitHub Free plan (private). See [A.3 in `REPO_AUDIT_PLAN.md`](./REPO_AUDIT_PLAN.md#a3-limitations-of-a-merge-into-one-approach) |
-| Required CI checks (per `branch-protection.md`) | `Lint + typecheck`, `TS unit tests`, `Python (agent runtime) tests`, `Python (model gateway) tests`, `Security scan` |
-| Latest PR CI result | ✅ all 5 green on PR #14 |
-| Latest push-to-main CI | All required checks green; only `Build container images` failed (typo: `actions/setup-buildx-action` should be `docker/setup-buildx-action`) |
-| Dependabot config | Tightened (PR #7) — `rebase-strategy: auto`, `delete-branch-after-merge: true` |
-| Open PRs | 0 |
-| Stale branches | 0 (all dependabot branches auto-deleted when their PRs were closed) |
+| Item                                            | State                                                                                                                                                        |
+| ----------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `main` HEAD                                     | `16bd83b`                                                                                                                                                    |
+| Total commits on main                           | 15 (4 original + 11 audit/remediation)                                                                                                                       |
+| Branch protection                               | Not enforceable — repo is on GitHub Free plan (private). See [A.3 in `REPO_AUDIT_PLAN.md`](./REPO_AUDIT_PLAN.md#a3-limitations-of-a-merge-into-one-approach) |
+| Required CI checks (per `branch-protection.md`) | `Lint + typecheck`, `TS unit tests`, `Python (agent runtime) tests`, `Python (model gateway) tests`, `Security scan`                                         |
+| Latest PR CI result                             | ✅ all 5 green on PR #14                                                                                                                                     |
+| Latest push-to-main CI                          | All required checks green; only `Build container images` failed (typo: `actions/setup-buildx-action` should be `docker/setup-buildx-action`)                 |
+| Dependabot config                               | Tightened (PR #7) — `rebase-strategy: auto`, `delete-branch-after-merge: true`                                                                               |
+| Open PRs                                        | 0                                                                                                                                                            |
+| Stale branches                                  | 0 (all dependabot branches auto-deleted when their PRs were closed)                                                                                          |
 
 ### Local (verified 2026-08-18)
 
-| Check | Result |
-|---|---|
-| `pnpm format:check` | ✅ pass |
-| `pnpm typecheck` | ✅ 11/11 packages |
-| `pnpm lint` | ✅ 11/11 packages |
-| `pnpm test` | ✅ 9/9 packages |
-| `pnpm build` | ✅ 2/2 apps |
-| Working tree | ✅ clean on main |
+| Check               | Result            |
+| ------------------- | ----------------- |
+| `pnpm format:check` | ✅ pass           |
+| `pnpm typecheck`    | ✅ 11/11 packages |
+| `pnpm lint`         | ✅ 11/11 packages |
+| `pnpm test`         | ✅ 9/9 packages   |
+| `pnpm build`        | ✅ 2/2 apps       |
+| Working tree        | ✅ clean on main  |
 
 ### Audit reports (`docs/audits/`)
 
-| Report | Status |
-|---|---|
-| `00-baseline.md` | Repository-local findings remediated |
-| `01-security.md` | Repository-local findings fixed; external TODOs remain |
-| `02-module-coverage.md` | Repository-local findings fixed; product/infrastructure TODOs remain |
-| `03-quality-and-coverage.md` | Repository-local findings fixed; tooling/configuration TODOs remain |
-| `README.md` | Index of all four reports |
+| Report                       | Status                                                               |
+| ---------------------------- | -------------------------------------------------------------------- |
+| `00-baseline.md`             | Repository-local findings remediated                                 |
+| `01-security.md`             | Repository-local findings fixed; external TODOs remain               |
+| `02-module-coverage.md`      | Repository-local findings fixed; product/infrastructure TODOs remain |
+| `03-quality-and-coverage.md` | Repository-local findings fixed; tooling/configuration TODOs remain  |
+| `README.md`                  | Index of all four reports                                            |
 
 ---
 
@@ -281,9 +281,11 @@ cd "/Users/vikash/Axiom Proof" && \
 ```
 
 **Expected output ends with**:
+
 ```
 DONE
 ```
+
 and an empty `git status -s` (working tree clean).
 
 ---
@@ -292,31 +294,31 @@ and an empty `git status -s` (working tree clean).
 
 These are the things the audit reports flag as "fixed locally, needs external verification":
 
-| # | TODO | Where | What's needed |
-|---|---|---|---|
-| 1 | Supabase migrations applied | `infra/supabase/migrations/*.sql` | A real Supabase project; `supabase db push` |
-| 2 | `append_ledger()` RPC verified | `infra/supabase/migrations/0005_approvals_ledger.sql` | psql against the Supabase DB |
-| 3 | S3 bucket in Compliance mode | `infra/terraform/envs/prod/s3.tf` | `terraform plan/apply` against AWS |
-| 4 | IAM roles + service accounts | `infra/terraform/envs/prod/iam.tf` | Same as #3 |
-| 5 | Temporal worker registered | `services/temporal-workers/src/temporal_workers/workflows.py` | A running Temporal cluster |
-| 6 | Playwright E2E in staging | `tests/e2e/tests/*.spec.ts` | Deployed staging env + `playwright test` |
-| 7 | CI: fix `actions/setup-buildx-action` → `docker/setup-buildx-action` | `.github/workflows/ci.yml` | Local edit + PR (5-second fix) |
-| 8 | Branch protection (if desired) | GitHub repo settings | Upgrade to Pro OR make repo public |
+| #   | TODO                                                                 | Where                                                         | What's needed                               |
+| --- | -------------------------------------------------------------------- | ------------------------------------------------------------- | ------------------------------------------- |
+| 1   | Supabase migrations applied                                          | `infra/supabase/migrations/*.sql`                             | A real Supabase project; `supabase db push` |
+| 2   | `append_ledger()` RPC verified                                       | `infra/supabase/migrations/0005_approvals_ledger.sql`         | psql against the Supabase DB                |
+| 3   | S3 bucket in Compliance mode                                         | `infra/terraform/envs/prod/s3.tf`                             | `terraform plan/apply` against AWS          |
+| 4   | IAM roles + service accounts                                         | `infra/terraform/envs/prod/iam.tf`                            | Same as #3                                  |
+| 5   | Temporal worker registered                                           | `services/temporal-workers/src/temporal_workers/workflows.py` | A running Temporal cluster                  |
+| 6   | Playwright E2E in staging                                            | `tests/e2e/tests/*.spec.ts`                                   | Deployed staging env + `playwright test`    |
+| 7   | CI: fix `actions/setup-buildx-action` → `docker/setup-buildx-action` | `.github/workflows/ci.yml`                                    | Local edit + PR (5-second fix)              |
+| 8   | Branch protection (if desired)                                       | GitHub repo settings                                          | Upgrade to Pro OR make repo public          |
 
 ---
 
 ## 11. When something breaks
 
-| Symptom | First check | Likely fix |
-|---|---|---|
-| `pnpm install` fails with lockfile mismatch | `git status` — any uncommitted package.json changes? | Commit the lockfile change or run `pnpm install` (no flag) once |
-| `pnpm typecheck` says `Cannot find module '@axiom/X'` | Check the consumer's `package.json` for `@axiom/X` in deps | Add `"@axiom/X": "workspace:*"` and re-run `pnpm install` |
-| `pnpm test` says `No test files found` | `package.json` test script | Add `--passWithNoTests` to the vitest command |
-| `next lint` is interactive | Running from a non-TTY or no `.eslintrc.json` | Create `apps/<name>/.eslintrc.json` with `{ "extends": "next/core-web-vitals" }` |
-| Prettier errors on `infra/helm/**` | `.prettierignore` | Add `infra/helm/` (already there) |
-| CI fails on push to main but green on PR | Branch protection not enforced + a push-only job failed | Check the `build-images` job for the `setup-buildx-action` typo |
-| `tsc` says `'X' is specified more than once` in tokens.ts | A `...spread` followed by an explicit key | Remove the duplicate explicit declaration |
-| `canonicalJson` fails on `ApprovalTokenSpec` | Type signature too strict | Pass `unknown` instead of `JsonValue` in `packages/ledger/src/canonicalise.ts` |
+| Symptom                                                   | First check                                                | Likely fix                                                                       |
+| --------------------------------------------------------- | ---------------------------------------------------------- | -------------------------------------------------------------------------------- |
+| `pnpm install` fails with lockfile mismatch               | `git status` — any uncommitted package.json changes?       | Commit the lockfile change or run `pnpm install` (no flag) once                  |
+| `pnpm typecheck` says `Cannot find module '@axiom/X'`     | Check the consumer's `package.json` for `@axiom/X` in deps | Add `"@axiom/X": "workspace:*"` and re-run `pnpm install`                        |
+| `pnpm test` says `No test files found`                    | `package.json` test script                                 | Add `--passWithNoTests` to the vitest command                                    |
+| `next lint` is interactive                                | Running from a non-TTY or no `.eslintrc.json`              | Create `apps/<name>/.eslintrc.json` with `{ "extends": "next/core-web-vitals" }` |
+| Prettier errors on `infra/helm/**`                        | `.prettierignore`                                          | Add `infra/helm/` (already there)                                                |
+| CI fails on push to main but green on PR                  | Branch protection not enforced + a push-only job failed    | Check the `build-images` job for the `setup-buildx-action` typo                  |
+| `tsc` says `'X' is specified more than once` in tokens.ts | A `...spread` followed by an explicit key                  | Remove the duplicate explicit declaration                                        |
+| `canonicalJson` fails on `ApprovalTokenSpec`              | Type signature too strict                                  | Pass `unknown` instead of `JsonValue` in `packages/ledger/src/canonicalise.ts`   |
 
 For deeper diagnosis, read the relevant audit report under `docs/audits/`.
 

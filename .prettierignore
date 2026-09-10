@@ -5,3 +5,8 @@ Axiom Proof Site/design/support.js
 design-system/support.js
 infra/helm/
 pnpm-lock.yaml
+
+# Generated control library JSON; written by `pnpm tsx scripts/build-controls-json.mjs`
+# Its 2-space JSON.stringify output doesn't match prettier's exact formatting and would
+# re-break `pnpm format:check` on every regen. Source of truth is the TS module.
+services/agent-runtime/src/axiom/data/controls.json
