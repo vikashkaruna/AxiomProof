@@ -19,7 +19,7 @@
     "clean": "rm -rf dist .turbo"
   },
   "devDependencies": {
-    "typescript": "^7.0.2"
+    "typescript": "^6.0.2"
   },
   "peerDependencies": {
     "tailwindcss": "^3.4.10"

@@ -24,7 +24,7 @@ export const ErrorResponseSchema = z.object({
   error: z.object({
     code: z.string(),
     message: z.string(),
-    details: z.record(z.unknown()).optional(),
+    details: z.record(z.string(), z.unknown()).optional(),
     traceId: z.string().optional(),
   }),
 });
@@ -58,7 +58,10 @@ export const GapScanSubmitSchema = z.object({
   employeeBand: z.enum(['1-50', '51-200', '201-500', '501-1000', '1001-5000', '5000+']).optional(),
   processesChildrenData: z.boolean().optional(),
   isSdf: z.boolean().optional(),
-  answers: z.record(z.union([z.boolean(), z.string(), z.number(), z.array(z.string())])),
+  answers: z.record(
+    z.string(),
+    z.union([z.boolean(), z.string(), z.number(), z.array(z.string())]),
+  ),
   contactName: z.string().min(2).max(120).optional(),
   contactEmail: z.string().email().optional(),
   contactCompany: z.string().max(200).optional(),
@@ -184,7 +187,7 @@ export const IssueApprovalRequestSchema = z
       .max(7 * 24 * 60)
       .default(60),
     reason: z.string().max(2000).optional(),
-    conditions: z.record(z.unknown()).default({}),
+    conditions: z.record(z.string(), z.unknown()).default({}),
   })
   .superRefine((value, ctx) => {
     if (new Set(value.actionIds).size !== value.actionIds.length) {
@@ -248,7 +251,7 @@ export const AgentInvocationRequestSchema = z.object({
   engagementId: z.string().uuid().optional(),
   planId: z.string().uuid().optional(),
   promptHandle: z.string(),
-  inputs: z.record(z.unknown()),
+  inputs: z.record(z.string(), z.unknown()),
   // If the agent is structural-only (e.g. Drishti, Vibhaag), set this
   // true so the model gateway skips PII redaction of row values.
   structuralOnly: z.boolean().default(false),

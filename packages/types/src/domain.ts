@@ -155,7 +155,7 @@ export const FindingSchema = z.object({
   riskPoints: z.number().min(0),
   rationale: z.string(),
   evidenceIds: z.array(z.string().uuid()),
-  answers: z.record(z.unknown()),
+  answers: z.record(z.string(), z.unknown()),
   reviewedBy: z.string().uuid().nullable(),
   reviewedAt: z.string().datetime().nullable(),
   reviewNotes: z.string().nullable(),
@@ -203,7 +203,7 @@ export const RollbackDefinitionSchema = z.object({
     z.object({
       description: z.string(),
       action: z.string(), // a callable name in the executor
-      parameters: z.record(z.unknown()).default({}),
+      parameters: z.record(z.string(), z.unknown()).default({}),
     }),
   ),
   estimatedRollbackTimeSeconds: z.number().int().nonnegative(),
@@ -220,7 +220,7 @@ export const RemediationActionSchema = z.object({
   planId: z.string().uuid(),
   sequence: z.number().int().positive(),
   actionType: z.nativeEnum(ActionType),
-  parameters: z.record(z.unknown()),
+  parameters: z.record(z.string(), z.unknown()),
   description: z.string(),
   closesFindingIds: z.array(z.string().uuid()),
   riskClass: z.nativeEnum(ActionRiskClass),
@@ -229,7 +229,7 @@ export const RemediationActionSchema = z.object({
   rollbackDefinition: RollbackDefinitionSchema,
   rollbackValidated: z.boolean(),
   dryRunStatus: z.nativeEnum(ActionStatus),
-  dryRunResult: z.record(z.unknown()).nullable(),
+  dryRunResult: z.record(z.string(), z.unknown()).nullable(),
   dryRunCompletedAt: z.string().datetime().nullable(),
   dryRunExpiresAt: z.string().datetime().nullable(),
   approvalStatus: z.nativeEnum(ActionStatus),
@@ -242,7 +242,7 @@ export const RemediationActionSchema = z.object({
   preStateUri: z.string().nullable(),
   postStateUri: z.string().nullable(),
   verificationStatus: z.nativeEnum(ActionStatus).nullable(),
-  verificationResult: z.record(z.unknown()).nullable(),
+  verificationResult: z.record(z.string(), z.unknown()).nullable(),
   verifiedAt: z.string().datetime().nullable(),
   finalOutcome: z.enum(['succeeded', 'failed', 'rolled_back', 'skipped']).nullable(),
 });
@@ -279,7 +279,7 @@ export const ApprovalTokenSchema = z.object({
   concurrency: z.number().int().positive(),
   stopOnFailure: z.boolean(),
   signature: z.string(),
-  signedPayload: z.record(z.unknown()),
+  signedPayload: z.record(z.string(), z.unknown()),
   nonce: z.string(),
   issuedAt: z.string().datetime(),
   expiresAt: z.string().datetime(),
@@ -287,7 +287,7 @@ export const ApprovalTokenSchema = z.object({
   revokedAt: z.string().datetime().nullable(),
   status: z.nativeEnum(ApprovalStatus),
   reason: z.string().nullable(),
-  conditions: z.record(z.unknown()),
+  conditions: z.record(z.string(), z.unknown()),
 });
 export type ApprovalToken = z.infer<typeof ApprovalTokenSchema>;
 
@@ -312,7 +312,7 @@ export const AuditLedgerEntrySchema = z.object({
   preStateRef: z.string().nullable(),
   postStateRef: z.string().nullable(),
   result: z.nativeEnum(LedgerResult),
-  detail: z.record(z.unknown()),
+  detail: z.record(z.string(), z.unknown()),
   occurredAt: z.string().datetime(),
   prevEntryHash: z.string().nullable(),
   entryHash: z.string(),
@@ -340,7 +340,7 @@ export const AgentRunSchema = z.object({
   error: z.string().nullable(),
   correlationId: z.string().uuid(),
   piiRedacted: z.boolean(),
-  metadata: z.record(z.unknown()),
+  metadata: z.record(z.string(), z.unknown()),
 });
 export type AgentRun = z.infer<typeof AgentRunSchema>;
 
@@ -353,8 +353,8 @@ export const GapScanResponseSchema = z.object({
   employeeBand: z.enum(['1-50', '51-200', '201-500', '501-1000', '1001-5000', '5000+']).nullable(),
   processesChildrenData: z.boolean().nullable(),
   isSdf: z.boolean().nullable(),
-  answers: z.record(z.unknown()),
-  reportSnapshot: z.record(z.unknown()).nullable(),
+  answers: z.record(z.string(), z.unknown()),
+  reportSnapshot: z.record(z.string(), z.unknown()).nullable(),
   libraryVersion: z.string(),
   postureScore: z.number().min(0).max(100).nullable(),
   estimatedExposureInr: z.number().int().nonnegative().nullable(),
@@ -435,7 +435,7 @@ export const ReportSchema = z.object({
   kind: z.enum(['board', 'auditor', 'dpb', 'technical', 'gap_scan', 'evidence_pack', 'custom']),
   title: z.string(),
   storageUri: z.string(),
-  content: z.record(z.unknown()),
+  content: z.record(z.string(), z.unknown()),
   libraryVersion: z.string(),
   generatedByAgent: z.string(),
   generatedAt: z.string().datetime(),

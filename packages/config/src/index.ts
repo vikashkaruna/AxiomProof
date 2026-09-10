@@ -93,12 +93,10 @@ const EnvSchema = z
       .transform((v) => v === 'true'),
   })
   .superRefine((env, ctx) => {
-    if (
-      env.NODE_ENV !== 'production' ||
-      env.ENVIRONMENT === 'development' ||
-      env.ENVIRONMENT === 'local'
-    )
-      return;
+    // NODE_ENV is the runtime safety boundary. ENVIRONMENT is deployment
+    // metadata and defaults to "development", so it must not bypass the
+    // production credential requirements when NODE_ENV is production.
+    if (env.NODE_ENV !== 'production' || env.ENVIRONMENT === 'local') return;
 
     if (
       !env.SUPABASE_URL ||

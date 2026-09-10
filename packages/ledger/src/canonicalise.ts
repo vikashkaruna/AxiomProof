@@ -43,7 +43,9 @@ export function canonicalJson(value: unknown): string {
 }
 
 export async function sha256(input: string | Uint8Array): Promise<string> {
-  const data = typeof input === 'string' ? new TextEncoder().encode(input) : input;
+  // Copy byte inputs into an ArrayBuffer-backed typed array. WebCrypto rejects
+  // views that could be backed by a SharedArrayBuffer, and TS 6 reflects that.
+  const data = typeof input === 'string' ? new TextEncoder().encode(input) : new Uint8Array(input);
   const hash = await crypto.subtle.digest('SHA-256', data);
   return Array.from(new Uint8Array(hash))
     .map((b) => b.toString(16).padStart(2, '0'))

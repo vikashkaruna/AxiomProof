@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { CONTROL_LIBRARY_COUNT } from '@axiom/control-library';
 import { Button, Input, Label, Textarea, generateUUID } from '@axiom/ui';
 
@@ -95,6 +96,7 @@ const SECTORS = [
 ];
 
 export function GapScanForm() {
+  const router = useRouter();
   const [step, setStep] = useState(0);
   const [sector, setSector] = useState('');
   const [employeeBand, setEmployeeBand] = useState('');
@@ -140,7 +142,7 @@ export function GapScanForm() {
         return;
       }
       const body = await res.json();
-      window.location.href = `/gap-scan/report/${body.id}`;
+      router.push(`/gap-scan/report/${body.id}`);
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Failed');
     } finally {
