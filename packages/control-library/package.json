@@ -19,10 +19,10 @@
     "clean": "rm -rf dist .turbo coverage"
   },
   "dependencies": {
-    "zod": "^3.23.8"
+    "zod": "^4.5.4"
   },
   "devDependencies": {
-    "@supabase/supabase-js": "^2.45.4",
+    "@supabase/supabase-js": "^2.116.0",
     "typescript": "^7.0.2",
     "vitest": "^5.0.0"
   }
