@@ -115,6 +115,28 @@ services:
     networks:
       - axiom-network
 
+  # ─── Temporal Database (PostgreSQL — required by auto-setup 1.24+) ──
+  # auto-setup 1.24+ dropped SQLite; runs a local Postgres for Temporal's
+  # default + visibility stores. Internal to the network (no host port).
+  temporal-db:
+    image: postgres:15-alpine
+    container_name: axiom-temporal-db
+    restart: unless-stopped
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=temporal
+    volumes:
+      - temporal-db-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d temporal"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+      start_period: 10s
+    networks:
+      - axiom-network
+
   # ─── Temporal Server (Durable Orchestration Dev Engine) ────────
   temporal:
     image: temporalio/auto-setup:1.24.2
@@ -124,10 +146,25 @@ services:
       - "${TEMPORAL_PORT:-7233}:7233"
       - "${TEMPORAL_UI_PORT:-8233}:8233"
     environment:
-      - DB=sqlite
+      - DB=postgres12
+      - POSTGRES_SEEDS=temporal-db
+      - POSTGRES_PORT=5432
+      - POSTGRES_VISIBILITY_PORT=5432
+      - POSTGRES_USER=postgres
+      - POSTGRES_PWD=postgres
+      - POSTGRES_DB=temporal
       - DYNAMIC_CONFIG_FILE_PATH=config/dynamicconfig/development-sql.yaml
       - ENABLE_ES=false
       - BIND_ON_IP=0.0.0.0
+    depends_on:
+      temporal-db:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "wget --no-verbose --tries=1 --spider http://localhost:7233 || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
     networks:
       - axiom-network
 
@@ -150,7 +187,7 @@ services:
       - "host.docker.internal:host-gateway"
     depends_on:
       temporal:
-        condition: service_started
+        condition: service_healthy
       agent-runtime:
         condition: service_healthy
     networks:
@@ -231,3 +268,7 @@ services:
 networks:
   axiom-network:
     driver: bridge
+
+volumes:
+  temporal-db-data:
+    name: axiom-temporal-db-data
