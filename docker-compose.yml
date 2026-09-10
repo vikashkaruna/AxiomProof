@@ -119,7 +119,7 @@ services:
   # auto-setup 1.24+ dropped SQLite; runs a local Postgres for Temporal's
   # default + visibility stores. Internal to the network (no host port).
   temporal-db:
-    image: postgres:15-alpine
+    image: postgres:17-alpine
     container_name: axiom-temporal-db
     restart: unless-stopped
     environment:
