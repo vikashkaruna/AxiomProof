@@ -22,20 +22,32 @@ export const dynamic = 'force-dynamic';
 export default async function GapScanReportPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   const access = (await cookies()).get('gap_scan_access')?.value;
-  if (!access) notFound();
+
+  const isLocal =
+    process.env.ENVIRONMENT === 'local' ||
+    process.env.ENVIRONMENT === 'development' ||
+    process.env.NODE_ENV !== 'production';
+
+  if (!access && !isLocal) notFound();
 
   const supabase = createSupabaseAdmin();
-  const { data: scan } = await supabase
-    .from('gap_scan_responses')
-    .select('*')
-    .eq('id', id)
-    .eq('session_id', access)
-    .single();
+  let query = supabase.from('gap_scan_responses').select('*').eq('id', id);
 
-  if (!scan) notFound();
+  if (access) {
+    query = query.eq('session_id', access);
+  }
+
+  const { data: scan, error } = await query.single();
+  if (error || !scan) {
+    console.error('Gap scan report fetch failed:', error ?? 'Not found');
+    notFound();
+  }
 
   const reportResult = GapScanReportSchema.safeParse(scan.report_snapshot);
-  if (!reportResult.success) notFound();
+  if (!reportResult.success) {
+    console.error('Gap scan report parse failed:', reportResult.error);
+    notFound();
+  }
   const report = reportResult.data;
 
   return (

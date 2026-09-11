@@ -80,12 +80,17 @@ export async function POST(request: Request) {
     estimatedExposureInr: report.estimatedExposureInr,
     findingsCount: report.findings.length,
   });
+  const isLocal =
+    process.env.ENVIRONMENT === 'local' ||
+    process.env.ENVIRONMENT === 'development' ||
+    process.env.NODE_ENV !== 'production';
+
   response.cookies.set('gap_scan_access', sessionHash, {
     httpOnly: true,
     sameSite: 'lax',
-    secure: process.env.NODE_ENV === 'production',
-    maxAge: 60 * 60,
-    path: '/gap-scan',
+    secure: !isLocal,
+    maxAge: 60 * 60 * 24 * 7,
+    path: '/',
   });
   return response;
 }
