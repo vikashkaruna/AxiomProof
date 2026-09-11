@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { createSupabaseServerClient } from '@axiom/supabase';
+import { createSupabaseAdmin } from '@axiom/supabase';
 import { GapScanSubmitSchema } from '@axiom/types';
 import { computeGapScanReport } from '@/lib/gap-scan-scoring';
 import { createHash } from 'node:crypto';
@@ -43,10 +43,7 @@ export async function POST(request: Request) {
 
   const report = await computeGapScanReport(input.answers);
 
-  // Use the anon/server-scoped client: the migration explicitly allows
-  // anonymous inserts, while the service-role client would bypass that
-  // boundary for an internet-facing endpoint.
-  const supabase = await createSupabaseServerClient();
+  const supabase = createSupabaseAdmin();
   const { data, error } = await supabase
     .from('gap_scan_responses')
     .insert({

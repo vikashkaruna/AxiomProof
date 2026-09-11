@@ -68,3 +68,4 @@ charts/*/charts/
 # Supabase
 infra/supabase/.branches/
 infra/supabase/.temp/
+infra/supabase/snippets/

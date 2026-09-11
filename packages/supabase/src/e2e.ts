@@ -50,15 +50,25 @@ type QueryBuilder = {
   limit: (...args: unknown[]) => QueryBuilder;
   eq: (...args: unknown[]) => QueryBuilder;
   in: (...args: unknown[]) => QueryBuilder;
+  insert: (...args: unknown[]) => QueryBuilder;
+  upsert: (...args: unknown[]) => QueryBuilder;
+  update: (...args: unknown[]) => QueryBuilder;
+  delete: (...args: unknown[]) => QueryBuilder;
   single: () => Promise<{ data: unknown; error: null }>;
   maybeSingle: () => Promise<{ data: unknown; error: null }>;
   then: Promise<QueryResult>['then'];
 };
 
 function createQuery(table: string): QueryBuilder {
+  let mutatedData: unknown = null;
   const resultData =
     table === 'users' ? [E2E_USER_PROFILE] : table === 'remediation_plans' ? [E2E_PLAN] : [];
-  const singleData = table === 'users' ? E2E_USER_PROFILE : E2E_PLAN;
+  const singleData =
+    table === 'users'
+      ? E2E_USER_PROFILE
+      : table === 'remediation_plans'
+        ? E2E_PLAN
+        : { id: '00000000-0000-0000-0000-000000000001' };
 
   const result: QueryResult = {
     data: resultData,
@@ -72,12 +82,31 @@ function createQuery(table: string): QueryBuilder {
   query.limit = () => query;
   query.eq = () => query;
   query.in = () => query;
+  query.insert = (values: unknown) => {
+    mutatedData = Array.isArray(values) ? values[0] : values;
+    return query;
+  };
+  query.upsert = (values: unknown) => {
+    mutatedData = Array.isArray(values) ? values[0] : values;
+    return query;
+  };
+  query.update = (values: unknown) => {
+    mutatedData = values;
+    return query;
+  };
+  query.delete = () => query;
   query.single = async () => ({
-    data: singleData,
+    data:
+      mutatedData && typeof mutatedData === 'object'
+        ? { id: '00000000-0000-0000-0000-000000000001', ...(mutatedData as Record<string, unknown>) }
+        : singleData,
     error: null,
   });
   query.maybeSingle = async () => ({
-    data: singleData,
+    data:
+      mutatedData && typeof mutatedData === 'object'
+        ? { id: '00000000-0000-0000-0000-000000000001', ...(mutatedData as Record<string, unknown>) }
+        : singleData,
     error: null,
   });
   query.then = Promise.resolve(result).then.bind(Promise.resolve(result));

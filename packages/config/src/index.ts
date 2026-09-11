@@ -11,7 +11,6 @@ const EnvSchema = z
     NODE_ENV: z.enum(['development', 'staging', 'production', 'test']).default('development'),
     ENVIRONMENT: z
       .enum(['development', 'staging', 'preprod', 'production', 'local'])
-      .default('development')
       .optional(),
     LOG_LEVEL: z.enum(['debug', 'info', 'warn', 'error']).default('info'),
 
@@ -93,10 +92,15 @@ const EnvSchema = z
       .transform((v) => v === 'true'),
   })
   .superRefine((env, ctx) => {
-    // NODE_ENV is the runtime safety boundary. ENVIRONMENT is deployment
-    // metadata and defaults to "development", so it must not bypass the
-    // production credential requirements when NODE_ENV is production.
-    if (env.NODE_ENV !== 'production' || env.ENVIRONMENT === 'local') return;
+    // NODE_ENV is the runtime safety boundary. When ENVIRONMENT is explicitly
+    // set to 'development' or 'local' (e.g. Docker local stack running built Next.js
+    // apps where Next sets NODE_ENV=production), bypass production credential checks.
+    if (
+      env.NODE_ENV !== 'production' ||
+      env.ENVIRONMENT === 'development' ||
+      env.ENVIRONMENT === 'local'
+    )
+      return;
 
     if (
       !env.SUPABASE_URL ||

@@ -532,3 +532,209 @@ Local functional audit
 → Limited connector rollout
 → Full production execution
 ```
+
+## 14. End-to-End Testing & Live Verification Guide
+
+This section provides the complete reference for executing automated test suites and running live, interactive end-to-end verification flows across the entire Axiom Proof stack.
+
+### 14.1 Automated Pre-CI and Local Test Suite
+
+Run the all-in-one verification script:
+
+```bash
+./scripts/test-local-stack.sh
+```
+
+This single command executes 5 sequential verification steps:
+1. **TypeScript Unit Tests & Typechecks (`pnpm test`)**: Validates `@axiom/types`, `@axiom/config`, `@axiom/control-library`, `@axiom/approval-engine`, `@axiom/ledger`, `@axiom/evidence`, `@axiom/supabase`, `@axiom/ui`, `@axiom/bff`, and `@axiom/web`.
+2. **Python Agent Runtime Pytest (`cd services/agent-runtime && uv run pytest -q`)**: Executes 32 tests verifying all 10 named agents (Drishti, Vibhaag, Parikshan, Saakshi, Sudhaar, Karya, Lekha, Nazar, Prativedan, Sanket), the canonicaliser, the approval engine, and PII redactor.
+3. **Python Model Gateway Pytest (`cd services/model-gateway && uv run pytest -q`)**: Executes 14 tests verifying Indian PII regex and NER redaction (Aadhaar, PAN, phone numbers, passport, voter ID), model routing, and token budget governance.
+4. **Live HTTP Health Checks**: Verifies live responses from:
+   - Model Gateway (`http://localhost:8001/health`)
+   - Agent Runtime (`http://localhost:8000/health`)
+   - BFF API (`http://localhost:4000/health`)
+   - Temporal UI (`http://localhost:8233`)
+   - Web Product Workbench (`http://localhost:3001`)
+   - Marketing Site (`http://localhost:3000`)
+5. **Playwright E2E UI Suite (`cd tests/e2e && pnpm test:e2e`)**: Validates the public gap-scan funnel, trust surface, non-negotiable safety rules, kill-switch visibility, and security headers.
+
+To run individual sub-suites:
+
+```bash
+# TypeScript workspace tests
+pnpm test
+
+# Agent Runtime tests
+cd services/agent-runtime && uv run pytest -v
+
+# Model Gateway tests
+cd services/model-gateway && uv run pytest -v
+
+# E2E Playwright tests (headless)
+cd tests/e2e && pnpm test:e2e
+
+# E2E Playwright interactive UI runner
+cd tests/e2e && pnpm exec playwright test --ui
+```
+
+---
+
+### 14.2 Live Verification Examples by Architectural Boundary
+
+#### Flow A: Public Gap-Scan Assessment Funnel
+Tests the anonymous marketing diagnostic funnel through the Next.js API route into Supabase and renders the scored DPDPA posture report.
+
+1. **Submit diagnostic responses via API**:
+```bash
+curl -i -X POST http://localhost:3000/api/gap-scan \
+  -H "Content-Type: application/json" \
+  -d '{
+    "sessionId": "11111111-1111-1111-1111-111111111111",
+    "sector": "Fintech & Financial Services",
+    "employeeBand": "51-200",
+    "processesChildrenData": false,
+    "isSdf": false,
+    "answers": {
+      "q1": true, "q2": true, "q3": false, "q4": true,
+      "q5": false, "q6": true, "q7": true, "q8": false,
+      "q9": true, "q10": false, "q11": false, "q12": false
+    },
+    "contactName": "Aarav Sharma",
+    "contactEmail": "aarav@example.com",
+    "contactCompany": "Aarav Pay",
+    "followUpRequested": true,
+    "marketingConsent": false
+  }'
+```
+
+2. **Expected Response**:
+- Status: `HTTP/1.1 200 OK`
+- Cookie: Sets `gap_scan_access=<token>; Path=/gap-scan; HttpOnly; SameSite=lax`
+- Body:
+```json
+{
+  "id": "<report-uuid>",
+  "postureScore": 47.5,
+  "estimatedExposureInr": 153000000,
+  "findingsCount": 12
+}
+```
+
+3. **View the live scored report**:
+Open in your browser:
+```text
+http://localhost:3000/gap-scan/report/<report-uuid>
+```
+Or use the interactive scan on the homepage at `http://localhost:3000/#gap-scan` and click **"Generate my report"**.
+
+---
+
+#### Flow B: Model Gateway PII Redaction & Data Residency
+Verifies that all client personal data stays in `ap-south-1` and third-party model providers never see raw Indian PII (Aadhaar, PAN, phone).
+
+1. **Send prompt containing raw Indian identifiers**:
+```bash
+curl -s -X POST http://localhost:8001/v1/chat/completions \
+  -H "Content-Type: application/json" \
+  -d '{
+    "model": "stub-dpdpa-specialist",
+    "messages": [
+      {
+        "role": "user",
+        "content": "Verify consent for Aadhaar 3456 7890 1234, PAN ABCDE1234F, and phone +91 98765 43210."
+      }
+    ],
+    "tenant_id": "00000000-0000-0000-0000-000000000001"
+  }' | jq .
+```
+
+2. **Expected Response**:
+The Model Gateway intercepts and strips identifiers before dispatch, confirming redaction:
+```json
+{
+  "id": "chatcmpl-stub-...",
+  "object": "chat.completion",
+  "choices": [
+    {
+      "message": {
+        "role": "assistant",
+        "content": "Model Gateway received prompt with PII redacted: Verify consent for Aadhaar <AADHAAR_REDACTED>, PAN <PAN_REDACTED>, and phone <PHONE_REDACTED>."
+      }
+    }
+  ]
+}
+```
+
+---
+
+#### Flow C: Agent Invocation & Append-Only Audit Ledger
+Verifies Drishti (discovery agent) invocation, immutable SHA-256 hash chaining, and mathematical proof of non-tampering.
+
+1. **Trigger Drishti discovery run via BFF**:
+```bash
+curl -s -X POST http://localhost:4000/v1/agents/drishti/run \
+  -H "Content-Type: application/json" \
+  -H "X-Tenant-ID: 00000000-0000-0000-0000-000000000001" \
+  -d '{"scope": "full_discovery"}' | jq .
+```
+
+2. **Verify Ledger SHA-256 Chain in PostgreSQL**:
+Connect to Supabase DB:
+```bash
+docker exec -it supabase_db_axiom-proof psql -U postgres -d postgres -c \
+  "SELECT sequence_number, event_type, agent_name, hash, previous_hash FROM audit_ledger WHERE tenant_id = '00000000-0000-0000-0000-000000000001' ORDER BY sequence_number DESC LIMIT 5;"
+```
+
+3. **Mathematically Verify Ledger Integrity**:
+Execute the ledger verification function:
+```sql
+SELECT * FROM verify_ledger('00000000-0000-0000-0000-000000000001');
+```
+*Intact output:* `0 rows returned`. If any byte in the database had been altered, `verify_ledger` would output the exact broken sequence number and computed vs stored hash.
+
+4. **Verify Immutability Enforcement**:
+Attempt a direct update:
+```bash
+docker exec -it supabase_db_axiom-proof psql -U postgres -d postgres -c \
+  "UPDATE audit_ledger SET summary = 'tampered' WHERE sequence_number = 1;"
+```
+*Expected result:* Rejected with PostgreSQL permission denied or trigger error.
+
+---
+
+#### Flow D: Human Approval Gate & Kill Switch
+Verifies separation of duties (ADR-3) and mandatory human approval (ADR-1, BR-2).
+
+1. **Verify Planning Agent (Sudhaar) Cannot Mutate**:
+```bash
+python3 -c "from axiom.agents.sudhaar import SudhaarAgent; assert SudhaarAgent.can_mutate is False; print('SudhaarAgent.can_mutate is strictly False')"
+```
+
+2. **Trigger Dry-Run Remediation**:
+```bash
+curl -s -X POST http://localhost:4000/v1/plans/generate \
+  -H "Content-Type: application/json" \
+  -H "X-Tenant-ID: 00000000-0000-0000-0000-000000000001" \
+  -d '{"control_id": "DPDPA-CNS-001"}' | jq .
+```
+Notice the plan generates actions in `pending_approval` state with pre-computed dry-run output and rollback definitions.
+
+3. **Verify Execution Kill Switch**:
+Trigger an emergency halt across all running agents for a tenant:
+```bash
+curl -s -X POST http://localhost:4000/v1/kill-switch \
+  -H "Content-Type: application/json" \
+  -H "X-Tenant-ID: 00000000-0000-0000-0000-000000000001" \
+  -d '{"reason": "Emergency drill"}' | jq .
+```
+
+---
+
+#### Flow E: Temporal Durable Orchestration UI
+Monitor background agent workflows, retries, and timers:
+- **Temporal Web UI**: `http://localhost:8233`
+- **Temporal Server gRPC**: `localhost:7233`
+- **Namespaces**: `default`
+- **Workflows**: `gap_scan_assessment_workflow`, `agent_execution_workflow`, `continuous_monitoring_workflow`
+- Workflows survive process restarts and node failures while preserving state and idempotency.
+

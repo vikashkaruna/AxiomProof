@@ -251,7 +251,7 @@ services:
       - SUPABASE_URL=${SUPABASE_URL:-http://host.docker.internal:55321}
       - SUPABASE_ANON_KEY=${SUPABASE_ANON_KEY:-eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS1kZW1vIiwicm9sZSI6ImFub24iLCJleHAiOjE5ODM4MTI5OTZ9.CRXP1A7WOeoJeXxjNni43kdQwgnWNReilDMblYTn_I0}
       - SUPABASE_SERVICE_KEY=${SUPABASE_SERVICE_KEY:-eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS1kZW1vIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImV4cCI6MTk4MzgxMjk5Nn0.EGIM96RAZx35lJzdJsyH-qQwv8Hdp7fsn3W0YpN81IU}
-      - ENVIRONMENT=${ENVIRONMENT:-development}
+      - ENVIRONMENT=local
       - AXIOM_E2E_BYPASS_AUTH=${AXIOM_E2E_BYPASS_AUTH:-true}
       - BFF_PUBLIC_URL=${NEXT_PUBLIC_BFF_URL:-http://localhost:4000}
     extra_hosts:
@@ -260,7 +260,7 @@ services:
       bff:
         condition: service_healthy
     healthcheck:
-      test: ['CMD-SHELL', 'wget --no-verbose --tries=1 --spider http://localhost:3001 || exit 1']
+      test: ['CMD-SHELL', 'wget --no-verbose --tries=1 --spider http://127.0.0.1:3001 || exit 1']
       interval: 10s
       timeout: 5s
       retries: 5
@@ -288,6 +288,8 @@ services:
       - SUPABASE_URL=${SUPABASE_URL:-http://host.docker.internal:55321}
       - SUPABASE_ANON_KEY=${SUPABASE_ANON_KEY:-eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS1kZW1vIiwicm9sZSI6ImFub24iLCJleHAiOjE5ODM4MTI5OTZ9.CRXP1A7WOeoJeXxjNni43kdQwgnWNReilDMblYTn_I0}
       - SUPABASE_SERVICE_KEY=${SUPABASE_SERVICE_KEY:-eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS1kZW1vIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImV4cCI6MTk4MzgxMjk5Nn0.EGIM96RAZx35lJzdJsyH-qQwv8Hdp7fsn3W0YpN81IU}
+      - ENVIRONMENT=local
+      - AXIOM_E2E_BYPASS_AUTH=false
       - BFF_PUBLIC_URL=${NEXT_PUBLIC_BFF_URL:-http://localhost:4000}
     extra_hosts:
       - 'host.docker.internal:host-gateway'
@@ -295,7 +297,7 @@ services:
       bff:
         condition: service_healthy
     healthcheck:
-      test: ['CMD-SHELL', 'wget --no-verbose --tries=1 --spider http://localhost:3000 || exit 1']
+      test: ['CMD-SHELL', 'wget --no-verbose --tries=1 --spider http://127.0.0.1:3000 || exit 1']
       interval: 10s
       timeout: 5s
       retries: 5
