@@ -195,7 +195,7 @@ create or replace function public.append_ledger(
 ) returns bigint
 language plpgsql
 security definer
-set search_path = public, pg_temp
+set search_path = public, extensions, pg_temp
 as $$
 declare
   v_seq bigint;
@@ -287,6 +287,7 @@ returns table (
 )
 language plpgsql
 stable
+set search_path = public, extensions, pg_temp
 as $$
 declare
   rec record;
@@ -297,8 +298,8 @@ begin
   v_prev_hash := null;
   for rec in
     select * from public.audit_ledger
-    where tenant_id = p_tenant_id and sequence_no >= p_from_sequence
-    order by sequence_no asc
+    where audit_ledger.tenant_id = p_tenant_id and audit_ledger.sequence_no >= p_from_sequence
+    order by audit_ledger.sequence_no asc
   loop
     v_payload := concat_ws(
       '|',
