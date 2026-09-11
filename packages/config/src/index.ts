@@ -73,6 +73,11 @@ const EnvSchema = z
     OTEL_EXPORTER_OTLP_ENDPOINT: z.string().url().optional(),
     SENTRY_DSN: z.string().url().optional(),
 
+    // Resend Email Delivery
+    RESEND_API_KEY: z.string().optional(),
+    RESEND_FROM_EMAIL: z.string().default('Axiom Proof <onboarding@resend.dev>'),
+    CONTACT_RECIPIENT_EMAIL: z.string().email().default('hello@axiomminds.ai'),
+
     // Feature flags
     FEATURE_DRY_RUN_ENGINE: z
       .string()

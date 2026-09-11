@@ -96,6 +96,16 @@ export const GapScanReportSchema = z.object({
 });
 export type GapScanReport = z.infer<typeof GapScanReportSchema>;
 
+// ─── Contact inquiry (public) ────────────────────────────────────────
+
+export const ContactSubmitSchema = z.object({
+  name: z.string().trim().min(2, 'Name must be at least 2 characters').max(120),
+  email: z.string().trim().email('Please enter a valid email address'),
+  company: z.string().trim().max(200).optional(),
+  message: z.string().trim().min(10, 'Message must be at least 10 characters').max(5000),
+});
+export type ContactSubmit = z.infer<typeof ContactSubmitSchema>;
+
 // ─── Engagements ─────────────────────────────────────────────────────
 
 export const CreateEngagementSchema = z.object({

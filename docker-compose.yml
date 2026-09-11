@@ -291,6 +291,9 @@ services:
       - ENVIRONMENT=local
       - AXIOM_E2E_BYPASS_AUTH=false
       - BFF_PUBLIC_URL=${NEXT_PUBLIC_BFF_URL:-http://localhost:4000}
+      - RESEND_API_KEY=${RESEND_API_KEY:-}
+      - RESEND_FROM_EMAIL=${RESEND_FROM_EMAIL:-Axiom Proof <onboarding@resend.dev>}
+      - CONTACT_RECIPIENT_EMAIL=${CONTACT_RECIPIENT_EMAIL:-hello@axiomminds.ai}
     extra_hosts:
       - 'host.docker.internal:host-gateway'
     depends_on:
