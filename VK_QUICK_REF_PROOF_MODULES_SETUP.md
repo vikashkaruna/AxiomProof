@@ -582,9 +582,16 @@ cd tests/e2e && pnpm exec playwright test --ui
 ### 14.2 Live Verification Examples by Architectural Boundary
 
 #### Flow A: Public Gap-Scan Assessment Funnel
-Tests the anonymous marketing diagnostic funnel through the Next.js API route into Supabase and renders the scored DPDPA posture report.
+Tests the public diagnostic funnel into Supabase and renders the scored DPDPA posture report.
 
-1. **Submit diagnostic responses via API**:
+> [!NOTE]
+> **Schema validation rules (`GapScanSubmitSchema`)**:
+> - `employeeBand`: Must be one of `'1-50' | '51-200' | '201-500' | '501-1000' | '1001-5000' | '5000+'`.
+> - `sessionId`: String between 8 and 128 characters.
+
+**Option 1: Marketing Frontend API (`http://localhost:3000/api/gap-scan`)**
+Calculates score and financial exposure, sets secure session cookie `gap_scan_access`, and stores in Supabase:
+
 ```bash
 curl -i -X POST http://localhost:3000/api/gap-scan \
   -H "Content-Type: application/json" \
@@ -607,10 +614,7 @@ curl -i -X POST http://localhost:3000/api/gap-scan \
   }'
 ```
 
-2. **Expected Response**:
-- Status: `HTTP/1.1 200 OK`
-- Cookie: Sets `gap_scan_access=<token>; Path=/gap-scan; HttpOnly; SameSite=lax`
-- Body:
+*Expected Response (`HTTP 200 OK`)*:
 ```json
 {
   "id": "<report-uuid>",
@@ -620,12 +624,44 @@ curl -i -X POST http://localhost:3000/api/gap-scan \
 }
 ```
 
-3. **View the live scored report**:
-Open in your browser:
+View the scored report in browser:
 ```text
 http://localhost:3000/gap-scan/report/<report-uuid>
 ```
-Or use the interactive scan on the homepage at `http://localhost:3000/#gap-scan` and click **"Generate my report"**.
+Or use the interactive scan directly on the marketing homepage at `http://localhost:3000/#gap-scan`.
+
+**Option 2: BFF Public API (`http://localhost:4000/public/gap-scan`)**
+Direct public submission endpoint for external integrations:
+
+```bash
+curl -i -X POST http://localhost:4000/public/gap-scan \
+  -H "Content-Type: application/json" \
+  -d '{
+    "sessionId": "demo-session-12345",
+    "sector": "fintech",
+    "employeeBand": "51-200",
+    "processesChildrenData": true,
+    "isSdf": false,
+    "answers": {
+      "notice_multilingual": "no",
+      "dpo_appointed": "yes",
+      "cross_border_transfer": "yes"
+    },
+    "contactName": "Aarav Sharma",
+    "contactEmail": "aarav@example.com",
+    "contactCompany": "Aarav Payments Pvt Ltd",
+    "followUpRequested": true,
+    "marketingConsent": true,
+    "source": "live_demo"
+  }'
+```
+
+*Expected Response (`HTTP 201 Created`)*:
+```json
+{
+  "id": "<record-uuid>"
+}
+```
 
 ---
 
