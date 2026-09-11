@@ -73,6 +73,14 @@ while [[ $# -gt 0 ]]; do
       ACTION="test"
       shift
       ;;
+    status|down|restart|test)
+      ACTION="$1"
+      shift
+      ;;
+    up)
+      ACTION="up"
+      shift
+      ;;
     --logs|-l)
       ACTION="logs"
       if [[ -n "$2" && "$2" != --* ]]; then
@@ -220,7 +228,7 @@ preflight_checks() {
 verify_and_deploy_components() {
   log_step "Step 4: Verifying module containers & deploying missing components..."
 
-  local services=("model-gateway" "agent-runtime" "bff" "temporal" "temporal-worker" "web" "marketing")
+  local services=("model-gateway" "agent-runtime" "bff" "temporal" "temporal-ui" "temporal-worker" "web" "marketing")
   local missing_or_stopped=()
 
   for svc in "${services[@]}"; do
@@ -257,6 +265,7 @@ check_health_and_report() {
     "Model Gateway:http://localhost:8001/health"
     "Agent Runtime:http://localhost:8000/health"
     "BFF API Engine:http://localhost:4000/health"
+    "Temporal UI:http://localhost:8233"
     "Web Workbench:http://localhost:3001"
     "Marketing Public:http://localhost:3000"
   )

@@ -29,6 +29,11 @@ services:
     profiles:
       - donotstart
 
+  temporal-ui:
+    # In production, Temporal Cloud UI is used
+    profiles:
+      - donotstart
+
   temporal-worker:
     image: axiom-temporal-worker:prod
     restart: always

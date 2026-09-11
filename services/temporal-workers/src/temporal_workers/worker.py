@@ -41,7 +41,7 @@ async def main():
     )
 
     logging.basicConfig(level=logging.INFO)
-    logging.info("temporal_worker.starting", address=address, namespace=namespace)
+    logging.info(f"temporal_worker.starting address={address} namespace={namespace}")
     await worker.run()
 
 

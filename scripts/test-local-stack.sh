@@ -75,6 +75,13 @@ else
   fail "BFF not responding on http://localhost:4000/health"
 fi
 
+# Check Temporal UI
+if curl -fsS http://localhost:8233 >/dev/null 2>&1; then
+  pass "Temporal UI live (http://localhost:8233)"
+else
+  fail "Temporal UI not responding on http://localhost:8233"
+fi
+
 # Check Web Workbench
 if curl -fsS http://localhost:3001 >/dev/null 2>&1; then
   pass "Web Product Workbench live (http://localhost:3001)"

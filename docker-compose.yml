@@ -145,7 +145,6 @@ services:
     restart: unless-stopped
     ports:
       - '${TEMPORAL_PORT:-7233}:7233'
-      - '${TEMPORAL_UI_PORT:-8233}:8233'
     environment:
       - DB=postgres12
       - DB_PORT=5432
@@ -155,18 +154,55 @@ services:
       - POSTGRES_USER=postgres
       - POSTGRES_PWD=postgres
       - POSTGRES_DB=temporal
-      - DYNAMIC_CONFIG_FILE_PATH=config/dynamicconfig/development-sql.yaml
+      - DYNAMIC_CONFIG_FILE_PATH=config/dynamicconfig/docker.yaml
       - ENABLE_ES=false
-      - BIND_ON_IP=0.0.0.0
+      # Create the 'axiom-proof' namespace on first boot, since the
+      # worker is hard-coded to register there. auto-setup.sh creates
+      # whatever DEFAULT_NAMESPACE is set to (defaults to 'default').
+      - DEFAULT_NAMESPACE=axiom-proof
+      - DEFAULT_NAMESPACE_RETENTION=24h
+      # BIND_ON_IP left unset: the entrypoint auto-resolves it to the
+      # container's hostname IP (the docker network address), which is
+      # both the bind address AND the ringpop broadcastAddress. Setting
+      # it to 0.0.0.0 makes ringpop refuse to start with
+      # "broadcastAddress required when listening on all interfaces".
     depends_on:
       temporal-db:
         condition: service_healthy
     healthcheck:
-      test: ['CMD-SHELL', 'wget --no-verbose --tries=1 --spider http://localhost:7233 || exit 1']
+      # Temporal's gRPC frontend binds to BIND_ON_IP (auto-resolved by
+      # the entrypoint to the container's hostname IP, i.e. the docker
+      # network address) — NOT 0.0.0.0 and NOT 127.0.0.1. Probe via
+      # `hostname -i` (the same IP the server is bound to) rather than
+      # localhost, which would always fail.
+      test: ['CMD-SHELL', 'nc -z $(hostname -i) 7233 || exit 1']
       interval: 10s
       timeout: 5s
       retries: 10
       start_period: 30s
+    networks:
+      - axiom-network
+
+  # ─── Temporal Web UI ───────────────────────────────────────────
+  temporal-ui:
+    image: temporalio/ui:latest
+    container_name: axiom-temporal-ui
+    restart: unless-stopped
+    ports:
+      - '${TEMPORAL_UI_PORT:-8233}:8080'
+    environment:
+      - TEMPORAL_ADDRESS=temporal:7233
+      - TEMPORAL_CORS_ORIGINS=http://localhost:3000,http://localhost:3001
+      - TEMPORAL_DEFAULT_NAMESPACE=axiom-proof
+    depends_on:
+      temporal:
+        condition: service_healthy
+    healthcheck:
+      test: ['CMD-SHELL', 'wget --no-verbose --tries=1 --spider http://localhost:8080 || exit 1']
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 5s
     networks:
       - axiom-network
 
