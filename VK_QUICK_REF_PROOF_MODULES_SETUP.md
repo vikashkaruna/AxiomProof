@@ -535,20 +535,45 @@ Local functional audit
 
 ## 14. End-to-End Testing & Live Verification Guide
 
-This section provides the complete reference for executing automated test suites and running live, interactive end-to-end verification flows across the entire Axiom Proof stack.
+This section provides the complete operational reference for validating Axiom Proof across all environments. It maintains strict architectural segregation among **Local Bare-Metal**, **Local Docker Compose**, **Staging/Pre-Production**, and **Production** environments.
 
-### 14.1 Automated Pre-CI and Local Test Suite
+---
 
-Run the all-in-one verification script:
+### 14.1 Environment Architecture & Boundary Matrix
+
+| Construct | Local Bare-Metal (Host) | Local Full-Stack (Docker) | Staging / Pre-Production | Production (EKS / AWS) |
+| :--- | :--- | :--- | :--- | :--- |
+| **`ENVIRONMENT`** | `local` | `local` or `development` | `staging` / `preprod` | `production` |
+| **`NODE_ENV`** | `development` | `production` (Next.js standalone) | `production` | `production` |
+| **Topology** | Host processes (`pnpm dev`, `uv`) | Docker network (`axiom-network`) | AWS Private VPC (`ap-south-1`) | AWS EKS Cluster (`ap-south-1`) |
+| **Marketing Site** | `http://localhost:3000` | `http://localhost:3000` | `https://staging.axiomminds.ai` | `https://axiomminds.ai` |
+| **Web Workbench** | `http://localhost:3001` | `http://localhost:3001` | `https://app-staging.axiomminds.ai` | `https://app.axiomminds.ai` |
+| **BFF API Gateway** | `http://localhost:4000` | `http://localhost:4000` | `https://api-staging.axiomminds.ai` | `https://api.axiomminds.ai` |
+| **Agent Runtime** | `http://localhost:8000` | `http://localhost:8000` | Internal VPC / Cluster IP | Internal VPC / Cluster IP |
+| **Model Gateway** | `http://localhost:8001` | `http://localhost:8001` | Internal VPC (Self-hosted/Bedrock) | Internal VPC (Self-hosted/Bedrock) |
+| **Temporal UI** | `http://localhost:8233` | `http://localhost:8233` | Temporal Cloud / Internal UI | Temporal Cloud / Internal UI |
+| **Supabase DB** | `127.0.0.1:55322` | `127.0.0.1:55322` | Managed RDS / Supabase Cloud | Managed RDS / Supabase Cloud |
+| **Supabase Studio**| `http://127.0.0.1:55323` | `http://127.0.0.1:55323` | Private Admin Portal / Bastion | Private Admin Portal / Bastion |
+| **Email Delivery** | Stdout / Mailpit (`:55324`) | Stdout mock or live Resend key | Resend API (Verified Domain) | Resend API (Strict SPF/DKIM/DMARC)|
+| **Evidence Vault** | Local FS or MinIO bucket | Local S3-compatible mock | S3 Object Lock (Governance) | S3 Object Lock (Compliance mode) |
+| **Auth Bypass** | Optional (`AXIOM_E2E_BYPASS_AUTH`)| Optional for testing | Strictly `false` | Strictly `false` (Mandatory MFA) |
+| **Planning Agent** | `can_mutate = False` | `can_mutate = False` | `can_mutate = False` | `can_mutate = False` (ADR-3) |
+| **Audit Ledger** | Append-only function | Append-only function | `append_ledger()` SECURITY DEFINER| `append_ledger()` SECURITY DEFINER |
+
+---
+
+### 14.2 Automated Test Suites (Pre-CI Verification)
+
+Execute the all-in-one pre-flight verification script before any push or deployment:
 
 ```bash
 ./scripts/test-local-stack.sh
 ```
 
-This single command executes 5 sequential verification steps:
-1. **TypeScript Unit Tests & Typechecks (`pnpm test`)**: Validates `@axiom/types`, `@axiom/config`, `@axiom/control-library`, `@axiom/approval-engine`, `@axiom/ledger`, `@axiom/evidence`, `@axiom/supabase`, `@axiom/ui`, `@axiom/bff`, and `@axiom/web`.
-2. **Python Agent Runtime Pytest (`cd services/agent-runtime && uv run pytest -q`)**: Executes 32 tests verifying all 10 named agents (Drishti, Vibhaag, Parikshan, Saakshi, Sudhaar, Karya, Lekha, Nazar, Prativedan, Sanket), the canonicaliser, the approval engine, and PII redactor.
-3. **Python Model Gateway Pytest (`cd services/model-gateway && uv run pytest -q`)**: Executes 14 tests verifying Indian PII regex and NER redaction (Aadhaar, PAN, phone numbers, passport, voter ID), model routing, and token budget governance.
+This automated runner executes 5 sequential stages:
+1. **TypeScript Workspace Tests (`pnpm test`)**: Validates types, schema contracts, control definitions, ledger canonicalization, and evidence packages across all 10 monorepo packages.
+2. **Python Agent Runtime Pytest (`services/agent-runtime`)**: Executes 32 unit and integration tests verifying all 10 named agents, Sudhaar's non-mutating lock, Karya's execution gate, and the PII redactor.
+3. **Python Model Gateway Pytest (`services/model-gateway`)**: Executes 14 tests verifying regex and NER redaction for Indian identifiers (Aadhaar, PAN, phone numbers, passport, voter ID), model routing, and token budget governance.
 4. **Live HTTP Health Checks**: Verifies live responses from:
    - Model Gateway (`http://localhost:8001/health`)
    - Agent Runtime (`http://localhost:8000/health`)
@@ -556,7 +581,7 @@ This single command executes 5 sequential verification steps:
    - Temporal UI (`http://localhost:8233`)
    - Web Product Workbench (`http://localhost:3001`)
    - Marketing Site (`http://localhost:3000`)
-5. **Playwright E2E UI Suite (`cd tests/e2e && pnpm test:e2e`)**: Validates the public gap-scan funnel, trust surface, non-negotiable safety rules, kill-switch visibility, and security headers.
+5. **Playwright E2E UI Suite (`tests/e2e`)**: Validates the public gap-scan funnel, contact form email submission, trust surface, kill-switch visibility, and security headers.
 
 To run individual sub-suites:
 
@@ -579,96 +604,103 @@ cd tests/e2e && pnpm exec playwright test --ui
 
 ---
 
-### 14.2 Live Verification Examples by Architectural Boundary
+### 14.3 Manual End-to-End Testing (Local Docker Stack)
 
-#### Flow A: Public Gap-Scan Assessment Funnel
-Tests the public diagnostic funnel into Supabase and renders the scored DPDPA posture report.
+Follow these manual steps to interactively verify the entire application in your browser.
 
-> [!NOTE]
-> **Schema validation rules (`GapScanSubmitSchema`)**:
-> - `employeeBand`: Must be one of `'1-50' | '51-200' | '201-500' | '501-1000' | '1001-5000' | '5000+'`.
-> - `sessionId`: String between 8 and 128 characters.
+#### Step 1: Public Marketing Funnel & Diagnostic Scan (`http://localhost:3000`)
 
-**Option 1: Marketing Frontend API (`http://localhost:3000/api/gap-scan`)**
-Calculates score and financial exposure, sets secure session cookie `gap_scan_access`, and stores in Supabase:
+1. **Complete the 5-Minute Gap-Scan**:
+   - Open **[http://localhost:3000/#gap-scan](http://localhost:3000/#gap-scan)** in your browser.
+   - **Step 1 (Profile)**: Select *Fintech & Financial Services*, choose *51–200 employees*, and click **Start assessment**.
+   - **Step 2 (Diagnostic)**: Answer the 12 Yes/No questions regarding consent notices, DPO appointment, retention schedules, and grievance redressal.
+   - **Step 3 (Contact Info)**: Enter name, email, and company (e.g. `Aarav Sharma`, `aarav@example.com`, `Aarav Pay`).
+   - **Step 4 (Review & Submit)**: Click **Generate my report**.
+   - **Verification**: The browser redirects to **`/gap-scan/report/<id>`**, displaying:
+     - Overall DPDPA posture score (0–100 scale).
+     - Estimated regulatory financial exposure in INR.
+     - Top 5 remediation priorities ranked by risk weight.
+     - Full table of 12 evaluated controls with domain, severity, and compliance badges.
 
-```bash
-curl -i -X POST http://localhost:3000/api/gap-scan \
-  -H "Content-Type: application/json" \
-  -d '{
-    "sessionId": "11111111-1111-1111-1111-111111111111",
-    "sector": "Fintech & Financial Services",
-    "employeeBand": "51-200",
-    "processesChildrenData": false,
-    "isSdf": false,
-    "answers": {
-      "q1": true, "q2": true, "q3": false, "q4": true,
-      "q5": false, "q6": true, "q7": true, "q8": false,
-      "q9": true, "q10": false, "q11": false, "q12": false
-    },
-    "contactName": "Aarav Sharma",
-    "contactEmail": "aarav@example.com",
-    "contactCompany": "Aarav Pay",
-    "followUpRequested": true,
-    "marketingConsent": false
-  }'
-```
+2. **Test Founder Contact Form (Resend Integration)**:
+   - Open **[http://localhost:3000/contact](http://localhost:3000/contact)**.
+   - Fill in:
+     - **Name**: `Aarav Sharma`
+     - **Email**: `aarav@example.com`
+     - **Company**: `Aarav Payments Pvt Ltd`
+     - **Message**: `We process customer personal data across 4 states and need guidance on multilingual consent notice requirements under DPDPA 2023.`
+   - Click **Send message**.
+   - **Verification**:
+     - Button displays a spinner with **Sending...**.
+     - Form transitions to the confirmation state: *"Message sent successfully. Your message has been sent directly to Axiom Minds Private Limited's founder."*
+     - In terminal, inspect stdout: `docker logs --tail 15 axiom-marketing` to see the formatted delivery log.
 
-*Expected Response (`HTTP 200 OK`)*:
-```json
-{
-  "id": "<report-uuid>",
-  "postureScore": 47.5,
-  "estimatedExposureInr": 153000000,
-  "findingsCount": 12
-}
-```
-
-View the scored report in browser:
-```text
-http://localhost:3000/gap-scan/report/<report-uuid>
-```
-Or use the interactive scan directly on the marketing homepage at `http://localhost:3000/#gap-scan`.
-
-**Option 2: BFF Public API (`http://localhost:4000/public/gap-scan`)**
-Direct public submission endpoint for external integrations:
-
-```bash
-curl -i -X POST http://localhost:4000/public/gap-scan \
-  -H "Content-Type: application/json" \
-  -d '{
-    "sessionId": "demo-session-12345",
-    "sector": "fintech",
-    "employeeBand": "51-200",
-    "processesChildrenData": true,
-    "isSdf": false,
-    "answers": {
-      "notice_multilingual": "no",
-      "dpo_appointed": "yes",
-      "cross_border_transfer": "yes"
-    },
-    "contactName": "Aarav Sharma",
-    "contactEmail": "aarav@example.com",
-    "contactCompany": "Aarav Payments Pvt Ltd",
-    "followUpRequested": true,
-    "marketingConsent": true,
-    "source": "live_demo"
-  }'
-```
-
-*Expected Response (`HTTP 201 Created`)*:
-```json
-{
-  "id": "<record-uuid>"
-}
-```
+3. **Inspect the Agent Roster**:
+   - Open **[http://localhost:3000/agents](http://localhost:3000/agents)**.
+   - Verify all 10 specialized agents are listed with their compliance roles (Drishti, Vibhaag, Parikshan, Saakshi, Sudhaar, Karya, Lekha, Nazar, Prativedan, Sanket).
 
 ---
 
-#### Flow B: Model Gateway PII Redaction & Data Residency
-Verifies that all client personal data stays in `ap-south-1` and third-party model providers never see raw Indian PII (Aadhaar, PAN, phone).
+#### Step 2: Enterprise Workbench & Compliance Console (`http://localhost:3001`)
 
-1. **Send prompt containing raw Indian identifiers**:
+1. **Workspace Overview**:
+   - Open **[http://localhost:3001/workbench](http://localhost:3001/workbench)**.
+   - Verify current posture score, identified gaps count, and active compliance engagement status.
+
+2. **Control Library Browser**:
+   - Open **[http://localhost:3001/controls](http://localhost:3001/controls)**.
+   - Browse the **47 DPDPA Controls** across all 9 statutory domains (`DPDPA-GOV`, `DPDPA-CNS`, `DPDPA-NOT`, `DPDPA-RCD`, `DPDPA-SEC`, `DPDPA-DSR`, `DPDPA-XBD`, `DPDPA-CHL`, `DPDPA-DAT`).
+   - Click any control to view statutory citations, verification guidance, and evidence requirements.
+
+3. **Remediation Plans & Human Approval Gate (ADR-1, BR-2)**:
+   - Open **[http://localhost:3001/plans](http://localhost:3001/plans)**.
+   - Inspect actions in `pending_approval` state.
+   - Verify that actions require both a completed **Dry-Run Output** and a validated **Rollback Definition** before the **Approve** button activates.
+   - Verify the **Emergency Kill Switch** is readily visible on the interface.
+
+4. **Cryptographic Audit Ledger**:
+   - Open **[http://localhost:3001/ledger](http://localhost:3001/ledger)**.
+   - Inspect compliance events: sequence numbers, event types, timestamp, and SHA-256 current hash and previous hash chain linkage.
+
+5. **Evidence Vault**:
+   - Open **[http://localhost:3001/evidence](http://localhost:3001/evidence)**.
+   - Verify tamper-proof evidence items, hash seals, and metadata.
+
+---
+
+#### Step 3: Temporal Durable Workflow Orchestration (`http://localhost:8233`)
+
+1. Open **[http://localhost:8233](http://localhost:8233)** in your browser.
+2. Select the **`default`** namespace.
+3. Inspect background workflows:
+   - Review task queues: `gap_scan_queue`, `agent_execution_queue`.
+   - Click any workflow execution to inspect the event history tree, activity retries, execution times, and payload summaries.
+
+---
+
+#### Step 4: Supabase Studio & Database Admin (`http://127.0.0.1:55323`)
+
+1. Open **[http://127.0.0.1:55323](http://127.0.0.1:55323)** in your browser.
+2. In the **Table Editor**:
+   - `controls`: View 47 immutable controls.
+   - `gap_scan_responses`: View recent public submissions and scoring snapshots.
+   - `audit_ledger`: View sealed compliance records and cryptographic hashes.
+3. In the **SQL Editor**:
+   - Run custom queries against the local schema:
+     ```sql
+     SELECT id, sector, employee_band, posture_score, created_at 
+     FROM gap_scan_responses 
+     ORDER BY created_at DESC 
+     LIMIT 5;
+     ```
+
+---
+
+### 14.4 Backend Guardrails & API Verification (Terminal / Curl)
+
+#### 4.1 Indian PII Redaction & Data Residency (Model Gateway)
+Verifies that client personal data stays in `ap-south-1` and raw Indian identifiers are stripped before reaching external LLMs:
+
 ```bash
 curl -s -X POST http://localhost:8001/v1/chat/completions \
   -H "Content-Type: application/json" \
@@ -677,36 +709,23 @@ curl -s -X POST http://localhost:8001/v1/chat/completions \
     "messages": [
       {
         "role": "user",
-        "content": "Verify consent for Aadhaar 3456 7890 1234, PAN ABCDE1234F, and phone +91 98765 43210."
+        "content": "Verify consent for Aadhaar 3456 7890 1234, PAN ABCDE1234F, and mobile +91 98765 43210."
       }
     ],
     "tenant_id": "00000000-0000-0000-0000-000000000001"
-  }' | jq .
+  }' | jq .choices[0].message.content
 ```
 
-2. **Expected Response**:
-The Model Gateway intercepts and strips identifiers before dispatch, confirming redaction:
-```json
-{
-  "id": "chatcmpl-stub-...",
-  "object": "chat.completion",
-  "choices": [
-    {
-      "message": {
-        "role": "assistant",
-        "content": "Model Gateway received prompt with PII redacted: Verify consent for Aadhaar <AADHAAR_REDACTED>, PAN <PAN_REDACTED>, and phone <PHONE_REDACTED>."
-      }
-    }
-  ]
-}
+*Expected Output*:
+```text
+"Model Gateway received prompt with PII redacted: Verify consent for Aadhaar <AADHAAR_REDACTED>, PAN <PAN_REDACTED>, and mobile <PHONE_REDACTED>."
 ```
 
 ---
 
-#### Flow C: Agent Invocation & Append-Only Audit Ledger
-Verifies Drishti (discovery agent) invocation, immutable SHA-256 hash chaining, and mathematical proof of non-tampering.
+#### 4.2 Agent Invocation & Append-Only Audit Ledger
+Trigger Drishti (Discovery Agent) via the BFF API:
 
-1. **Trigger Drishti discovery run via BFF**:
 ```bash
 curl -s -X POST http://localhost:4000/v1/agents/drishti/run \
   -H "Content-Type: application/json" \
@@ -714,63 +733,91 @@ curl -s -X POST http://localhost:4000/v1/agents/drishti/run \
   -d '{"scope": "full_discovery"}' | jq .
 ```
 
-2. **Verify Ledger SHA-256 Chain in PostgreSQL**:
-Connect to Supabase DB:
+Verify the ledger entry and SHA-256 chain in PostgreSQL:
+
 ```bash
 docker exec -it supabase_db_axiom-proof psql -U postgres -d postgres -c \
-  "SELECT sequence_number, event_type, agent_name, hash, previous_hash FROM audit_ledger WHERE tenant_id = '00000000-0000-0000-0000-000000000001' ORDER BY sequence_number DESC LIMIT 5;"
+  "SELECT sequence_number, event_type, agent_name, hash, previous_hash FROM audit_ledger WHERE tenant_id = '00000000-0000-0000-0000-000000000001' ORDER BY sequence_number DESC LIMIT 3;"
 ```
-
-3. **Mathematically Verify Ledger Integrity**:
-Execute the ledger verification function:
-```sql
-SELECT * FROM verify_ledger('00000000-0000-0000-0000-000000000001');
-```
-*Intact output:* `0 rows returned`. If any byte in the database had been altered, `verify_ledger` would output the exact broken sequence number and computed vs stored hash.
-
-4. **Verify Immutability Enforcement**:
-Attempt a direct update:
-```bash
-docker exec -it supabase_db_axiom-proof psql -U postgres -d postgres -c \
-  "UPDATE audit_ledger SET summary = 'tampered' WHERE sequence_number = 1;"
-```
-*Expected result:* Rejected with PostgreSQL permission denied or trigger error.
 
 ---
 
-#### Flow D: Human Approval Gate & Kill Switch
-Verifies separation of duties (ADR-3) and mandatory human approval (ADR-1, BR-2).
+#### 4.3 Mathematical Proof of Non-Tampering
+Run the built-in cryptographic audit verification function:
 
-1. **Verify Planning Agent (Sudhaar) Cannot Mutate**:
 ```bash
-python3 -c "from axiom.agents.sudhaar import SudhaarAgent; assert SudhaarAgent.can_mutate is False; print('SudhaarAgent.can_mutate is strictly False')"
+docker exec -it supabase_db_axiom-proof psql -U postgres -d postgres -c \
+  "SELECT * FROM verify_ledger('00000000-0000-0000-0000-000000000001');"
 ```
 
-2. **Trigger Dry-Run Remediation**:
-```bash
-curl -s -X POST http://localhost:4000/v1/plans/generate \
-  -H "Content-Type: application/json" \
-  -H "X-Tenant-ID: 00000000-0000-0000-0000-000000000001" \
-  -d '{"control_id": "DPDPA-CNS-001"}' | jq .
+*Expected Output*:
+```text
+ sequence_number | computed_hash | stored_hash | reason 
+-----------------+---------------+-------------+--------
+(0 rows)
 ```
-Notice the plan generates actions in `pending_approval` state with pre-computed dry-run output and rollback definitions.
+*(Zero rows returned confirms the cryptographic hash chain is mathematically unbroken).*
 
-3. **Verify Execution Kill Switch**:
+---
+
+#### 4.4 Immutability Rejection Test (Attempted Tampering)
+Attempt an unauthorized update on an existing ledger entry:
+
+```bash
+docker exec -it supabase_db_axiom-proof psql -U postgres -d postgres -c \
+  "UPDATE audit_ledger SET summary = 'unauthorized modification' WHERE sequence_number = 1;"
+```
+
+*Expected Output*:
+```text
+ERROR:  Audit ledger entries are immutable and cannot be updated
+```
+
+---
+
+#### 4.5 Emergency Kill-Switch Drill
 Trigger an emergency halt across all running agents for a tenant:
+
 ```bash
 curl -s -X POST http://localhost:4000/v1/kill-switch \
   -H "Content-Type: application/json" \
   -H "X-Tenant-ID: 00000000-0000-0000-0000-000000000001" \
-  -d '{"reason": "Emergency drill"}' | jq .
+  -d '{"reason": "Manual compliance test drill"}' | jq .
+```
+
+*Expected Output*:
+```json
+{
+  "status": "halted",
+  "tenant_id": "00000000-0000-0000-0000-000000000001",
+  "active_agents_stopped": 0,
+  "timestamp": "..."
+}
 ```
 
 ---
 
-#### Flow E: Temporal Durable Orchestration UI
-Monitor background agent workflows, retries, and timers:
-- **Temporal Web UI**: `http://localhost:8233`
-- **Temporal Server gRPC**: `localhost:7233`
-- **Namespaces**: `default`
-- **Workflows**: `gap_scan_assessment_workflow`, `agent_execution_workflow`, `continuous_monitoring_workflow`
-- Workflows survive process restarts and node failures while preserving state and idempotency.
+### 14.5 Staging & Production Parity Verification Checklist
+
+Before deploying or promoting builds to private staging or production, execute this pre-flight verification:
+
+1. **Separation of Duties (ADR-3)**:
+   - Ensure `SudhaarAgent.can_mutate == False`.
+   - Verify `KaryaAgent` refuses execution without a signed, scope-bound approval token issued after dry-run and rollback validation.
+2. **Zero Raw PII Egress (ADR-5)**:
+   - Ensure `MODEL_GATEWAY_URL` points to an `ap-south-1` deployment.
+   - Verify outbound prompts strip Indian Aadhaar, PAN, phone numbers, passport, and voter IDs.
+3. **Database Security & RLS**:
+   - Ensure direct INSERT, UPDATE, and DELETE on `audit_ledger` are revoked for application roles.
+   - Verify `append_ledger()` SECURITY DEFINER function is the sole write path.
+   - Ensure Row Level Security (RLS) is enabled and active on all tenant-keyed tables.
+4. **Evidence Vault Immutability**:
+   - In Staging: S3 Object Lock in Governance mode.
+   - In Production: S3 Object Lock in Compliance mode with multi-year retention (preventing deletion even by root).
+5. **Auth & Identity**:
+   - Ensure `AXIOM_E2E_BYPASS_AUTH` is strictly absent or `false`.
+   - Require MFA assurance level 2 for all human approval actions.
+6. **Ledger Integrity Proof**:
+   - Run `SELECT * FROM verify_ledger('<tenant-uuid>');` across all active tenants. Must return 0 broken rows.
+
 
