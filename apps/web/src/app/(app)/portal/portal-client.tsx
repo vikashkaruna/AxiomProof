@@ -113,6 +113,7 @@ export function PortalClient({
   const [copiedHash, setCopiedHash] = useState<string | null>(null);
 
   const handleTenantChange = (slug: string) => {
+    document.cookie = `axiom_active_tenant=${slug}; path=/; max-age=31536000; SameSite=Lax`;
     const params = new URLSearchParams(searchParams.toString());
     params.set('tenant', slug);
     router.push(`/portal?${params.toString()}`);

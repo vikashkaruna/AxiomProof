@@ -1,7 +1,9 @@
 import { redirect } from 'next/navigation';
+import { cookies } from 'next/headers';
 import { createSupabaseServerClient, createSupabaseAdmin } from '@axiom/supabase';
 import { PageHeader, Card, CardContent, Badge, AgentIcon } from '@axiom/ui';
 import { VerifyButton } from './verify-button';
+import { ExportLedgerButton } from './export-ledger-button';
 import { LedgerRefresh } from './ledger-refresh';
 import { LedgerFilters } from './ledger-filters';
 import { LedgerPagination } from './ledger-pagination';
@@ -36,6 +38,7 @@ export default async function LedgerPage({
     q?: string;
     page?: string;
     limit?: string;
+    tenant?: string;
   }>;
 }) {
   const resolvedSearchParams = await searchParams;
@@ -54,6 +57,30 @@ export default async function LedgerPage({
 
   const admin = createSupabaseAdmin();
 
+  // Resolve active tenant from cookie or query param
+  const cookieStore = await cookies();
+  const activeTenantCookie = cookieStore.get('axiom_active_tenant')?.value;
+  const targetTenantSlug = resolvedSearchParams.tenant || activeTenantCookie || 'meridian';
+
+  let { data: activeTenant } = await admin
+    .from('tenants')
+    .select('id, name, slug')
+    .eq('slug', targetTenantSlug)
+    .maybeSingle();
+
+  if (!activeTenant) {
+    const { data: fallbackTenant } = await admin
+      .from('tenants')
+      .select('id, name, slug')
+      .limit(1)
+      .maybeSingle();
+    activeTenant = fallbackTenant;
+  }
+
+  const tenantId = activeTenant?.id || '00000000-0000-0000-0000-000000000001';
+  const tenantName = activeTenant?.name || 'Meridian Pay';
+  const tenantSlug = activeTenant?.slug || 'meridian';
+
   // Pagination parameters
   const page = Math.max(1, parseInt(resolvedSearchParams.page || '1', 10));
   const pageSize = Math.min(100, Math.max(5, parseInt(resolvedSearchParams.limit || '25', 10)));
@@ -61,13 +88,10 @@ export default async function LedgerPage({
   const to = from + pageSize - 1;
 
   // Verify chain integrity
-  const { data: tenants } = await admin.from('tenants').select('id, name').limit(1);
-  const tenantId = tenants?.[0]?.id;
-
   let verification: LedgerVerification = { intact: true };
-  if (tenants && tenants.length > 0 && tenants[0]) {
+  if (tenantId) {
     const { data } = await admin.rpc('verify_ledger', {
-      p_tenant_id: tenants[0].id,
+      p_tenant_id: tenantId,
       p_from_sequence: 1,
     });
     if (data && data.length > 0) {
@@ -82,6 +106,7 @@ export default async function LedgerPage({
   let ledgerQuery = admin
     .from('audit_ledger')
     .select('*', { count: 'exact' })
+    .eq('tenant_id', tenantId)
     .order('sequence_no', { ascending: false });
 
   if (resolvedSearchParams.agent) {
@@ -125,10 +150,14 @@ export default async function LedgerPage({
     admin
       .from('agent_runs')
       .select('*')
+      .eq('tenant_id', tenantId)
       .in('status', ['running', 'queued'])
       .order('started_at', { ascending: false }),
     ledgerQuery,
-    admin.from('audit_ledger').select('*', { count: 'exact', head: true }),
+    admin
+      .from('audit_ledger')
+      .select('*', { count: 'exact', head: true })
+      .eq('tenant_id', tenantId),
   ]);
 
   const activeAgentRuns = activeRunsRes.data ?? [];
@@ -348,13 +377,12 @@ export default async function LedgerPage({
           </span>
         </div>
 
-        <button
-          type="button"
-          onClick={undefined}
-          className="rounded-lg border border-slate-300 bg-white px-3.5 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-50 transition-colors shadow-2xs"
-        >
-          ⬇ Export ledger for auditor
-        </button>
+        <ExportLedgerButton
+          tenantId={tenantId}
+          tenantName={tenantName}
+          tenantSlug={tenantSlug}
+          totalCount={totalCount}
+        />
       </div>
 
       {/* Contextual Filters Bar */}

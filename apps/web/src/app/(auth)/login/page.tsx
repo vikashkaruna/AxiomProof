@@ -3,6 +3,7 @@ import Link from 'next/link';
 import { createSupabaseServerClient } from '@axiom/supabase';
 import { BRAND } from '@axiom/config';
 import { AxiomLogo, Button, Card, Input, Label } from '@axiom/ui';
+import { cookies } from 'next/headers';
 import { loginAction, signupAction } from './actions';
 
 export const dynamic = 'force-dynamic';
@@ -19,19 +20,22 @@ export default async function LoginPage({
   }>;
 }) {
   const resolvedSearchParams = await searchParams;
-
-  // Do not open the login page on standard navigation; take directly to dashboard
-  if (resolvedSearchParams.force !== 'true' && resolvedSearchParams.mode !== 'signup') {
-    redirect(resolvedSearchParams.redirect || '/dashboard');
-  }
+  const cookieStore = await cookies();
+  const isLoggedOut = cookieStore.get('axiom_e2e_logged_out')?.value === 'true';
 
   const supabase = await createSupabaseServerClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
 
-  if (user && resolvedSearchParams.force !== 'true') {
-    redirect(resolvedSearchParams.redirect || '/dashboard');
+  if (
+    user &&
+    !isLoggedOut &&
+    resolvedSearchParams.force !== 'true' &&
+    resolvedSearchParams.redirect &&
+    resolvedSearchParams.redirect !== '/login'
+  ) {
+    redirect(resolvedSearchParams.redirect);
   }
 
   const isSignup = resolvedSearchParams.mode === 'signup';
@@ -47,6 +51,17 @@ export default async function LoginPage({
 
       <Card className="w-full max-w-md">
         <div className="p-6">
+          {user && !isLoggedOut && (
+            <div className="mb-4 rounded-lg border border-teal-200 bg-teal-50 p-3 text-xs text-teal-900 flex items-center justify-between">
+              <span>
+                Signed in as <strong>{user.email}</strong>
+              </span>
+              <Link href="/portal" className="font-semibold underline hover:text-teal-700">
+                Go to Portal →
+              </Link>
+            </div>
+          )}
+
           <h1 className="font-heading text-2xl font-semibold text-indigo-500">
             {isSignup ? 'Create your account' : 'Sign in'}
           </h1>

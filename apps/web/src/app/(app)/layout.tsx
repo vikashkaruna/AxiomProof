@@ -1,3 +1,4 @@
+import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
 import { createSupabaseServerClient } from '@axiom/supabase';
 import { logoutAction } from '../(auth)/login/actions';
@@ -6,6 +7,9 @@ import { AppShell } from './app-shell';
 export const dynamic = 'force-dynamic';
 
 export default async function AppLayout({ children }: { children: React.ReactNode }) {
+  const cookieStore = await cookies();
+  const activeTenantSlug = cookieStore.get('axiom_active_tenant')?.value;
+
   const supabase = await createSupabaseServerClient();
   const {
     data: { user },
@@ -42,7 +46,12 @@ export default async function AppLayout({ children }: { children: React.ReactNod
   });
 
   return (
-    <AppShell user={user} tenants={tenants} logoutAction={logoutAction}>
+    <AppShell
+      user={user}
+      tenants={tenants}
+      activeTenantSlug={activeTenantSlug}
+      logoutAction={logoutAction}
+    >
       {children}
     </AppShell>
   );

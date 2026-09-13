@@ -15,9 +15,13 @@ export async function createSupabaseServerClient() {
     .getAll()
     .find((c) => c.name.startsWith('sb-') && c.name.includes('-auth-token') && c.value.length > 0);
 
+  const isLoggedOut = cookieStore.get('axiom_e2e_logged_out')?.value === 'true';
+
   if (
     !authCookie &&
-    (cookieStore.get('axiom_e2e_bypass')?.value === 'true' || isE2EBypassEnabled())
+    !isLoggedOut &&
+    isE2EBypassEnabled() &&
+    cookieStore.get('axiom_e2e_bypass')?.value === 'true'
   ) {
     return createE2ESupabaseClient();
   }

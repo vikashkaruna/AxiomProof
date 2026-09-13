@@ -40,7 +40,19 @@ async function forward(request: NextRequest, context: RouteContext) {
   const headers = new Headers(request.headers);
   headers.set('authorization', `Bearer ${accessToken}`);
   if (!headers.has('x-tenant-id')) {
-    headers.set('x-tenant-id', '00000000-0000-0000-0000-000000000001');
+    const activeTenantSlug = request.cookies.get('axiom_active_tenant')?.value;
+    const tenantMap: Record<string, string> = {
+      meridian: '00000000-0000-0000-0000-000000000001',
+      aarogya: '00000000-0000-0000-0000-000000000002',
+      streamline: '00000000-0000-0000-0000-000000000003',
+    };
+    const tenantId =
+      (activeTenantSlug && tenantMap[activeTenantSlug]) ||
+      (activeTenantSlug &&
+      /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(activeTenantSlug)
+        ? activeTenantSlug
+        : '00000000-0000-0000-0000-000000000001');
+    headers.set('x-tenant-id', tenantId);
   }
   headers.delete('host');
   headers.delete('content-length');

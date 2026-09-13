@@ -27,12 +27,15 @@ function computeSlaDays(dueBy: string | null | undefined): number {
   return Math.max(0, Math.round((dueTime - now) / (1000 * 60 * 60 * 24)));
 }
 
+import { cookies } from 'next/headers';
+
 export default async function ClientPortalPage({
   searchParams,
 }: {
   searchParams: Promise<{ tenant?: string }>;
 }) {
   const resolvedParams = await searchParams;
+  const cookieStore = await cookies();
   const supabase = await createSupabaseServerClient();
   const {
     data: { user },
@@ -65,11 +68,18 @@ export default async function ClientPortalPage({
     tenants = [DEFAULT_TENANT];
   }
 
-  // 2. Select active tenant (from query param or default to first tenant)
-  const activeTenantSlug = resolvedParams.tenant;
+  // 2. Select active tenant (from query param, then cookie, then default)
+  const savedTenantSlug = cookieStore.get('axiom_active_tenant')?.value;
+  const activeTenantSlug = resolvedParams.tenant || savedTenantSlug;
   const activeTenant: TenantSummary =
     (activeTenantSlug
-      ? tenants.find((t) => t.slug === activeTenantSlug || t.id === activeTenantSlug)
+      ? tenants.find(
+          (t) =>
+            t.slug === activeTenantSlug ||
+            t.id === activeTenantSlug ||
+            (activeTenantSlug === 'meridian' && t.slug === 'demo-client') ||
+            (activeTenantSlug === 'demo-client' && t.slug === 'meridian'),
+        )
       : null) ||
     tenants[0] ||
     DEFAULT_TENANT;
@@ -142,18 +152,35 @@ export default async function ClientPortalPage({
     // Parse engagement & control counts
     const dbEngagement = engagementsRes.data?.[0];
     const totalControls = controlsRes.count || 43;
+    const openFindingsCount = (findingsRes.data || []).filter((f) => f.status === 'open').length;
     const passingControls = Math.max(
-      32,
-      totalControls - ((findingsRes.data || []).filter((f) => f.status === 'open').length || 11),
+      0,
+      totalControls -
+        (openFindingsCount > 0
+          ? openFindingsCount
+          : activeTenant.slug === 'aarogya'
+            ? 17
+            : activeTenant.slug === 'streamline'
+              ? 7
+              : 11),
     );
+
+    const defaultScore =
+      activeTenant.slug === 'aarogya' ? 61 : activeTenant.slug === 'streamline' ? 83 : 74;
+    const defaultExposure =
+      activeTenant.slug === 'aarogya'
+        ? 342000000
+        : activeTenant.slug === 'streamline'
+          ? 61000000
+          : 184000000;
 
     if (dbEngagement) {
       engagement = {
         id: dbEngagement.id,
-        title: dbEngagement.title || 'DPDPA 2023 Statutory Compliance Assessment',
+        title: dbEngagement.title || `${activeTenant.name} DPDPA Assessment`,
         status: dbEngagement.status || 'assessment',
-        postureScore: Number(dbEngagement.posture_score) || 74,
-        estimatedExposureInr: Number(dbEngagement.estimated_exposure_inr) || 184000000,
+        postureScore: Number(dbEngagement.posture_score) || defaultScore,
+        estimatedExposureInr: Number(dbEngagement.estimated_exposure_inr) || defaultExposure,
         startedAt: dbEngagement.started_at,
         passingControls,
         totalControls,
@@ -161,10 +188,15 @@ export default async function ClientPortalPage({
     } else {
       engagement = {
         id: 'eng-active',
-        title: 'DPDPA 2023 Statutory Compliance Assessment',
-        status: 'assessment',
-        postureScore: 74,
-        estimatedExposureInr: 184000000,
+        title: `${activeTenant.name} DPDPA Assessment`,
+        status:
+          activeTenant.slug === 'aarogya'
+            ? 'discovery'
+            : activeTenant.slug === 'streamline'
+              ? 'review'
+              : 'assessment',
+        postureScore: defaultScore,
+        estimatedExposureInr: defaultExposure,
         startedAt: new Date().toISOString(),
         passingControls,
         totalControls,

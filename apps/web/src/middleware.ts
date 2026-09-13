@@ -24,11 +24,14 @@ export async function middleware(request: NextRequest) {
     return NextResponse.next();
   }
 
+  const isLoggedOut = request.cookies.get('axiom_e2e_logged_out')?.value === 'true';
+
   // Playwright and local development exercises protected UI routes without requiring manual login.
   if (
-    process.env.AXIOM_E2E_BYPASS_AUTH === 'true' ||
-    request.headers.get('x-e2e-bypass-auth') === 'true' ||
-    request.cookies.get('axiom_e2e_bypass')?.value === 'true'
+    !isLoggedOut &&
+    (process.env.AXIOM_E2E_BYPASS_AUTH === 'true' ||
+      request.headers.get('x-e2e-bypass-auth') === 'true' ||
+      request.cookies.get('axiom_e2e_bypass')?.value === 'true')
   ) {
     return NextResponse.next();
   }

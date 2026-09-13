@@ -8,17 +8,185 @@ export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url);
     const admin = createSupabaseAdmin();
 
-    const page = Math.max(1, parseInt(searchParams.get('page') || '1', 10));
-    const limit = Math.min(100, Math.max(5, parseInt(searchParams.get('limit') || '25', 10)));
+    const isExport = searchParams.get('export') === 'true';
     const agent = searchParams.get('agent');
     const action = searchParams.get('action');
     const result = searchParams.get('result');
     const q = searchParams.get('q')?.trim();
 
+    // Resolve tenant identifier from query params, headers, or active tenant cookie
+    const requestedTenantId =
+      searchParams.get('tenantId') ||
+      searchParams.get('tenant_id') ||
+      request.headers.get('x-tenant-id') ||
+      request.cookies.get('axiom_active_tenant')?.value;
+
+    let targetTenant: { id: string; name: string; slug: string } | null = null;
+    if (requestedTenantId) {
+      const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(
+        requestedTenantId,
+      );
+      const query = admin.from('tenants').select('id, name, slug');
+      const { data } = isUuid
+        ? await query.eq('id', requestedTenantId).maybeSingle()
+        : await query.eq('slug', requestedTenantId).maybeSingle();
+      if (data) {
+        targetTenant = data;
+      }
+    }
+
+    if (!targetTenant) {
+      const { data } = await admin.from('tenants').select('id, name, slug').limit(1).maybeSingle();
+      if (data) {
+        targetTenant = data;
+      }
+    }
+
+    // ─── AUDITOR EXPORT HANDLER ──────────────────────────────────────────────
+    if (isExport) {
+      let exportQuery = admin
+        .from('audit_ledger')
+        .select('*')
+        .order('sequence_no', { ascending: true })
+        .limit(5000);
+
+      if (targetTenant?.id) {
+        exportQuery = exportQuery.eq('tenant_id', targetTenant.id);
+      }
+
+      if (agent) {
+        const val = agent.toLowerCase();
+        if (val === 'human' || val === 'system') {
+          exportQuery = exportQuery.eq('actor_type', val);
+        } else {
+          exportQuery = exportQuery.eq('actor_id', val);
+        }
+      }
+
+      if (result) {
+        exportQuery = exportQuery.eq('result', result.toLowerCase());
+      }
+
+      if (action) {
+        exportQuery = exportQuery.ilike('action_type', `%${action.toLowerCase()}%`);
+      }
+
+      if (q) {
+        if (/^\d+$/.test(q)) {
+          exportQuery = exportQuery.eq('sequence_no', parseInt(q, 10));
+        } else if (/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(q)) {
+          exportQuery = exportQuery.eq('correlation_id', q);
+        } else {
+          exportQuery = exportQuery.or(
+            `target_ref.ilike.%${q}%,action_type.ilike.%${q}%,actor_id.ilike.%${q}%`,
+          );
+        }
+      }
+
+      const { data: records, error: exportError } = await exportQuery;
+      if (exportError) {
+        return NextResponse.json({ error: exportError.message }, { status: 500 });
+      }
+
+      // Verify chain integrity for the target tenant
+      let chainIntact = true;
+      let firstBreak = null;
+      if (targetTenant?.id) {
+        const { data: verifyData } = await admin.rpc('verify_ledger', {
+          p_tenant_id: targetTenant.id,
+          p_from_sequence: 1,
+        });
+        if (verifyData && verifyData.length > 0) {
+          chainIntact = false;
+          firstBreak = verifyData[0];
+        }
+      }
+
+      const entriesList = records || [];
+      const genesisRecord = entriesList[0];
+      const headRecord = entriesList[entriesList.length - 1];
+
+      const auditBundle = {
+        export_metadata: {
+          standard: 'Digital Personal Data Protection Act (DPDPA), 2023 — Statutory Audit Trail',
+          legal_framework: 'DPDPA 2023 § 8(5) & ISO/IEC 27001:2022 Control A.8.15',
+          cryptographic_specification: 'SHA-256 genesis-linked append-only ledger (ADR-5)',
+          platform: 'Axiom Proof — Agentic DPDPA Compliance Platform',
+          exported_at: new Date().toISOString(),
+          tenant: {
+            id: targetTenant?.id || '00000000-0000-0000-0000-000000000001',
+            name: targetTenant?.name || 'Organization',
+            slug: targetTenant?.slug || 'org',
+          },
+          chain_integrity: {
+            status: chainIntact ? 'intact' : 'broken',
+            verified: chainIntact,
+            total_entries_verified: entriesList.length,
+            first_break: firstBreak,
+            genesis_sequence: genesisRecord?.sequence_no ?? 1,
+            head_sequence: headRecord?.sequence_no ?? 0,
+            genesis_hash: genesisRecord?.entry_hash || genesisRecord?.prev_entry_hash || null,
+            head_hash: headRecord?.entry_hash || null,
+          },
+          total_records: entriesList.length,
+        },
+        records: entriesList.map((e) => ({
+          sequence_no: e.sequence_no,
+          occurred_at: e.occurred_at,
+          actor: {
+            id: e.actor_id,
+            type: e.actor_type,
+            agent_version: e.agent_version || null,
+            model_id: e.model_id || null,
+          },
+          action: {
+            type: e.action_type,
+            target_ref: e.target_ref,
+            result: e.result,
+          },
+          cryptography: {
+            prev_hash: e.prev_entry_hash || e.prev_hash || null,
+            entry_hash: e.entry_hash,
+            input_hash: e.input_hash || null,
+            output_hash: e.output_hash || null,
+            prompt_hash: e.prompt_hash || null,
+          },
+          governance: {
+            correlation_id: e.correlation_id,
+            approval_token_id: e.approval_token_id || null,
+            approver_id: e.approver_id || null,
+            pre_state_ref: e.pre_state_ref || null,
+            post_state_ref: e.post_state_ref || null,
+          },
+          detail: e.detail,
+        })),
+      };
+
+      const dateStr = new Date().toISOString().slice(0, 10);
+      const filename = `axiom-proof-audit-ledger-${targetTenant?.slug || 'meridian'}-${dateStr}.json`;
+
+      return new NextResponse(JSON.stringify(auditBundle, null, 2), {
+        status: 200,
+        headers: {
+          'Content-Type': 'application/json',
+          'Content-Disposition': `attachment; filename="${filename}"`,
+          'Cache-Control': 'no-store',
+        },
+      });
+    }
+
+    // ─── PAGINATED QUERY HANDLER ─────────────────────────────────────────────
+    const page = Math.max(1, parseInt(searchParams.get('page') || '1', 10));
+    const limit = Math.min(100, Math.max(5, parseInt(searchParams.get('limit') || '25', 10)));
+
     let query = admin
       .from('audit_ledger')
       .select('*', { count: 'exact' })
       .order('sequence_no', { ascending: false });
+
+    if (targetTenant?.id) {
+      query = query.eq('tenant_id', targetTenant.id);
+    }
 
     if (agent) {
       const val = agent.toLowerCase();

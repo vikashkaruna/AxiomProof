@@ -28,15 +28,18 @@ on conflict (version) do nothing;
 --   2. Then run:
 --      update public.users set is_axiom_internal = true where email = 'founder@axiomminds.ai';
 
--- A demo tenant for local exploration
-insert into public.tenants (id, slug, name, tier)
-values (
-  '00000000-0000-0000-0000-000000000001',
-  'demo-client',
-  'Demo Client (Acme Fintech Pvt Ltd)',
-  'growth'
-)
-on conflict (id) do nothing;
+-- Demo tenants for local exploration & multi-tenant testing
+insert into public.tenants (id, slug, name, tier, is_sdf, processes_health_data)
+values
+  ('00000000-0000-0000-0000-000000000001', 'meridian', 'Meridian Pay (Fintech)', 'growth', true, false),
+  ('00000000-0000-0000-0000-000000000002', 'aarogya', 'Aarogya Health (Healthcare)', 'enterprise', true, true),
+  ('00000000-0000-0000-0000-000000000003', 'streamline', 'Streamline SaaS (B2B SaaS)', 'essential', false, false)
+on conflict (id) do update set
+  name = EXCLUDED.name,
+  slug = EXCLUDED.slug,
+  tier = EXCLUDED.tier,
+  is_sdf = EXCLUDED.is_sdf,
+  processes_health_data = EXCLUDED.processes_health_data;
 
 -- A demo founder user for dev / e2e exploration
 insert into auth.users (id, instance_id, aud, role, email, encrypted_password, email_confirmed_at, created_at, updated_at, raw_app_meta_data, raw_user_meta_data, is_super_admin)
@@ -66,13 +69,86 @@ values (
 on conflict (id) do nothing;
 
 insert into public.tenant_users (tenant_id, user_id, role)
-values (
-  '00000000-0000-0000-0000-000000000001',
-  '00000000-0000-0000-0000-000000000001',
-  'owner'
-)
+values
+  ('00000000-0000-0000-0000-000000000001', '00000000-0000-0000-0000-000000000001', 'owner'),
+  ('00000000-0000-0000-0000-000000000002', '00000000-0000-0000-0000-000000000001', 'owner'),
+  ('00000000-0000-0000-0000-000000000003', '00000000-0000-0000-0000-000000000001', 'owner')
 on conflict (tenant_id, user_id) do nothing;
 
 -- Public gap-scan submissions are stored without a tenant; the control
 -- library is the only data that lives outside tenant isolation at the
 -- schema level.
+
+do $$
+begin
+  if not exists (select 1 from public.audit_ledger where tenant_id = '00000000-0000-0000-0000-000000000002') then
+    perform public.append_ledger(
+      '00000000-0000-0000-0000-000000000002'::uuid,
+      gen_random_uuid(),
+      'agent'::actor_type,
+      'drishti',
+      '1.0.0',
+      'anthropic.claude-3-sonnet',
+      'prompt-hash-aarogya-1',
+      'discovery.batch.completed'::ledger_action_type,
+      'pg.prod · ehr_records',
+      'input-hash-1',
+      'output-hash-1',
+      null, null, null, null,
+      'success'::ledger_result,
+      '{"discovered": 142000, "health_data_flag": true}'::jsonb
+    );
+    perform public.append_ledger(
+      '00000000-0000-0000-0000-000000000002'::uuid,
+      gen_random_uuid(),
+      'agent'::actor_type,
+      'parikshan',
+      '1.0.0',
+      'anthropic.claude-3-sonnet',
+      'prompt-hash-aarogya-2',
+      'assessment.report.generated'::ledger_action_type,
+      'control.dpdpa.sec8.health',
+      'input-hash-2',
+      'output-hash-2',
+      null, null, null, null,
+      'success'::ledger_result,
+      '{"controls_assessed": 24, "findings_count": 17}'::jsonb
+    );
+  end if;
+
+  if not exists (select 1 from public.audit_ledger where tenant_id = '00000000-0000-0000-0000-000000000003') then
+    perform public.append_ledger(
+      '00000000-0000-0000-0000-000000000003'::uuid,
+      gen_random_uuid(),
+      'agent'::actor_type,
+      'drishti',
+      '1.0.0',
+      'anthropic.claude-3-sonnet',
+      'prompt-hash-streamline-1',
+      'discovery.batch.completed'::ledger_action_type,
+      's3.prod · billing_exports',
+      'input-hash-3',
+      'output-hash-3',
+      null, null, null, null,
+      'success'::ledger_result,
+      '{"discovered": 48000, "b2b_saas": true}'::jsonb
+    );
+    perform public.append_ledger(
+      '00000000-0000-0000-0000-000000000003'::uuid,
+      gen_random_uuid(),
+      'agent'::actor_type,
+      'parikshan',
+      '1.0.0',
+      'anthropic.claude-3-sonnet',
+      'prompt-hash-streamline-2',
+      'assessment.report.generated'::ledger_action_type,
+      'control.dpdpa.sec6.notice',
+      'input-hash-4',
+      'output-hash-4',
+      null, null, null, null,
+      'success'::ledger_result,
+      '{"controls_assessed": 20, "findings_count": 7}'::jsonb
+    );
+  end if;
+end $$;
+

@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import { AxiomLogo } from '@axiom/ui';
 import { SidebarAgentPanel } from './sidebar-agent-panel';
 
@@ -91,6 +91,7 @@ export const APP_NAV_GROUPS: NavGroup[] = [
 export interface TenantOption {
   id: string;
   name: string;
+  slug?: string;
   sector: string;
   mark: string;
   color: string;
@@ -99,10 +100,11 @@ export interface TenantOption {
   env: string;
 }
 
-const DEFAULT_TENANTS: TenantOption[] = [
+export const DEFAULT_TENANTS: TenantOption[] = [
   {
-    id: 'meridian',
+    id: '00000000-0000-0000-0000-000000000001',
     name: 'Meridian Pay',
+    slug: 'meridian',
     sector: 'Fintech',
     mark: 'MP',
     color: '#1E2A4A',
@@ -111,8 +113,9 @@ const DEFAULT_TENANTS: TenantOption[] = [
     env: 'Production',
   },
   {
-    id: 'aarogya',
+    id: '00000000-0000-0000-0000-000000000002',
     name: 'Aarogya Health',
+    slug: 'aarogya',
     sector: 'Healthcare',
     mark: 'AH',
     color: '#0FB5A5',
@@ -121,8 +124,9 @@ const DEFAULT_TENANTS: TenantOption[] = [
     env: 'Production',
   },
   {
-    id: 'streamline',
+    id: '00000000-0000-0000-0000-000000000003',
     name: 'Streamline SaaS',
+    slug: 'streamline',
     sector: 'B2B SaaS',
     mark: 'SS',
     color: '#C9A227',
@@ -132,6 +136,12 @@ const DEFAULT_TENANTS: TenantOption[] = [
   },
 ];
 
+function setActiveTenantCookie(slug: string) {
+  if (typeof document !== 'undefined') {
+    document.cookie = `axiom_active_tenant=${slug}; path=/; max-age=31536000; SameSite=Lax`;
+  }
+}
+
 interface AppShellProps {
   children: React.ReactNode;
   user: {
@@ -140,20 +150,53 @@ interface AppShellProps {
     user_metadata?: { full_name?: string };
   };
   tenants: Array<{ id: string; name: string; slug: string; role: string }>;
+  activeTenantSlug?: string;
   logoutAction: () => Promise<void>;
 }
 
-export function AppShell({ children, user, tenants, logoutAction }: AppShellProps) {
+export function AppShell({
+  children,
+  user,
+  tenants,
+  activeTenantSlug,
+  logoutAction,
+}: AppShellProps) {
+  const router = useRouter();
   const pathname = usePathname();
   const [killOn, setKillOn] = useState(false);
   const [tenantsOpen, setTenantsOpen] = useState(false);
 
-  // Active tenant
+  // Active tenant resolution: activeTenantSlug cookie > user tenants > default tenants
+  const matchedFromSlug = activeTenantSlug
+    ? DEFAULT_TENANTS.find(
+        (t) =>
+          t.slug === activeTenantSlug ||
+          t.id === activeTenantSlug ||
+          (activeTenantSlug === 'meridian' && t.id === '00000000-0000-0000-0000-000000000001') ||
+          (activeTenantSlug === 'demo-client' && t.id === '00000000-0000-0000-0000-000000000001'),
+      ) ||
+      tenants
+        .filter((t) => t.slug === activeTenantSlug || t.id === activeTenantSlug)
+        .map((t) => ({
+          id: t.id,
+          name: t.name,
+          slug: t.slug,
+          sector: 'Enterprise',
+          mark: t.name.slice(0, 2).toUpperCase(),
+          color: '#1E2A4A',
+          employees: 500,
+          score: 74,
+          env: 'Production',
+        }))[0]
+    : undefined;
+
   const initialTenant: TenantOption =
-    tenants.length > 0 && tenants[0]
+    matchedFromSlug ||
+    (tenants.length > 0 && tenants[0]
       ? {
           id: tenants[0].id,
           name: tenants[0].name,
+          slug: tenants[0].slug,
           sector: 'Enterprise',
           mark: tenants[0].name.slice(0, 2).toUpperCase(),
           color: '#1E2A4A',
@@ -161,9 +204,21 @@ export function AppShell({ children, user, tenants, logoutAction }: AppShellProp
           score: 74,
           env: 'Production',
         }
-      : DEFAULT_TENANTS[0]!;
+      : DEFAULT_TENANTS[0]!);
 
   const [selectedTenant, setSelectedTenant] = useState<TenantOption>(initialTenant);
+
+  const handleSelectTenant = (t: TenantOption) => {
+    setSelectedTenant(t);
+    setTenantsOpen(false);
+    const targetSlug = t.slug || t.id;
+    setActiveTenantCookie(targetSlug);
+    if (pathname === '/portal') {
+      router.push(`/portal?tenant=${targetSlug}`);
+    } else {
+      router.refresh();
+    }
+  };
 
   // Find active group and item for breadcrumb
   let activeBreadcrumb = 'Overview';
@@ -307,10 +362,7 @@ export function AppShell({ children, user, tenants, logoutAction }: AppShellProp
                 {DEFAULT_TENANTS.map((t) => (
                   <div
                     key={t.id}
-                    onClick={() => {
-                      setSelectedTenant(t);
-                      setTenantsOpen(false);
-                    }}
+                    onClick={() => handleSelectTenant(t)}
                     className={`flex items-center gap-2.5 rounded-lg p-2 cursor-pointer transition-colors ${
                       t.id === selectedTenant.id ? 'bg-[#F4F6F8]' : 'hover:bg-[#F4F6F8]'
                     }`}
