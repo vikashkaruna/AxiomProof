@@ -25,7 +25,19 @@ const ALL_AGENTS: AgentInfo[] = [
   { name: 'sanket', persona: 'Market Signal', autonomy: 'L1', description: 'Breach telemetry & market signals' },
 ];
 
-export function SidebarAgentPanel() {
+export interface SidebarAgentPanelProps {
+  transparent?: boolean;
+  systemMessage?: string;
+  className?: string;
+  showSystemMessage?: boolean;
+}
+
+export function SidebarAgentPanel({
+  transparent = true,
+  systemMessage,
+  className = '',
+  showSystemMessage = true,
+}: SidebarAgentPanelProps = {}) {
   const [activeAgentNames, setActiveAgentNames] = useState<Set<string>>(new Set());
   const [demoMode, setDemoMode] = useState<'live' | 'thinking' | 'working'>('live');
   const [selectedAgent, setSelectedAgent] = useState<AgentInfo | null>(null);
@@ -72,16 +84,31 @@ export function SidebarAgentPanel() {
     });
   };
 
+  const activeCount = activeAgentNames.size;
+  const currentBroadcast =
+    systemMessage ||
+    (demoMode === 'working'
+      ? 'All agents executing in parallel · ap-south-1'
+      : demoMode === 'thinking'
+        ? 'Agents deliberating statutory controls…'
+        : activeCount > 0
+          ? `${activeCount} agent(s) active on task · live`
+          : 'Agents standing by · ap-south-1');
+
   return (
-    <div className="border-t border-slate-200 bg-white/50 p-3 select-none">
+    <div
+      className={`border-t border-white/10 p-3 select-none transition-colors ${
+        transparent ? 'bg-transparent' : 'bg-white/50 backdrop-blur-sm'
+      } ${className}`}
+    >
       {/* Panel Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-1.5">
-          <p className="text-[10px] font-semibold uppercase tracking-wider text-slate-500">
+          <p className="text-[10px] font-semibold uppercase tracking-wider text-white/60">
             Agents ({ALL_AGENTS.length})
           </p>
-          {activeAgentNames.size > 0 && demoMode === 'live' && (
-            <span className="flex h-1.5 w-1.5 rounded-full bg-teal-500 animate-ping" />
+          {(activeCount > 0 || demoMode !== 'live') && (
+            <span className="flex h-1.5 w-1.5 rounded-full bg-[#0FB5A5] animate-ping" />
           )}
         </div>
 
@@ -92,8 +119,8 @@ export function SidebarAgentPanel() {
           title="Click to cycle animation preview modes (Live / Thinking / Working)"
           className={`rounded px-1.5 py-0.5 text-[9px] font-medium transition-colors border ${
             demoMode !== 'live'
-              ? 'border-indigo-300 bg-indigo-50 text-indigo-700 font-semibold'
-              : 'border-slate-200 bg-mist-100 text-slate-600 hover:bg-mist-200'
+              ? 'border-teal-400/40 bg-teal-500/20 text-teal-300 font-semibold'
+              : 'border-white/10 bg-white/5 text-white/70 hover:bg-white/10 hover:text-white'
           }`}
         >
           {demoMode === 'live'
@@ -119,8 +146,8 @@ export function SidebarAgentPanel() {
               title={`${agent.name} (${agent.persona}) · Status: ${state}`}
               className={`group relative flex flex-col items-center justify-center rounded-lg p-1 transition-all ${
                 isSelected
-                  ? 'bg-mist-200 ring-1 ring-slate-400'
-                  : 'hover:bg-mist-100'
+                  ? 'bg-white/15 ring-1 ring-white/25'
+                  : 'hover:bg-white/10'
               }`}
             >
               <AgentIcon
@@ -132,7 +159,9 @@ export function SidebarAgentPanel() {
               />
               <span
                 className="mt-1 truncate text-[9px] font-medium capitalize"
-                style={{ color: state === 'working' ? accent : '#64748B' }}
+                style={{
+                  color: state === 'working' ? accent : isSelected ? '#FFFFFF' : 'rgba(255, 255, 255, 0.65)',
+                }}
               >
                 {agent.name}
               </span>
@@ -141,37 +170,64 @@ export function SidebarAgentPanel() {
         })}
       </div>
 
+      {/* System-wide Agent Message / Status Bar */}
+      {showSystemMessage && (
+        <div className="mt-2.5 flex items-center gap-1.5 rounded-lg border border-white/10 bg-white/[0.04] px-2 py-1 text-[9px] text-white/80 backdrop-blur-sm">
+          <span
+            className={`h-1.5 w-1.5 shrink-0 rounded-full ${
+              activeCount > 0 || demoMode !== 'live'
+                ? 'bg-teal-400 animate-pulse'
+                : 'bg-[#C9A227]'
+            }`}
+          />
+          <span className="truncate font-mono tracking-tight text-white/70">
+            {currentBroadcast}
+          </span>
+        </div>
+      )}
+
       {/* Interactive Detail Inspector Popover */}
       {selectedAgent && (
-        <div className="mt-2.5 rounded-lg border border-slate-200 bg-white p-2.5 shadow-md">
+        <div className="mt-2.5 rounded-lg border border-white/15 bg-[#182238]/95 backdrop-blur-md p-2.5 shadow-2xl text-white">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-1.5">
               <span
                 className="h-2 w-2 rounded-full"
                 style={{ backgroundColor: agentAccents[selectedAgent.name] }}
               />
-              <span className="font-heading text-xs font-semibold capitalize text-slate-900">
+              <span className="font-heading text-xs font-semibold capitalize text-white">
                 {selectedAgent.name}
               </span>
-              <span className="text-[10px] text-slate-500">· {selectedAgent.persona}</span>
+              <span className="text-[10px] text-white/60">· {selectedAgent.persona}</span>
             </div>
             <button
               type="button"
               onClick={() => setSelectedAgent(null)}
-              className="text-[11px] text-slate-400 hover:text-slate-700"
+              className="text-[11px] text-white/40 hover:text-white transition-colors"
             >
               ✕
             </button>
           </div>
 
-          <p className="mt-1 text-[11px] text-slate-600 leading-tight">
+          <p className="mt-1 text-[11px] text-white/75 leading-tight">
             {selectedAgent.description}
           </p>
 
-          <div className="mt-2 flex items-center justify-between border-t border-slate-100 pt-1.5 text-[10px]">
-            <span className="text-slate-500">Autonomy: <strong className="text-indigo-600">{selectedAgent.autonomy}</strong></span>
-            <span className="font-medium capitalize text-slate-700">
-              State: <strong className={getAgentState(selectedAgent.name) === 'working' ? 'text-teal-600' : 'text-slate-600'}>{getAgentState(selectedAgent.name)}</strong>
+          <div className="mt-2 flex items-center justify-between border-t border-white/10 pt-1.5 text-[10px]">
+            <span className="text-white/60">
+              Autonomy: <strong className="text-teal-300">{selectedAgent.autonomy}</strong>
+            </span>
+            <span className="font-medium capitalize text-white/80">
+              State:{' '}
+              <strong
+                className={
+                  getAgentState(selectedAgent.name) === 'working'
+                    ? 'text-teal-300'
+                    : 'text-white/70'
+                }
+              >
+                {getAgentState(selectedAgent.name)}
+              </strong>
             </span>
           </div>
         </div>
