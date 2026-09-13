@@ -1367,3 +1367,281 @@ The Client Portal (`http://localhost:3001/portal`) provides an executive- and au
   - **Incident & Breach Radar**: Live verification of 0 open breaches and CERT-In 6h / DPB 72h tabletop drill readiness.
   - **Immutable Audit Ledger**: Append-only cryptographic ledger sequence events (#92, #91, #90...) for the organization.
 - **Design System Parity**: Features the authoritative Deep Indigo Hero Banner (`from-[#1E2A4A] via-[#1E2A4A] to-[#243356]`), Indic subtitle (`ग्राहक पोर्टल`), agent attribution (`Agent · Saakshi + Sudhaar`), and 6 live KPI cards.
+
+---
+
+### 14.13 End-to-End Operational Audit Workflow (Local, On-Premise & Production)
+
+This section details the canonical 13-step operational procedure for executing a complete statutory DPDPA compliance audit in an on-premise or production-like environment from local.
+
+#### Execution Architecture: Dual-Track
+
+Every step can be executed interactively via the **Web Console (UI)** at `http://localhost:3001` or automated via the **BFF Gateway / CLI (API)** at `http://localhost:4000`.
+
+```
+[1. Auth Login] ──> [2. Tenant Select] ──> [3. Open Workbench] ──> [4. Create Engagement]
+                                                                             │
+┌────────────────────────────────────────────────────────────────────────────┘
+▼
+[5 & 6. Drishti Discovery] ──> [7. Vibhaag Classification] ──> [8. Parikshan Assessment]
+                                                                             │
+┌────────────────────────────────────────────────────────────────────────────┘
+▼
+[9. Sudhaar Remediation Plan] ──> [10. Review Blast Radius & Rollback]
+                                                 │
+┌────────────────────────────────────────────────┘
+▼
+[11. Approval Console (Token Issue)] ──> [12. Karya Execute & Ledger Verify]
+                                                         │
+┌────────────────────────────────────────────────────────┘
+▼
+[13. Saakshi WORM Proof & Prativedan Board Report] ──> [Surveillance in Portal]
+```
+
+---
+
+#### Detailed Step-by-Step Execution Guide
+
+##### Step 1: Create or Log into a Supabase Auth User
+- **Web UI**: Navigate to `http://localhost:3001/login`, input compliance officer credentials (`dpo@enterprise.co.in` / `AxiomSecureAudit2026!`), and sign in.
+- **CLI / cURL**:
+  ```bash
+  # Create user in GoTrue Auth
+  curl -s -X POST "http://localhost:55321/auth/v1/admin/users" \
+    -H "apikey: $SUPABASE_SERVICE_KEY" \
+    -H "Authorization: Bearer $SUPABASE_SERVICE_KEY" \
+    -H "Content-Type: application/json" \
+    -d '{
+      "email": "dpo@enterprise.co.in",
+      "password": "AxiomSecureAudit2026!",
+      "email_confirm": true,
+      "user_metadata": { "full_name": "Chief Compliance Officer" }
+    }'
+
+  # Obtain user JWT
+  export JWT=$(curl -s -X POST "http://localhost:55321/auth/v1/token?grant_type=password" \
+    -H "apikey: $SUPABASE_ANON_KEY" \
+    -H "Content-Type: application/json" \
+    -d '{"email":"dpo@enterprise.co.in","password":"AxiomSecureAudit2026!"}' | jq -r .access_token)
+  ```
+
+##### Step 2: Create or Select a Tenant
+- **Web UI**: Use the TopBar organization switcher or `http://localhost:3001/portal?tenant=demo-client` to bind to the client organization.
+- **CLI / SQL**: Ensure user is bound to the target tenant in `public.tenant_users` with role `owner` or `approver`:
+  ```bash
+  docker exec -i supabase_db_axiom-proof psql -U postgres -d postgres -c "
+    INSERT INTO public.users (id, email, full_name, is_axiom_internal)
+    SELECT id, email, raw_user_meta_data->>'full_name', true FROM auth.users WHERE email = 'dpo@enterprise.co.in'
+    ON CONFLICT (id) DO NOTHING;
+
+    INSERT INTO public.tenant_users (tenant_id, user_id, role)
+    VALUES ('00000000-0000-0000-0000-000000000001', (SELECT id FROM auth.users WHERE email = 'dpo@enterprise.co.in'), 'owner')
+    ON CONFLICT (tenant_id, user_id) DO NOTHING;
+  "
+  ```
+
+##### Step 3: Open the Web Workbench
+- **Web UI**: Navigate to `http://localhost:3001/workbench`.
+- **Functionality**:
+  - Displays the 10-agent fleet status (**10/10 Online**).
+  - Displays the active environment (`Production On-Premise ap-south-1`).
+  - Allows direct prompt testing, autonomy ceiling inspection, and live telemetry streaming.
+- **CLI / API**: Verify BFF and Agent Runtime readiness:
+  ```bash
+  curl -s http://localhost:4000/ready | jq .
+  curl -s http://localhost:8000/ready | jq .
+  ```
+
+##### Step 4: Create an Engagement
+- **Web UI**: Navigate to `http://localhost:3001/assessment` or click **New Assessment**.
+- **CLI / cURL**:
+  ```bash
+  export ENG_RES=$(curl -s -X POST "http://localhost:4000/v1/engagements" \
+    -H "Authorization: Bearer $JWT" \
+    -H "X-Tenant-Id: 00000000-0000-0000-0000-000000000001" \
+    -H "Content-Type: application/json" \
+    -d '{
+      "libraryVersion": "0.1.0",
+      "title": "DPDPA 2023 Statutory Compliance Assessment"
+    }')
+  export ENG_ID=$(echo "$ENG_RES" | jq -r '.id // "574bfb7d-9c19-4aa1-afef-b4df0283f6c0"')
+  ```
+
+##### Step 5 & 6: Provide Discovery Interview & Run Drishti Discovery
+- **Web UI**: In `http://localhost:3001/discovery`, trigger **⚡ Run Discovery Scan**.
+- **Statutory Scope**: Sweeps datastores, inventories tables/buckets, samples schema names, and evaluates geographic residency under DPDPA §16 (warning if any non-Indian region is detected).
+- **CLI / cURL**:
+  ```bash
+  curl -s -X POST "http://localhost:4000/v1/agents/drishti/run" \
+    -H "Authorization: Bearer $JWT" \
+    -H "X-Tenant-Id: 00000000-0000-0000-0000-000000000001" \
+    -H "Content-Type: application/json" \
+    -d "{
+      \"engagement_id\": \"$ENG_ID\",
+      \"systems\": [
+        {
+          \"name\": \"production-postgres-core\",
+          \"type\": \"postgres\",
+          \"description\": \"Core banking customer ledger in ap-south-1\",
+          \"hosts_personal_data\": true,
+          \"region\": \"ap-south-1\",
+          \"data_categories\": [\"identity\", \"contact\", \"financial\", \"government_id\"]
+        },
+        {
+          \"name\": \"analytics-lake-s3\",
+          \"type\": \"s3\",
+          \"description\": \"Data lake storing customer logs and interaction telemetry\",
+          \"hosts_personal_data\": true,
+          \"region\": \"ap-south-1\",
+          \"data_categories\": [\"contact\", \"behavioural\"]
+        }
+      ]
+    }" | jq .
+  ```
+
+##### Step 7: Run Vibhaag Classification
+- **Web UI**: In `http://localhost:3001/classification`, click **⚡ Run Classification Scan**.
+- **Statutory Scope**: Maps discovered fields into 9 statutory categories (e.g. Aadhaar/PAN to `government_id`, bank accounts to `financial`).
+- **CLI / cURL**:
+  ```bash
+  curl -s -X POST "http://localhost:4000/v1/agents/vibhaag/run" \
+    -H "Authorization: Bearer $JWT" \
+    -H "X-Tenant-Id: 00000000-0000-0000-0000-000000000001" \
+    -H "Content-Type: application/json" \
+    -d "{
+      \"engagement_id\": \"$ENG_ID\",
+      \"field_hints\": {
+        \"production-postgres-core\": {
+          \"aadhaar_num\": { \"category\": \"government_id\", \"sensitivity\": \"high\" },
+          \"pan_num\": { \"category\": \"government_id\", \"sensitivity\": \"high\" },
+          \"phone_number\": { \"category\": \"contact\", \"sensitivity\": \"medium\" },
+          \"bank_acc_no\": { \"category\": \"financial\", \"sensitivity\": \"high\" }
+        }
+      }
+    }" | jq .
+  ```
+
+##### Step 8: Run Parikshan Assessment against the Control Library
+- **Web UI**: In `http://localhost:3001/assessment`, run the 5-stage assessment pipeline runner. Review the 46-control score, posture ratio (e.g. 74/100), and statutory penalty exposure range (₹18–46 Cr).
+- **CLI / cURL**:
+  ```bash
+  curl -s -X POST "http://localhost:4000/v1/agents/parikshan/run" \
+    -H "Authorization: Bearer $JWT" \
+    -H "X-Tenant-Id: 00000000-0000-0000-0000-000000000001" \
+    -H "Content-Type: application/json" \
+    -d "{
+      \"engagement_id\": \"$ENG_ID\",
+      \"scope\": \"statutory_46_controls\"
+    }" | jq .
+  ```
+
+##### Step 9: Generate a Plan with Sudhaar
+- **Web UI**: In `http://localhost:3001/plans`, view generated remediation plans (`PLAN-118`).
+- **Architectural Principle (ADR-3)**: Sudhaar is read-only (`can_mutate = False`). It proposes typed remediation actions, calculates blast radii, and generates rollback definitions, but cannot execute them.
+- **CLI / cURL**:
+  ```bash
+  curl -s -X POST "http://localhost:4000/v1/agents/sudhaar/run" \
+    -H "Authorization: Bearer $JWT" \
+    -H "X-Tenant-Id: 00000000-0000-0000-0000-000000000001" \
+    -H "Content-Type: application/json" \
+    -d "{ \"engagement_id\": \"$ENG_ID\" }" | jq .
+  ```
+
+##### Step 10: Review Findings, Blast Radius, Dry-Run Output & Rollback Definition
+- **Web UI**: Open the Approval Console at `http://localhost:3001/approval`:
+  - **Statutory Gap Citation**: DPDP Act §8(7), Rule 8, and Schedule III.
+  - **Blast Radius Cards**: Record counts (e.g. 14,200 rows in `user_events_archive`), endpoints (4 gateways), log indexes (27,062 rows).
+  - **Dry-Run Diff**: Zero table lock contention verified.
+  - **Rollback Definition**: Validated snapshot recovery specification (`RB-118a`) within 45 seconds.
+
+##### Step 11: Approve the Plan through the Approval Console
+- **Web UI**: Select the actions in `http://localhost:3001/approval` and click **Approve Selected (Token Signed)** in the sticky bottom bar.
+- **Security Mechanism**: Generates an HMAC-SHA256 scope-bound approval token containing action IDs, plan hash, approver ID, and single-use nonce.
+- **CLI / cURL**:
+  ```bash
+  PLAN_ID=$(curl -s -X GET "http://localhost:4000/v1/engagements/$ENG_ID" \
+    -H "Authorization: Bearer $JWT" \
+    -H "X-Tenant-Id: 00000000-0000-0000-0000-000000000001" | jq -r '.remediation_plans[0].id')
+
+  ACTION_IDS=$(curl -s -X GET "http://localhost:4000/v1/plans/$PLAN_ID" \
+    -H "Authorization: Bearer $JWT" \
+    -H "X-Tenant-Id: 00000000-0000-0000-0000-000000000001" | jq -r '[.remediation_actions[].id]')
+
+  export APPROVE_RES=$(curl -s -X POST "http://localhost:4000/v1/plans/approve" \
+    -H "Authorization: Bearer $JWT" \
+    -H "X-Tenant-Id: 00000000-0000-0000-0000-000000000001" \
+    -H "Content-Type: application/json" \
+    -d "{
+      \"planId\": \"$PLAN_ID\",
+      \"actionIds\": $ACTION_IDS,
+      \"rationale\": \"Audited dry-run diffs, zero table lock contention, validated rollback snapshot RB-118a.\"
+    }")
+  ```
+
+##### Step 12: Verify the Approval Token, Ledger Chain & Execution Status
+- **Web UI**: Navigate to `http://localhost:3001/execution` and `http://localhost:3001/ledger`.
+- **CLI / cURL**: Dispatch token-gated execution to Karya and verify the cryptographic ledger:
+  ```bash
+  # Dispatch to Karya
+  curl -s -X POST "http://localhost:4000/v1/plans/$PLAN_ID/execute" \
+    -H "Authorization: Bearer $JWT" \
+    -H "X-Tenant-Id: 00000000-0000-0000-0000-000000000001" \
+    -H "Content-Type: application/json" \
+    -d "{
+      \"mode\": \"simulated\",
+      \"concurrency\": 2,
+      \"stopOnFailure\": true,
+      \"approvalToken\": $(echo "$APPROVE_RES" | jq .token)
+    }" | jq .
+
+  # Verify unbroken cryptographic ledger chain
+  curl -s -X POST "http://localhost:4000/v1/ledger/verify" \
+    -H "Authorization: Bearer $JWT" \
+    -H "X-Tenant-Id: 00000000-0000-0000-0000-000000000001" | jq .
+  ```
+  Expected output: `{"intact": true}`.
+
+##### Step 13: Generate or Review Evidence through Saakshi and Prativedan
+- **Saakshi**: Seals the compliance proof into the S3 Object Lock Compliance vault with SHA-256 hash.
+- **Prativedan**: Compiles the executive Board pack, auditor pack, and DPB regulatory filing.
+- **CLI / cURL**:
+  ```bash
+  # Saakshi evidence seal
+  curl -s -X POST "http://localhost:4000/v1/agents/saakshi/run" \
+    -H "Authorization: Bearer $JWT" \
+    -H "X-Tenant-Id: 00000000-0000-0000-0000-000000000001" \
+    -H "Content-Type: application/json" \
+    -d "{
+      \"engagement_id\": \"$ENG_ID\",
+      \"evidence_type\": \"report\",
+      \"description\": \"Comprehensive Statutory Audit Evidence Dossier\",
+      \"demonstrates_control_ids\": [\"NOT-01\", \"SEC-09\", \"RTS-01\", \"GOV-01\"]
+    }" | jq .
+
+  # Prativedan Board pack compilation
+  curl -s -X POST "http://localhost:4000/v1/agents/prativedan/run" \
+    -H "Authorization: Bearer $JWT" \
+    -H "X-Tenant-Id: 00000000-0000-0000-0000-000000000001" \
+    -H "Content-Type: application/json" \
+    -d "{
+      \"engagement_id\": \"$ENG_ID\",
+      \"kind\": \"board\",
+      \"title\": \"Executive Board Compliance & Posture Pack\"
+    }" | jq .
+  ```
+- **Web UI Verification**:
+  - Evidence Explorer: [`http://localhost:3001/evidence`](http://localhost:3001/evidence)
+  - Reports Archive: [`http://localhost:3001/reports`](http://localhost:3001/reports)
+  - Client Portal: [`http://localhost:3001/portal`](http://localhost:3001/portal)
+
+---
+
+#### Automated Single-Script Audit Execution
+
+The entire 13-step pipeline can be executed in a single automated command via [`scripts/run-full-audit.sh`](file:///Users/vikash/Axiom%20Proof/scripts/run-full-audit.sh):
+
+```bash
+# Execute full statutory compliance audit
+./scripts/run-full-audit.sh
+```
+
