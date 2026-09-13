@@ -5,6 +5,7 @@ import { formatDateTime, relativeTime, truncateHash } from '@axiom/ui';
 import type { AgentName } from '@axiom/design-tokens';
 import { VerifyButton } from './verify-button';
 import { LedgerRefresh } from './ledger-refresh';
+import { LedgerFilters } from './ledger-filters';
 
 export const dynamic = 'force-dynamic';
 
@@ -24,7 +25,17 @@ interface RunningAgent {
   source: 'agent_runs' | 'audit_ledger';
 }
 
-export default async function LedgerPage() {
+export default async function LedgerPage({
+  searchParams,
+}: {
+  searchParams: Promise<{
+    agent?: string;
+    action?: string;
+    result?: string;
+    q?: string;
+  }>;
+}) {
+  const resolvedSearchParams = await searchParams;
   const supabase = await createSupabaseServerClient();
   const {
     data: { user },
@@ -58,22 +69,55 @@ export default async function LedgerPage() {
     }
   }
 
-  // Fetch active agent runs and audit ledger entries in parallel
-  const [activeRunsRes, ledgerRes] = await Promise.all([
+  // Build filtered query
+  let ledgerQuery = admin
+    .from('audit_ledger')
+    .select('*')
+    .order('sequence_no', { ascending: false })
+    .limit(100);
+
+  if (resolvedSearchParams.agent) {
+    const val = resolvedSearchParams.agent.toLowerCase();
+    if (val === 'human' || val === 'system') {
+      ledgerQuery = ledgerQuery.eq('actor_type', val);
+    } else {
+      ledgerQuery = ledgerQuery.eq('actor_id', val);
+    }
+  }
+
+  if (resolvedSearchParams.result) {
+    ledgerQuery = ledgerQuery.eq('result', resolvedSearchParams.result.toLowerCase());
+  }
+
+  if (resolvedSearchParams.action) {
+    ledgerQuery = ledgerQuery.ilike('action_type', `%${resolvedSearchParams.action.toLowerCase()}%`);
+  }
+
+  if (resolvedSearchParams.q) {
+    const q = resolvedSearchParams.q.trim();
+    if (/^\d+$/.test(q)) {
+      ledgerQuery = ledgerQuery.eq('sequence_no', parseInt(q, 10));
+    } else if (/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(q)) {
+      ledgerQuery = ledgerQuery.eq('correlation_id', q);
+    } else {
+      ledgerQuery = ledgerQuery.or(`target_ref.ilike.%${q}%,action_type.ilike.%${q}%,actor_id.ilike.%${q}%`);
+    }
+  }
+
+  // Fetch active agent runs, filtered audit ledger entries, and total count in parallel
+  const [activeRunsRes, ledgerRes, totalCountRes] = await Promise.all([
     admin
       .from('agent_runs')
       .select('*')
       .in('status', ['running', 'queued'])
       .order('started_at', { ascending: false }),
-    admin
-      .from('audit_ledger')
-      .select('*')
-      .order('sequence_no', { ascending: false })
-      .limit(50),
+    ledgerQuery,
+    admin.from('audit_ledger').select('*', { count: 'exact', head: true }),
   ]);
 
   const activeAgentRuns = activeRunsRes.data ?? [];
   const entries = ledgerRes.data ?? [];
+  const totalCount = totalCountRes.count ?? 0;
 
   // Correlate terminal vs started entries across the ledger
   const terminalResults = new Set(['success', 'failure', 'rolled_back', 'skipped']);
@@ -172,6 +216,9 @@ export default async function LedgerPage() {
         }
       />
 
+      {/* Contextual Filter Bar */}
+      <LedgerFilters totalCount={totalCount} filteredCount={entries.length} />
+
       {/* Active Agent Executions Banner */}
       {runningAgents.length > 0 && (
         <Card className="border-teal-300 bg-teal-50/40 shadow-xs overflow-hidden">
@@ -233,8 +280,28 @@ export default async function LedgerPage() {
       )}
 
       {/* Ledger Records Table */}
-      <div className="grid grid-cols-1 gap-3">
-        {entries.map((e) => {
+      {entries.length === 0 ? (
+        <Card>
+          <CardContent className="p-8 text-center text-slate-500">
+            {resolvedSearchParams.agent || resolvedSearchParams.action || resolvedSearchParams.result || resolvedSearchParams.q ? (
+              <div className="flex flex-col items-center gap-2">
+                <p className="font-medium text-slate-700">No ledger entries match the selected filters</p>
+                <p className="text-xs text-slate-400">Try adjusting your filters or search terms</p>
+                <a
+                  href="/ledger"
+                  className="mt-2 inline-flex items-center rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-xs font-medium text-slate-700 hover:bg-slate-50 transition-colors"
+                >
+                  Clear all filters
+                </a>
+              </div>
+            ) : (
+              'The audit ledger is empty.'
+            )}
+          </CardContent>
+        </Card>
+      ) : (
+        <div className="grid grid-cols-1 gap-3">
+          {entries.map((e) => {
           const completed = e.correlation_id ? completedByCorrelation.get(e.correlation_id) : null;
           return (
             <Card key={e.id}>
@@ -299,6 +366,7 @@ export default async function LedgerPage() {
           );
         })}
       </div>
+      )}
     </div>
   );
 }

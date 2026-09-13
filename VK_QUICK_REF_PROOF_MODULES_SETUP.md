@@ -1100,5 +1100,37 @@ The web application (`http://localhost:3001`) implements the authoritative styli
 5. **Dedicated Module Views**:
    - `/discovery`, `/classification`, `/datamap`, `/execution`, `/monitoring`, `/regwatch`, `/reports`, `/partner`, `/connectors`, `/policies` rendering canonical phase cards, autonomy ceilings, and live metric rows.
 
+---
+
+### 14.7 Audit Ledger Enhancements: Contextual Filtering & Interval Auto-Refresh
+
+The Audit Ledger screen (`/ledger`, `apps/web/src/app/(app)/ledger/`) features server-side querying, cryptographic verification, contextual filtering, and auto-refresh mechanisms.
+
+#### 1. Unified Auto-Refresh Control (`<LedgerRefresh />`)
+- **Single Component Pill**: Combines manual refresh, auto-refresh toggle, and interval selector into a single cohesive control (`[ ↻ Refresh | ● Auto: Off ▾ ]`) to eliminate multiple disjoint UI elements.
+- **Default State**: Strictly **`Auto: Off`** (`intervalSeconds = 0`), respecting non-intrusive default behavior.
+- **Interval Options**: `Auto: Off` (0s), `Every 5s`, `Every 10s`, `Every 30s`, `Every 60s`.
+- **Visual Feedback**:
+  - Manual refresh animates the `↻` icon with `animate-spin` while the server transition is pending.
+  - Active auto-refresh displays a pulsing teal dot (`animate-ping bg-teal-500`) and the active interval badge.
+  - Live timestamp tracking (`Updated HH:MM:SS`) confirms the exact moment of the last ledger pull.
+  - Agent stream awareness: Indicates live background activity (`Live streaming (X active)`) when agents are running.
+
+#### 2. Contextual Filter Suite (`<LedgerFilters />`)
+- **Unified Query Input (`q`)**: Accepts integer sequence numbers (e.g., `#1`), full or prefix UUID correlation IDs, target references, or action substrings.
+- **Actor / Agent Filter (`agent`)**: Select between all 10 named agents (*Drishti, Vibhaag, Parikshan, Saakshi, Sudhaar, Karya, Lekha, Nazar, Prativedan, Sanket*), *Human Approver*, or *System Engine*.
+- **Action Category Filter (`action`)**: Filter by semantic lifecycle category (*Discovery, Classification, Assessment, Evidence, Plan, Approval, Execution, Verification, DSAR, Breach*).
+- **Result Filter (`result`)**: Filter by execution outcome (*Success, Failure, Pending / Running, Rolled back, Skipped*).
+- **Interactive Filter Chips & Counter**:
+  - Dynamic result counter: `Showing X of Y total entries`.
+  - Removable tag chips for each active filter with instant 1-click removal (`✕`).
+  - Single-click **"Clear all filters"** reset button.
+  - Informative empty state with reset button when no rows match the filter criteria.
+
+#### 3. Server-Side Execution (`page.tsx`)
+- Queries PostgreSQL via Supabase Admin Client using server-side pagination and filtering.
+- Preserves cryptographic ledger integrity proof (`verify_ledger` RPC) and unbroken SHA-256 hash chains.
+
+
 
 
