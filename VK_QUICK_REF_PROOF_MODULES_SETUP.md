@@ -832,6 +832,24 @@ docker exec -it supabase_db_axiom-proof psql -U postgres -d postgres -c \
   "SELECT sequence_no, actor_type, actor_id, action_type, result, entry_hash, prev_entry_hash, occurred_at FROM audit_ledger WHERE tenant_id = '00000000-0000-0000-0000-000000000001' ORDER BY sequence_no DESC LIMIT 5;"
 ```
 
+##### Option 3: API Verification via cURL
+Trigger the cryptographic SHA-256 chain verification through the Web Proxy or directly via the BFF API:
+```bash
+# Via Web Next.js BFF proxy
+curl -s -X POST http://localhost:3001/api/bff/v1/ledger/verify | jq .
+
+# Directly against the BFF service
+curl -s -X POST http://localhost:4000/v1/ledger/verify \
+  -H "Authorization: Bearer dev-token" \
+  -H "X-Tenant-Id: 00000000-0000-0000-0000-000000000001" | jq .
+```
+*Expected Output*:
+```json
+{
+  "intact": true
+}
+```
+
 ---
 
 #### 4.4 Mathematical Proof of Non-Tampering
