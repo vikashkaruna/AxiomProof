@@ -2,7 +2,7 @@ import { redirect } from 'next/navigation';
 import Link from 'next/link';
 import { createSupabaseServerClient } from '@axiom/supabase';
 import { BRAND } from '@axiom/config';
-import { Button, Card, Input, Label } from '@axiom/ui';
+import { AxiomLogo, Button, Card, Input, Label } from '@axiom/ui';
 import { loginAction, signupAction } from './actions';
 
 export const dynamic = 'force-dynamic';
@@ -24,15 +24,15 @@ export default async function LoginPage({
   } = await supabase.auth.getUser();
 
   if (user) {
-    redirect(resolvedSearchParams.redirect || '/workbench');
+    redirect(resolvedSearchParams.redirect || '/dashboard');
   }
 
   const isSignup = resolvedSearchParams.mode === 'signup';
 
   return (
     <div className="flex min-h-screen flex-col items-center justify-center bg-mist-100 p-4">
-      <Link href="/" className="mb-8 flex items-center gap-2">
-        <span className="font-heading text-xl font-semibold text-indigo-500">{BRAND.name}</span>
+      <Link href="/" className="mb-8 flex items-center justify-center hover:opacity-90 transition-opacity">
+        <AxiomLogo size="lg" theme="light" showSubtitle={true} />
       </Link>
 
       <Card className="w-full max-w-md">

@@ -8,7 +8,7 @@ import { createSupabaseAdmin } from '@axiom/supabase';
 export async function loginAction(formData: FormData) {
   const email = String(formData.get('email') ?? '').trim();
   const password = String(formData.get('password') ?? '');
-  const redirectTo = String(formData.get('redirect') ?? '/workbench');
+  const redirectTo = String(formData.get('redirect') || '/dashboard');
 
   if (!email || !password) {
     redirect(`/login?error=${encodeURIComponent('Email and password are required.')}`);
@@ -116,7 +116,7 @@ export async function signupAction(formData: FormData) {
   revalidatePath('/', 'layout');
 
   if (data.session) {
-    redirect('/workbench');
+    redirect('/dashboard');
   }
 
   redirect(

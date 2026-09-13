@@ -1,22 +1,21 @@
 import Link from 'next/link';
 import { BRAND } from '@axiom/config';
-import { Button } from '@axiom/ui';
+import { AxiomLogo, Button } from '@axiom/ui';
 
 export default function HomePage() {
   return (
     <div className="flex min-h-screen flex-col">
       <header className="border-b border-slate-200 bg-white">
         <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6">
-          <div className="flex items-center gap-2">
-            <span className="font-heading text-lg font-semibold text-indigo-500">{BRAND.name}</span>
-            <span className="hidden text-sm text-slate-500 sm:inline">by {BRAND.company}</span>
-          </div>
+          <Link href="/" className="flex items-center gap-2">
+            <AxiomLogo size="sm" theme="light" showSubtitle={true} />
+          </Link>
           <nav className="flex items-center gap-2">
             <Button variant="ghost" size="sm" asChild={false}>
               <Link href="/login">Sign in</Link>
             </Button>
             <Button variant="accent" size="sm" asChild={false}>
-              <Link href="/workbench">Workbench</Link>
+              <Link href="/dashboard">Open App</Link>
             </Button>
           </nav>
         </div>

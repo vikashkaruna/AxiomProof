@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import { BRAND } from '@axiom/config';
-import { Button } from '@axiom/ui';
+import { Button, AxiomLogo } from '@axiom/ui';
 
 export function SiteHeader() {
   const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3001';
@@ -8,14 +8,8 @@ export function SiteHeader() {
   return (
     <header className="sticky top-0 z-10 border-b border-slate-200 bg-white/90 backdrop-blur">
       <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6">
-        <Link href="/" className="flex items-center gap-2">
-          <span className="inline-block h-7 w-7 rounded-md bg-indigo-500" />
-          <div>
-            <p className="font-heading text-base font-semibold text-indigo-500">{BRAND.name}</p>
-            <p className="text-[10px] uppercase tracking-wider text-slate-500">
-              {BRAND.jurisdiction} · {BRAND.dataResidencyRegion}
-            </p>
-          </div>
+        <Link href="/" className="flex items-center gap-3">
+          <AxiomLogo size="sm" theme="light" showSubtitle={true} />
         </Link>
         <nav className="flex items-center gap-1 sm:gap-3">
           <Link

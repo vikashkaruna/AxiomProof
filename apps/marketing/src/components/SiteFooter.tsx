@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import { BRAND } from '@axiom/config';
+import { AxiomLogo } from '@axiom/ui';
 
 export function SiteFooter() {
   return (
@@ -7,11 +8,8 @@ export function SiteFooter() {
       <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6">
         <div className="grid grid-cols-2 gap-8 sm:grid-cols-4">
           <div className="col-span-2">
-            <div className="flex items-center gap-2">
-              <span className="inline-block h-7 w-7 rounded-md bg-indigo-500" />
-              <p className="font-heading text-base font-semibold text-indigo-500">{BRAND.name}</p>
-            </div>
-            <p className="mt-2 max-w-md text-sm text-slate-600">{BRAND.tagline}</p>
+            <AxiomLogo size="sm" theme="light" showSubtitle={true} />
+            <p className="mt-3 max-w-md text-sm text-slate-600">{BRAND.tagline}</p>
             <p className="mt-3 text-xs text-slate-500">
               {BRAND.copyright}
               <br />

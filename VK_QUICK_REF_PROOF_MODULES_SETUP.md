@@ -1027,4 +1027,73 @@ Before deploying or promoting builds to private staging or production, execute t
 6. **Ledger Integrity Proof**:
    - Run `SELECT * FROM verify_ledger('<tenant-uuid>');` across all active tenants. Must return 0 broken rows.
 
+---
+
+### 14.6 Axiom Proof Brand Mark & Application Architecture Synchronization
+
+The Axiom Proof brand mark and complete application architecture are fully synchronized with the canonical Claude Design prototypes (`Axiom Proof Design System.dc.html`, `Axiom Proof App.dc.html`, and `Axiom Proof Site.dc.html`).
+
+#### 1. Official Brand Mark & Logo Lockup (`@axiom/ui`)
+
+- **Component**: `<AxiomMark />` and `<AxiomLogo />` in `packages/ui/src/components/`
+- **Concept (Design System §01 Brand)**:
+  - *Chain Link*: Circular ring representing the hash-chained ledger and complete traceability (ADR-5).
+  - *Checkmark Needle*: Vector proof checkmark resting inside the chain link, representing cryptographic proof and immutable attestation.
+  - *Color Gradients*: Canonical Signal Teal (`#0FB5A5` → `#0a8d80`), Deep Indigo (`#1E2A4A`), or Proof Gold (`#C9A227`).
+- **Integration**:
+  - Marketing Header & Footer (`apps/marketing/src/components/SiteHeader.tsx`, `SiteFooter.tsx`)
+  - Web App Header, Sidebar & Login (`apps/web/src/app/(app)/app-shell.tsx`, `login/page.tsx`, `page.tsx`)
+
+#### 2. Synchronized Axiom Proof Web App Architecture (`apps/web`)
+
+The web application (`http://localhost:3001`) implements the authoritative styling and layout from `Axiom Proof App.dc.html`:
+- **Deep Indigo Sidebar (`bg-[#1E2A4A]`)**:
+  - Full `navDef` phase-grouped navigation:
+    1. **Overview**: Dashboard (`/dashboard`, P0)
+    2. **Discover & Classify (Drishti + Vibhaag)**: Data Discovery (`/discovery`, P1), Classification (`/classification`, P1), Data Map & RoPA (`/datamap`, P1)
+    3. **Assess (Parikshan)**: Assessment (`/assessment`, P0), Control Library (`/controls`, P0)
+    4. **Remediate (Sudhaar + Karya)**: Remediation Plans (`/plans`, P3), Approval Console (`/approval`, P3, ★), Execution & Rollback (`/execution`, P3)
+    5. **Evidence & Audit (Saakshi + Lekha)**: Evidence Explorer (`/evidence`, P2), Audit Ledger (`/ledger`, P2)
+    6. **Rights & Consent**: DSAR / Rights (`/dsars`, P3), Consent Manager (`/consent`, P3)
+    7. **Incident**: Breach & Incident (`/breaches`, P3)
+    8. **Monitor (Nazar)**: Continuous Monitoring (`/monitoring`, P3), Regulatory Watch (`/regwatch`, P2)
+    9. **Report (Prativedan)**: Reports (`/reports`, P2)
+    10. **Operate**: Agent Workbench (`/workbench`, P0), Partner Portal (`/partner`, P4), Connectors (`/connectors`, P2), Standing Policies (`/policies`, P4), Settings (`/settings`, P0)
+  - Every navigation item includes its English name, Indic Hindi transliteration, phase tag (`P0`–`P4`), active teal indicator, and gold star (for Approval Console).
+  - Approver user profile bar with avatar initials.
+  - Bottom-left `<SidebarAgentPanel />` preserved with live execution polling and animations.
+- **TopBar Controls**:
+  - Dynamic breadcrumb and screen title.
+  - Interactive Tenant Switcher (Meridian Pay, Aarogya Health, Streamline SaaS, and live tenants).
+  - Environment badge (pulsing teal dot + `Production` / `Staging`).
+  - Interactive Global Kill Switch button and alert banner (`⏻ KILL SWITCH ENGAGED`).
+
+#### 3. Core Application Views Implemented
+
+1. **Dashboard (`/dashboard`)**:
+   - 74/100 Posture Score hero card, progress bar, 32/43 controls passing, ▲ +6 trend.
+   - 6 KPI metric cards (Open gaps, Pending approvals, Evidence sealed, Open DSARs, Consents live, Ledger entries).
+   - Open gaps by domain distribution bars.
+   - Pending approvals quick-action cards.
+   - Live agent activity feed with pulsing status indicators.
+   - Statutory DPDPA countdown timer (days to 13 May 2027 enforcement, ₹250 cr penalty cap).
+2. **Approval Console (`/approval`)**:
+   - Plan header with action progress, blast radius, and target environment.
+   - Typed action list with multi-select checkboxes, risk badges (`MED`, `LOW`, `HIGH`), and status lifecycle (`APPROVED`, `EXECUTING…`, `EXECUTED`, `✓ VERIFIED`, `REJECTED`, `DEFERRED`).
+   - Detailed action inspection: legal gap citation, risk justification, blast radius cards, dry-run diff viewer with SHA-256 hash, and generated rollback plan (`RB-118a`).
+   - Sticky bottom approval action bar with single-click execution simulation and token issuance guarantee.
+3. **Assessment Pipeline (`/assessment`)**:
+   - 5-stage interactive pipeline runner (Drishti → Vibhaag → Parikshan → Sudhaar → Saakshi).
+   - Control posture distribution bar.
+   - SDF self-assessment status card.
+   - Penalty exposure range estimator (₹18–46 cr).
+   - Statutory control table.
+4. **Consent Manager (`/consent`)**:
+   - Active consent metrics and 7-year WORM ledger retention.
+   - Immutable consent event stream.
+   - Interactive bilingual consent notice preview (English ↔ Hindi switcher) with granular purpose toggles.
+5. **Dedicated Module Views**:
+   - `/discovery`, `/classification`, `/datamap`, `/execution`, `/monitoring`, `/regwatch`, `/reports`, `/partner`, `/connectors`, `/policies` rendering canonical phase cards, autonomy ceilings, and live metric rows.
+
+
 
