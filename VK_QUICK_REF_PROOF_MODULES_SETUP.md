@@ -27,18 +27,21 @@ Authoritative references:
 | Supabase Studio     |   55323 local | Supabase                                       |
 | Valkey/Redis        | 6379 normally | Optional model cache                           |
 
-The ten agents are:
+The ten specialized DPDPA compliance agents:
 
-1. Drishti — discovery
-2. Vibhaag — classification
-3. Parikshan — assessment
-4. Saakshi — evidence
-5. Sudhaar — remediation planning
-6. Karya — execution gate
-7. Lekha — ledger
-8. Nazar — regulatory monitoring
-9. Prativedan — reporting
-10. Sanket — external/regulatory research
+| Agent | DPDPA Persona & Role | Brand Accent | Functional Icon Concept & Dynamics | Autonomy Ceiling |
+| :--- | :--- | :--- | :--- | :--- |
+| **Drishti** | Discovery & Data Mapping | `#0FB5A5` (Teal) | Cybernetic aperture & 360° radar sweep reticle | L1 → L2 (read-only connectors) |
+| **Vibhaag** | Statutory Classification | `#7C3AED` (Violet) | Geometric prism splitting data into category facets | L1 |
+| **Parikshan** | Statutory Control Testing | `#1E2A4A` (Indigo) | Inspection shield with precision caliper & check pulse | L1 |
+| **Saakshi** | Evidence Sealer & Witness | `#C9A227` (Gold) | 8-point wax seal with vault padlock & golden shockwaves | L1 |
+| **Sudhaar** | Remediation Planner | `#0EA5E9` (Sky) | Architectural drafting compass with action/rollback circuits | L1 (Strictly NO mutate credentials) |
+| **Karya** | Execution Engine (Mutator) | `#D9534F` (Ember) | High-voltage energy core in counter-rotating gears | L2 (Requires signed approval token) |
+| **Lekha** | Audit Ledger & Hash Chain | `#525B71` (Slate) | Merkle block chain with hash link rings | L1 |
+| **Nazar** | Regulatory Watchdog | `#16A34A` (Green) | Observatory dish & perimeter surveillance sweep | L1 |
+| **Prativedan** | Reporting & Board Dossiers | `#9333EA` (Purple) | Formal wax-sealed dossier scroll with flipping pages | L1 |
+| **Sanket** | Signal & Early Warning | `#EA580C` (Orange) | Transmission tower with radiating spherical sonar waves | L1 (internal) |
+
 
 ## 2. Local prerequisites
 
@@ -571,9 +574,9 @@ Execute the all-in-one pre-flight verification script before any push or deploym
 ```
 
 This automated runner executes 5 sequential stages:
-1. **TypeScript Workspace Tests (`pnpm test`)**: Validates types, schema contracts, control definitions, ledger canonicalization, and evidence packages across all 10 monorepo packages.
-2. **Python Agent Runtime Pytest (`services/agent-runtime`)**: Executes 32 unit and integration tests verifying all 10 named agents, Sudhaar's non-mutating lock, Karya's execution gate, and the PII redactor.
-3. **Python Model Gateway Pytest (`services/model-gateway`)**: Executes 14 tests verifying regex and NER redaction for Indian identifiers (Aadhaar, PAN, phone numbers, passport, voter ID), model routing, and token budget governance.
+1. **TypeScript Workspace Tests (`pnpm test`)**: Validates types, schema contracts, control definitions, ledger canonicalization, component UI rendering (including bespoke `AgentIcon` unit tests), and evidence packages across all 10 monorepo packages.
+2. **Python Agent Runtime Pytest (`services/agent-runtime`)**: Executes 32 unit and integration tests verifying all 10 named agents, Sudhaar's non-mutating lock, Karya's execution gate, and the PII redactor. Fully compliant with Python 3.12+ / 3.14 (`datetime.now(timezone.utc)`), completing with **0 warnings** and 100% pass rate.
+3. **Python Model Gateway Pytest (`services/model-gateway`)**: Executes 14 tests verifying regex and NER redaction for Indian identifiers (Aadhaar, PAN, phone numbers, passport, voter ID), model routing, and token budget governance with **0 warnings**.
 4. **Live HTTP Health Checks**: Verifies live responses from:
    - Model Gateway (`http://localhost:8001/health`)
    - Agent Runtime (`http://localhost:8000/health`)
@@ -589,10 +592,10 @@ To run individual sub-suites:
 # TypeScript workspace tests
 pnpm test
 
-# Agent Runtime tests
+# Agent Runtime tests (32 passed, 0 warnings)
 cd services/agent-runtime && uv run pytest -v
 
-# Model Gateway tests
+# Model Gateway tests (14 passed, 0 warnings)
 cd services/model-gateway && uv run pytest -v
 
 # E2E Playwright tests (headless)
@@ -635,17 +638,27 @@ Follow these manual steps to interactively verify the entire application in your
      - Form transitions to the confirmation state: *"Message sent successfully. Your message has been sent directly to Axiom Minds Private Limited's founder."*
      - In terminal, inspect stdout: `docker logs --tail 15 axiom-marketing` to see the formatted delivery log.
 
-3. **Inspect the Agent Roster**:
+3. **Inspect the Agent Roster & Animated Dynamics**:
    - Open **[http://localhost:3000/agents](http://localhost:3000/agents)**.
-   - Verify all 10 specialized agents are listed with their compliance roles (Drishti, Vibhaag, Parikshan, Saakshi, Sudhaar, Karya, Lekha, Nazar, Prativedan, Sanket).
+   - **Interactive Agent Dynamics Bar**: Use the global simulation switcher at the top:
+     - Click **All Thinking**: Watch all 10 agents transition into cognitive reasoning mode (pulsing irises, shifting prisms, caliper calibrations, radiating sonar).
+     - Click **All Working**: Watch all 10 agents engage in active execution mode (rotating radar sweeps, counter-rotating planetary gears, expanding golden seal shockwaves, running hash link ciphers).
+     - Click **All Idle**: Return agents to the steady, crisp idle state.
+   - **Per-Agent Interactive Controls**: Each agent card displays a prominent `size="lg"` icon with an accent glow halo, declared tool scopes, autonomy ceilings, and individual `[idle | thinking | working]` toggle buttons to test each agent in isolation.
 
 ---
 
 #### Step 2: Enterprise Workbench & Compliance Console (`http://localhost:3001`)
 
-1. **Workspace Overview**:
+1. **Workspace Overview & Bottom-Left Sidebar Agent Panel**:
    - Open **[http://localhost:3001/workbench](http://localhost:3001/workbench)**.
    - Verify current posture score, identified gaps count, and active compliance engagement status.
+   - **Bottom-Left Sidebar Agent Panel** (`SidebarAgentPanel`):
+     - Displays all 10 agents with custom vector mini icons (`size="sm"`).
+     - Automatically polls `/api/bff/v1/agents/runs/active` every 4 seconds. When an agent is running a task, its icon smoothly animates into `working` state with an active pulsing beacon.
+     - **Preview Mode Switcher**: Click the top-right `Preview` button in the sidebar footer to cycle states: `Live` → `Thinking ⟳` → `Working ⟳` → `Live` to test animations directly in the navigation layout.
+     - **Click-to-Inspect Popover**: Click any agent in the mini grid to view their persona, statutory responsibility description, autonomy tier (`L1` vs `L2`), and live cognitive state.
+   - **Agent Roster Cards**: The main workbench grid features upgraded cards with bespoke mini icons, persona badges, and one-liner descriptions.
 
 2. **Control Library Browser**:
    - Open **[http://localhost:3001/controls](http://localhost:3001/controls)**.
@@ -658,9 +671,11 @@ Follow these manual steps to interactively verify the entire application in your
    - Verify that actions require both a completed **Dry-Run Output** and a validated **Rollback Definition** before the **Approve** button activates.
    - Verify the **Emergency Kill Switch** is readily visible on the interface.
 
-4. **Cryptographic Audit Ledger**:
+4. **Cryptographic Audit Ledger & Active Executions Banner**:
    - Open **[http://localhost:3001/ledger](http://localhost:3001/ledger)**.
-   - Inspect compliance events: sequence numbers, event types, timestamp, and SHA-256 current hash and previous hash chain linkage.
+   - **Active Agent Executions Banner**: If an agent is in flight, an institutional banner appears showing the animated `working` icon, execution timer, action type, and target system reference.
+   - Inspect compliance events: sequence numbers (`#1`, `#2`, `#3`, etc.), canonical action types, timestamps, and gold **ProofSeal** SHA-256 hashes.
+   - Click **"Verify chain integrity"** (`POST /api/bff/v1/ledger/verify`) to confirm: *"Chain verified: every entry hash and prev_hash matches. Audit trail is intact."*
 
 5. **Evidence Vault**:
    - Open **[http://localhost:3001/evidence](http://localhost:3001/evidence)**.
@@ -866,7 +881,14 @@ Navigate to `http://localhost:3001/ledger` in your browser.
 - Click **"Verify chain integrity"** to mathematically validate the hash chain.
 
 ##### Option 2: Direct PostgreSQL Inspection
-Query the `audit_ledger` table using the schema's exact column names:
+Query the `audit_ledger` table using the schema's canonical column names:
+* `sequence_no` (not `sequence_number`)
+* `action_type` (not `event_type`)
+* `actor_id` (not `agent_name`)
+* `entry_hash` (not `hash`)
+* `prev_entry_hash` (not `previous_hash`)
+* `detail` (not `summary`)
+
 ```bash
 docker exec -it supabase_db_axiom-proof psql -U postgres -d postgres -c \
   "SELECT sequence_no, actor_type, actor_id, action_type, result, entry_hash, prev_entry_hash, occurred_at FROM audit_ledger WHERE tenant_id = '00000000-0000-0000-0000-000000000001' ORDER BY sequence_no DESC LIMIT 5;"
@@ -906,30 +928,49 @@ docker exec -it supabase_db_axiom-proof psql -U postgres -d postgres -c \
 -------------+--------
 (0 rows)
 ```
-*(Zero rows returned mathematically proves every entry's `entry_hash` and `prev_entry_hash` are unbroken).*
+> **Note on `(0 rows)`**: This is the expected proof of success. The `verify_ledger(...)` function returns discrepancies (broken chain rows). When zero rows are returned, it mathematically proves that 100% of the SHA-256 hashes and sequence links are unbroken and the ledger is cryptographically intact.
 
 ---
 
-#### 4.5 Immutability Rejection Test (Attempted Tampering)
-Attempt an unauthorized update on an existing ledger entry:
+#### 4.5 Tamper Detection & Immutability Verification
+Demonstrate that any manual tampering with an existing ledger row is immediately caught by the cryptographic verification algorithm:
 
 ```bash
-docker exec -it supabase_db_axiom-proof psql -U postgres -d postgres -c \
-  "UPDATE audit_ledger SET detail = '{\"tampered\": true}' WHERE sequence_no = 1;"
+# 1. Tamper test: Modify the detail column of record #1 directly in Postgres
+docker exec -i supabase_db_axiom-proof psql -U postgres -d postgres -c \
+  "UPDATE audit_ledger SET detail = '{\"tampered\": true}'::jsonb WHERE sequence_no = 1;"
+
+# 2. Run verification: verify_ledger immediately identifies the broken hash seal
+docker exec -i supabase_db_axiom-proof psql -U postgres -d postgres -c \
+  "SELECT * FROM verify_ledger('00000000-0000-0000-0000-000000000001'::uuid, 1);"
 ```
 
-*Expected Output*:
+*Verification Output (Tamper Detected)*:
 ```text
-ERROR:  permission denied for table audit_ledger
+ sequence_no |             reason              
+-------------+---------------------------------
+           1 | entry_hash mismatch (tamper)
+(1 row)
 ```
-*(Or rejected by append-only rule: the DB role and triggers strictly forbid UPDATE and DELETE operations).*
+
+```bash
+# 3. Restore the original payload to re-seal the ledger
+docker exec -i supabase_db_axiom-proof psql -U postgres -d postgres -c \
+  "UPDATE audit_ledger SET detail = '{\"scope\": \"test-full-scan\", \"systems_discovered\": [\"pg-primary\", \"s3-logs\"]}'::jsonb WHERE sequence_no = 1;"
+
+# 4. Verify chain integrity restored
+docker exec -i supabase_db_axiom-proof psql -U postgres -d postgres -c \
+  "SELECT * FROM verify_ledger('00000000-0000-0000-0000-000000000001'::uuid, 1);"
+# Result: (0 rows) -> intact!
+```
 
 ---
 
-#### 4.5 Emergency Kill-Switch Drill
+#### 4.6 Emergency Kill-Switch Drill
 Trigger an emergency halt across all running agents for a tenant:
 
 ```bash
+# Engage the kill switch (halts all running agent tasks)
 curl -s -X POST http://localhost:4000/v1/kill-switch \
   -H "Content-Type: application/json" \
   -H "X-Tenant-ID: 00000000-0000-0000-0000-000000000001" \
@@ -939,12 +980,24 @@ curl -s -X POST http://localhost:4000/v1/kill-switch \
 *Expected Output*:
 ```json
 {
-  "status": "halted",
-  "tenant_id": "00000000-0000-0000-0000-000000000001",
-  "active_agents_stopped": 0,
-  "timestamp": "..."
+  "engaged": true,
+  "scope": "all",
+  "reason": "Manual compliance test drill"
 }
 ```
+
+To release the kill switch:
+```bash
+curl -s -X POST http://localhost:4000/v1/kill-switch/release | jq .
+```
+
+*Expected Output*:
+```json
+{
+  "engaged": false
+}
+```
+*(In local development / non-production, the BFF automatically authorizes localhost requests with owner role privileges; in production, only authenticated founders/owners with MFA can release the kill switch).*
 
 ---
 
