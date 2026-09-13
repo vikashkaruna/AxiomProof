@@ -21,6 +21,12 @@ const DEFAULT_TENANT: TenantSummary = {
   is_sdf: false,
 };
 
+function computeSlaDays(dueBy: string | null | undefined): number {
+  const now = Date.now();
+  const dueTime = dueBy ? new Date(dueBy).getTime() : now + 14 * 86400000;
+  return Math.max(0, Math.round((dueTime - now) / (1000 * 60 * 60 * 24)));
+}
+
 export default async function ClientPortalPage({
   searchParams,
 }: {
@@ -198,8 +204,6 @@ export default async function ClientPortalPage({
     // Parse DSARs
     if (dsarsRes.data && dsarsRes.data.length > 0) {
       dsars = dsarsRes.data.map((d) => {
-        const dueTime = d.due_by ? new Date(d.due_by).getTime() : Date.now() + 14 * 86400000;
-        const diffDays = Math.max(0, Math.round((dueTime - Date.now()) / (1000 * 60 * 60 * 24)));
         return {
           id: d.id,
           kind: d.kind || 'access',
@@ -207,7 +211,7 @@ export default async function ClientPortalPage({
           principalName: d.data_principal_name || 'Anonymous Principal',
           dueBy: d.due_by,
           receivedAt: d.received_at,
-          slaDays: diffDays,
+          slaDays: computeSlaDays(d.due_by),
         };
       });
     }

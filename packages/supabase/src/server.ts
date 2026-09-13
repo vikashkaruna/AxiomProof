@@ -11,28 +11,25 @@ export async function createSupabaseServerClient() {
   const env = loadEnv();
   const cookieStore = await cookies();
 
-  if (cookieStore.get('axiom_e2e_bypass')?.value === 'true' || isE2EBypassEnabled()) {
+  const isLoggedOut = cookieStore.get('axiom_e2e_logged_out')?.value === 'true';
+
+  if (!isLoggedOut && (cookieStore.get('axiom_e2e_bypass')?.value === 'true' || isE2EBypassEnabled())) {
     return createE2ESupabaseClient();
   }
 
   return createServerClient(env.SUPABASE_URL, env.SUPABASE_ANON_KEY, {
     cookies: {
-      get(name: string) {
-        return cookieStore.get(name)?.value;
+      getAll() {
+        return cookieStore.getAll();
       },
-      set(name: string, value: string, options: CookieOptions) {
+      setAll(cookiesToSet) {
         try {
-          cookieStore.set({ name, value, ...options });
+          cookiesToSet.forEach(({ name, value, options }) => {
+            cookieStore.set(name, value, options);
+          });
         } catch {
-          // The `set` method was called from a Server Component.
+          // The `setAll` method was called from a Server Component.
           // This can be ignored if you have middleware refreshing user sessions.
-        }
-      },
-      remove(name: string, options: CookieOptions) {
-        try {
-          cookieStore.set({ name, value: '', ...options });
-        } catch {
-          // Same as above
         }
       },
     },

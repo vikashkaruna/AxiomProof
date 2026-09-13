@@ -33,9 +33,10 @@ ENV NEXT_TELEMETRY_DISABLED=1
 ENV PORT=3000
 ENV HOSTNAME=0.0.0.0
 RUN apk add --no-cache tini
-COPY --from=build /app/apps/marketing/.next/standalone ./
-COPY --from=build /app/apps/marketing/.next/static ./apps/marketing/.next/static
-COPY --from=build /app/apps/marketing/public ./apps/marketing/public
+COPY --chown=node:node --from=build /app/apps/marketing/.next/standalone ./
+COPY --chown=node:node --from=build /app/apps/marketing/.next/static ./apps/marketing/.next/static
+COPY --chown=node:node --from=build /app/apps/marketing/public ./apps/marketing/public
+RUN chown -R node:node /app
 EXPOSE 3000
 USER node
 ENTRYPOINT ["/sbin/tini", "--"]

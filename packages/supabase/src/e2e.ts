@@ -180,6 +180,43 @@ export function createE2ESupabaseClient(): SupabaseClient {
         },
         error: null,
       }),
+      signOut: async () => ({ error: null }),
+      signInWithPassword: async () => ({
+        data: {
+          user: E2E_USER,
+          session: {
+            access_token: 'test-access-token',
+            refresh_token: 'test-refresh-token',
+            user: E2E_USER,
+          },
+        },
+        error: null,
+      }),
+      signUp: async () => ({
+        data: {
+          user: E2E_USER,
+          session: {
+            access_token: 'test-access-token',
+            refresh_token: 'test-refresh-token',
+            user: E2E_USER,
+          },
+        },
+        error: null,
+      }),
+      onAuthStateChange: () => ({
+        data: {
+          subscription: {
+            id: 'mock-sub',
+            callback: () => {},
+            unsubscribe: () => {},
+          },
+        },
+      }),
+      resetPasswordForEmail: async () => ({ data: {}, error: null }),
+      updateUser: async (attrs: Record<string, unknown>) => ({
+        data: { user: { ...E2E_USER, ...attrs } },
+        error: null,
+      }),
     },
     from: (table: string) => createQuery(table),
     rpc: async (_fn: string, _args?: unknown) => ({ data: [], error: null }),

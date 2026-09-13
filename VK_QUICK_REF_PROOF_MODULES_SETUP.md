@@ -1404,6 +1404,8 @@ Every step can be executed interactively via the **Web Console (UI)** at `http:/
 
 ##### Step 1: Create or Log into a Supabase Auth User
 - **Web UI**: Navigate to `http://localhost:3001/login`, input compliance officer credentials (`dpo@enterprise.co.in` / `AxiomSecureAudit2026!`), and sign in.
+  > [!TIP]
+  > **Sign Out & Account Switching**: To log out or switch users, click **Sign out** at the bottom of the left navigation panel. The session and authentication cookies will be completely cleared, safely redirecting back to `http://localhost:3001/login`.
 - **CLI / cURL**:
   ```bash
   # Create user in GoTrue Auth

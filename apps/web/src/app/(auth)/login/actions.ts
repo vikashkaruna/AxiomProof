@@ -2,6 +2,7 @@
 
 import { redirect } from 'next/navigation';
 import { revalidatePath } from 'next/cache';
+import { cookies } from 'next/headers';
 import { createSupabaseServerClient } from '@axiom/supabase';
 import { createSupabaseAdmin } from '@axiom/supabase';
 
@@ -13,6 +14,9 @@ export async function loginAction(formData: FormData) {
   if (!email || !password) {
     redirect(`/login?error=${encodeURIComponent('Email and password are required.')}`);
   }
+
+  const cookieStore = await cookies();
+  cookieStore.delete('axiom_e2e_logged_out');
 
   const supabase = await createSupabaseServerClient();
   const { data, error } = await supabase.auth.signInWithPassword({ email, password });
@@ -47,7 +51,11 @@ export async function loginAction(formData: FormData) {
     }
   }
 
-  revalidatePath('/', 'layout');
+  try {
+    revalidatePath('/', 'layout');
+  } catch (err) {
+    console.warn('[loginAction] revalidatePath warning:', err);
+  }
   redirect(redirectTo);
 }
 
@@ -64,6 +72,9 @@ export async function signupAction(formData: FormData) {
       `/login?mode=signup&error=${encodeURIComponent('Password must be at least 12 characters.')}`,
     );
   }
+
+  const cookieStore = await cookies();
+  cookieStore.delete('axiom_e2e_logged_out');
 
   const supabase = await createSupabaseServerClient();
   const { data, error } = await supabase.auth.signUp({
@@ -113,7 +124,11 @@ export async function signupAction(formData: FormData) {
     }
   }
 
-  revalidatePath('/', 'layout');
+  try {
+    revalidatePath('/', 'layout');
+  } catch (err) {
+    console.warn('[signupAction] revalidatePath warning:', err);
+  }
 
   if (data.session) {
     redirect('/dashboard');
@@ -127,8 +142,34 @@ export async function signupAction(formData: FormData) {
 }
 
 export async function logoutAction() {
-  const supabase = await createSupabaseServerClient();
-  await supabase.auth.signOut();
-  revalidatePath('/', 'layout');
+  const cookieStore = await cookies();
+  cookieStore.delete('axiom_e2e_bypass');
+  cookieStore.set('axiom_e2e_logged_out', 'true', {
+    path: '/',
+    httpOnly: true,
+    sameSite: 'lax',
+  });
+
+  // Explicitly delete any sb-*-auth-token cookies to ensure session purge
+  for (const cookie of cookieStore.getAll()) {
+    if (cookie.name.startsWith('sb-') && cookie.name.includes('-auth-token')) {
+      cookieStore.delete(cookie.name);
+    }
+  }
+
+  try {
+    const supabase = await createSupabaseServerClient();
+    if (supabase?.auth?.signOut) {
+      await supabase.auth.signOut();
+    }
+  } catch (err) {
+    console.error('Error during signOut:', err);
+  }
+
+  try {
+    revalidatePath('/', 'layout');
+  } catch (err) {
+    console.warn('[logoutAction] revalidatePath warning:', err);
+  }
   redirect('/login');
 }
