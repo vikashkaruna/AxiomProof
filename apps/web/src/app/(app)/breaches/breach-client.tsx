@@ -37,7 +37,7 @@ export function BreachClient({ initialBreach }: { initialBreach?: BreachItem | n
       label: 'Incident detected & triaged',
       t: 'T+0h 12m',
       detail:
-        'Anomalous export attempt flagged by runtime monitoring; correlation cr-118 attached.',
+        'Anomalous export attempt flagged by automated security monitoring; correlation cr-118 attached.',
       dot: '#0FB5A5',
       titleColor: '#1E2A4A',
     },

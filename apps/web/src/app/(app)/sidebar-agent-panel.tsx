@@ -293,7 +293,7 @@ export function SidebarAgentPanel({
       setLastRunResult({
         success: false,
         status: 'error',
-        message: err?.message || 'Network error invoking agent runtime',
+        message: err?.message || 'Network error invoking compliance agent',
       });
     } finally {
       setIsExecuting(false);

@@ -109,7 +109,7 @@ export function GenericModuleView({
       setRunResult({
         success: false,
         status: 'error',
-        message: err?.message || 'Network error invoking agent runtime',
+        message: err?.message || 'Network error invoking compliance agent',
       });
     } finally {
       setIsExecuting(false);
@@ -225,9 +225,7 @@ export function GenericModuleView({
         {isExecuting && (
           <div className="mt-4 rounded-lg border border-teal-400/40 bg-teal-950/40 p-2.5 text-xs text-teal-200 flex items-center gap-2 animate-in fade-in-0 duration-150">
             <span className="animate-spin font-bold text-[#0FB5A5]">↻</span>
-            <span>
-              Invoking {meta.agent || 'agent'} in Python runtime… verifying statutory bounds…
-            </span>
+            <span>Invoking {meta.agent || 'compliance agent'}… verifying statutory bounds…</span>
           </div>
         )}
 
@@ -380,9 +378,9 @@ export function GenericModuleView({
         <div className="flex items-center gap-2">
           <span className="h-2 w-2 rounded-full bg-[#0FB5A5] animate-pulse" />
           <span>
-            <strong>Live Compliance Telemetry:</strong> Connected to PostgreSQL ledger & Python
-            runtime. All client data resides strictly in sovereign Indian region (
-            <code>ap-south-1</code> Mumbai).
+            <strong>Live Compliance Telemetry:</strong> Connected to statutory audit ledger &
+            autonomous compliance engine. All client data resides strictly in sovereign Indian
+            region (<code>ap-south-1</code> Mumbai).
           </span>
         </div>
         <div className="flex items-center gap-3 font-medium text-[11px]">
