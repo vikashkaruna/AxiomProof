@@ -17,12 +17,20 @@ interface Action {
 interface Props {
   planId: string;
   tenantId: string;
+  planStatus?: string;
   actions: Action[];
   eligible: Action[];
   blocked: Action[];
 }
 
-export function ApprovalActions({ planId, tenantId, actions, eligible, blocked }: Props) {
+export function ApprovalActions({
+  planId,
+  tenantId,
+  planStatus = 'review',
+  actions,
+  eligible,
+  blocked,
+}: Props) {
   const router = useRouter();
   const [selected, setSelected] = useState<Set<string>>(new Set(eligible.map((a) => a.id)));
   const [reason, setReason] = useState('');
@@ -33,6 +41,7 @@ export function ApprovalActions({ planId, tenantId, actions, eligible, blocked }
   const [approvalToken, setApprovalToken] = useState<string | null>(null);
   const [approvedActionIds, setApprovedActionIds] = useState<string[]>([]);
   const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState<string | null>(null);
 
   function toggle(id: string) {
     const next = new Set(selected);
@@ -43,6 +52,7 @@ export function ApprovalActions({ planId, tenantId, actions, eligible, blocked }
 
   async function submit() {
     setError(null);
+    setSuccess(null);
     if (selected.size === 0) {
       setError('Select at least one action to approve.');
       return;
@@ -64,15 +74,16 @@ export function ApprovalActions({ planId, tenantId, actions, eligible, blocked }
       });
       if (!res.ok) {
         const body = await res.json().catch(() => ({}));
-        setError(body?.error?.message ?? `HTTP ${res.status}`);
+        setError(body?.error?.message ?? `Approval failed (HTTP ${res.status})`);
         return;
       }
       const body = await res.json();
       setApprovalToken(JSON.stringify(body.token));
       setApprovedActionIds(Array.from(selected));
+      setSuccess(`Approved ${selected.size} action(s). Signed approval token issued.`);
       router.refresh();
     } catch (e) {
-      setError(e instanceof Error ? e.message : 'Failed');
+      setError(e instanceof Error ? e.message : 'Approval failed');
     } finally {
       setSubmitting(false);
     }
@@ -81,6 +92,7 @@ export function ApprovalActions({ planId, tenantId, actions, eligible, blocked }
   async function execute() {
     if (!approvalToken || approvedActionIds.length === 0) return;
     setError(null);
+    setSuccess(null);
     setSubmitting(true);
     try {
       const res = await fetch(`/api/bff/v1/plans/${planId}/execute`, {
@@ -101,21 +113,65 @@ export function ApprovalActions({ planId, tenantId, actions, eligible, blocked }
       });
       if (!res.ok) {
         const body = await res.json().catch(() => ({}));
-        setError(body?.error?.message ?? `HTTP ${res.status}`);
+        setError(body?.error?.message ?? `Execution failed (HTTP ${res.status})`);
         return;
       }
       setApprovalToken(null);
       setApprovedActionIds([]);
+      setSuccess('Actions executed successfully.');
       router.refresh();
     } catch (e) {
-      setError(e instanceof Error ? e.message : 'Failed');
+      setError(e instanceof Error ? e.message : 'Execution failed');
     } finally {
       setSubmitting(false);
     }
   }
 
+  async function reject() {
+    if (!confirm('Reject the plan? This will mark all actions as rejected/skipped.')) return;
+    setError(null);
+    setSuccess(null);
+    setSubmitting(true);
+    try {
+      const res = await fetch(`/api/bff/v1/plans/${planId}/reject`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-Tenant-Id': tenantId,
+        },
+      });
+      if (!res.ok) {
+        const body = await res.json().catch(() => ({}));
+        setError(body?.error?.message ?? `Rejection failed (HTTP ${res.status})`);
+        return;
+      }
+      setSuccess('Plan rejected. Actions have been marked as skipped.');
+      router.refresh();
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'Failed to reject plan');
+    } finally {
+      setSubmitting(false);
+    }
+  }
+
+  if (planStatus === 'completed') {
+    return (
+      <div className="rounded-md border border-teal-500 bg-teal-50 p-4 text-sm text-teal-800">
+        <strong>Plan execution completed.</strong> All remediation actions have been executed and
+        recorded in the immutable audit ledger.
+      </div>
+    );
+  }
+
   return (
     <div className="flex flex-col gap-4">
+      {planStatus === 'cancelled' && (
+        <div className="rounded-md border border-amber-300 bg-amber-50 p-3 text-sm text-amber-800">
+          This remediation plan is currently marked as cancelled/rejected. You may still re-approve
+          eligible actions below to reinstate and approve them.
+        </div>
+      )}
+
       {blocked.length > 0 && (
         <div className="rounded-md border border-ember-500 bg-ember-50 p-3 text-sm text-ember-700">
           <strong>{blocked.length} action(s) blocked</strong> — not eligible for approval. Need a
@@ -127,6 +183,12 @@ export function ApprovalActions({ planId, tenantId, actions, eligible, blocked }
       {error && (
         <div className="rounded-md border border-ember-500 bg-ember-50 p-3 text-sm text-ember-700">
           {error}
+        </div>
+      )}
+
+      {success && (
+        <div className="rounded-md border border-teal-500 bg-teal-50 p-3 text-sm text-teal-800">
+          {success}
         </div>
       )}
 
@@ -216,19 +278,9 @@ export function ApprovalActions({ planId, tenantId, actions, eligible, blocked }
         <Button
           variant="danger"
           size="lg"
-          onClick={async () => {
-            if (!confirm('Reject the plan? This will mark all actions as rejected.')) return;
-            setSubmitting(true);
-            try {
-              await fetch(`/api/bff/v1/plans/${planId}/reject`, {
-                method: 'POST',
-                headers: { 'X-Tenant-Id': tenantId },
-              });
-              router.refresh();
-            } finally {
-              setSubmitting(false);
-            }
-          }}
+          onClick={reject}
+          loading={submitting}
+          disabled={submitting}
         >
           Reject plan
         </Button>
@@ -237,7 +289,7 @@ export function ApprovalActions({ planId, tenantId, actions, eligible, blocked }
       <p className="text-xs text-slate-500">
         On approval, the BFF issues a signed, scope-bound token via the Approval Engine. The token
         is the gate (per ADR-2). A separate execute call is required to actually run — the token
-        itself doesn't execute.
+        itself doesn&apos;t execute.
       </p>
     </div>
   );

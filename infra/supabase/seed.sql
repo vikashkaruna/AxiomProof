@@ -38,6 +38,41 @@ values (
 )
 on conflict (id) do nothing;
 
+-- A demo founder user for dev / e2e exploration
+insert into auth.users (id, instance_id, aud, role, email, encrypted_password, email_confirmed_at, created_at, updated_at, raw_app_meta_data, raw_user_meta_data, is_super_admin)
+values (
+  '00000000-0000-0000-0000-000000000001',
+  '00000000-0000-0000-0000-000000000000',
+  'authenticated',
+  'authenticated',
+  'founder@axiomminds.ai',
+  crypt('Admin@12345678', gen_salt('bf')),
+  now(),
+  now(),
+  now(),
+  '{"provider":"email","providers":["email"]}',
+  '{"full_name":"Founder"}',
+  false
+)
+on conflict (id) do nothing;
+
+insert into public.users (id, email, full_name, is_axiom_internal)
+values (
+  '00000000-0000-0000-0000-000000000001',
+  'founder@axiomminds.ai',
+  'Founder',
+  true
+)
+on conflict (id) do nothing;
+
+insert into public.tenant_users (tenant_id, user_id, role)
+values (
+  '00000000-0000-0000-0000-000000000001',
+  '00000000-0000-0000-0000-000000000001',
+  'owner'
+)
+on conflict (tenant_id, user_id) do nothing;
+
 -- Public gap-scan submissions are stored without a tenant; the control
 -- library is the only data that lives outside tenant isolation at the
 -- schema level.

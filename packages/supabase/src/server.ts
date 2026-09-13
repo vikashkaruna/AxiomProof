@@ -11,18 +11,21 @@ export async function createSupabaseServerClient() {
   const env = loadEnv();
   const cookieStore = await cookies();
 
-  const hasRealSession = cookieStore
+  const authCookie = cookieStore
     .getAll()
-    .some((c) => c.name.startsWith('sb-') && c.name.includes('-auth-token') && c.value.length > 0);
+    .find((c) => c.name.startsWith('sb-') && c.name.includes('-auth-token') && c.value.length > 0);
 
   if (
-    !hasRealSession &&
+    !authCookie &&
     (cookieStore.get('axiom_e2e_bypass')?.value === 'true' || isE2EBypassEnabled())
   ) {
     return createE2ESupabaseClient();
   }
 
+  const cookieName = authCookie ? authCookie.name.replace(/\.\d+$/, '') : undefined;
+
   return createServerClient(env.SUPABASE_URL, env.SUPABASE_ANON_KEY, {
+    cookieOptions: cookieName ? { name: cookieName } : undefined,
     cookies: {
       getAll() {
         return cookieStore.getAll();

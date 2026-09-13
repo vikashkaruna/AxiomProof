@@ -182,6 +182,7 @@ export default async function PlanDetailPage({ params }: PageProps) {
           <ApprovalActions
             planId={typedPlan.id}
             tenantId={typedPlan.tenant_id}
+            planStatus={typedPlan.status}
             actions={actions}
             eligible={eligible}
             blocked={blocked}

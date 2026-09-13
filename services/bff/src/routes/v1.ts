@@ -81,7 +81,7 @@ export function v1Routes(deps: Deps) {
     if (planErr || !plan) {
       return c.json({ error: { code: 'plan_not_found', message: 'Plan not found' } }, 404);
     }
-    if (!['review', 'approved'].includes(plan.status)) {
+    if (!['draft', 'review', 'approved', 'cancelled'].includes(plan.status)) {
       return c.json(
         { error: { code: 'plan_not_approvable', message: 'Plan is not ready for approval' } },
         422,
@@ -198,6 +198,7 @@ export function v1Routes(deps: Deps) {
         approval_token_id: tokenRow.id,
         approved_by: user.id,
         approved_at: new Date().toISOString(),
+        final_outcome: null,
       })
       .eq('tenant_id', tenantId)
       .eq('plan_id', input.planId)
@@ -209,6 +210,13 @@ export function v1Routes(deps: Deps) {
         500,
       );
     }
+
+    // Update plan status to approved
+    await admin
+      .from('remediation_plans')
+      .update({ status: 'approved' })
+      .eq('id', input.planId)
+      .eq('tenant_id', tenantId);
 
     // Ledger
     const correlationId = randomUUID();
@@ -286,7 +294,7 @@ export function v1Routes(deps: Deps) {
       .update({ approval_status: 'skipped', final_outcome: 'skipped' })
       .eq('plan_id', planId)
       .eq('tenant_id', tenantId)
-      .eq('approval_status', 'draft');
+      .in('approval_status', ['draft', 'awaiting_approval', 'approved']);
 
     await deps.ledger.append({
       tenantId,
