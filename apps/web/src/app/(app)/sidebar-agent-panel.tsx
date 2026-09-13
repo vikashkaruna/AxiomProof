@@ -296,331 +296,238 @@ export function SidebarAgentPanel({
           : 'Agents standing by · ap-south-1');
 
   return (
-    <>
-      {/* ============================================================ */}
-      {/* 1. ELEVATED AGENT DOCK (IN SIDEBAR)                           */}
-      {/* Lighter contrast background per UI/UX best practices          */}
-      {/* ============================================================ */}
-      <div
-        className={`mx-2.5 mb-2.5 rounded-xl border border-white/20 p-3 shadow-lg select-none transition-all ${
-          transparent ? 'bg-[#212f50]/80' : 'bg-[#243458]'
-        } ${className}`}
-      >
-        {/* Dock Header */}
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-1.5">
-            <span className="text-[11px] font-bold uppercase tracking-wider text-slate-100">
-              Agents ({ALL_AGENTS.length})
-            </span>
-            {(activeCount > 0 || demoMode !== 'live') && (
-              <span className="relative flex h-2 w-2">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#0FB5A5] opacity-75" />
-                <span className="relative inline-flex rounded-full h-2 w-2 bg-[#0FB5A5]" />
-              </span>
-            )}
-          </div>
-
-          {/* Demo Mode Toggle */}
-          <button
-            type="button"
-            onClick={cycleDemoMode}
-            title="Cycle animation preview modes (Live / Thinking / Working)"
-            className={`rounded px-1.5 py-0.5 text-[9.5px] font-medium transition-colors border cursor-pointer ${
-              demoMode !== 'live'
-                ? 'border-teal-400/60 bg-teal-500/25 text-teal-300 font-semibold shadow-2xs'
-                : 'border-white/15 bg-white/10 text-slate-200 hover:bg-white/20 hover:text-white'
-            }`}
-          >
-            {demoMode === 'live'
-              ? 'Preview'
-              : demoMode === 'thinking'
-                ? 'Thinking ⟳'
-                : 'Working ⟳'}
-          </button>
+    <div
+      className={`border-t border-slate-200 bg-[#F8FAFC] p-3 select-none text-slate-800 transition-colors ${
+        transparent ? 'bg-transparent border-white/10 text-white' : ''
+      } ${className}`}
+    >
+      {/* Panel Header */}
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-1.5">
+          <p className="text-[10px] font-semibold uppercase tracking-wider text-slate-500">
+            Agents ({ALL_AGENTS.length})
+          </p>
+          {(activeCount > 0 || demoMode !== 'live') && (
+            <span className="flex h-1.5 w-1.5 rounded-full bg-[#0FB5A5] animate-ping" />
+          )}
         </div>
 
-        {/* 10 Interactive Agent Tiles Grid */}
-        <div className="mt-2.5 grid grid-cols-5 gap-1.5">
-          {ALL_AGENTS.map((agent) => {
-            const state = getAgentState(agent.name);
-            const isSelected = selectedAgent?.name === agent.name;
-            const accent = agentAccents[agent.name] || '#0FB5A5';
-
-            return (
-              <button
-                key={agent.name}
-                type="button"
-                onClick={() => setSelectedAgent(isSelected ? null : agent)}
-                title={`Click for ${agent.name} (${agent.persona}) actions & inspection · State: ${state}`}
-                className={`group relative flex flex-col items-center justify-center rounded-lg p-1.5 transition-all cursor-pointer ${
-                  isSelected
-                    ? 'bg-teal-500/30 border border-teal-400 ring-2 ring-[#0FB5A5] shadow-sm'
-                    : 'bg-white/[0.08] hover:bg-white/[0.18] border border-white/10 hover:border-white/25 shadow-2xs'
-                }`}
-              >
-                <AgentIcon
-                  agent={agent.name}
-                  state={state}
-                  size="sm"
-                  showBadge={state === 'working'}
-                  className="transition-transform group-hover:scale-110"
-                />
-                <span
-                  className="mt-1 truncate text-[9.5px] font-semibold capitalize max-w-full"
-                  style={{
-                    color:
-                      state === 'working'
-                        ? accent
-                        : isSelected
-                          ? '#FFFFFF'
-                          : '#E2E8F0',
-                  }}
-                >
-                  {agent.name}
-                </span>
-              </button>
-            );
-          })}
-        </div>
-
-        {/* Status Ticker Bar */}
-        {showSystemMessage && (
-          <div className="mt-2.5 flex items-center gap-2 rounded-lg border border-white/15 bg-black/25 px-2.5 py-1 text-[9.5px] text-slate-200 backdrop-blur-sm">
-            <span
-              className={`h-1.5 w-1.5 shrink-0 rounded-full ${
-                activeCount > 0 || demoMode !== 'live'
-                  ? 'bg-teal-400 animate-pulse'
-                  : 'bg-[#C9A227]'
-              }`}
-            />
-            <span className="truncate font-mono tracking-tight text-slate-200">
-              {currentBroadcast}
-            </span>
-          </div>
-        )}
+        {/* Demo Animation Switcher Button */}
+        <button
+          type="button"
+          onClick={cycleDemoMode}
+          title="Click to cycle animation preview modes (Live / Thinking / Working)"
+          className={`rounded px-1.5 py-0.5 text-[9px] font-medium transition-colors border cursor-pointer ${
+            demoMode !== 'live'
+              ? 'border-teal-400 bg-teal-50 text-teal-700 font-semibold'
+              : 'border-slate-200 bg-slate-100 text-slate-600 hover:bg-slate-200'
+          }`}
+        >
+          {demoMode === 'live'
+            ? 'Preview'
+            : demoMode === 'thinking'
+              ? 'Thinking ⟳'
+              : 'Working ⟳'}
+        </button>
       </div>
 
-      {/* ============================================================ */}
-      {/* 2. ELEVATED AGENT ACTION & INSPECTION FLYOUT CARD            */}
-      {/* High-contrast light card floating safely beside the sidebar  */}
-      {/* ============================================================ */}
-      {selectedAgent && (
-        <>
-          {/* Backdrop Click Dismiss */}
-          <div
-            className="fixed inset-0 z-40 bg-black/10 backdrop-blur-[0.5px]"
-            onClick={() => setSelectedAgent(null)}
-          />
+      {/* 10 Agent Mini Icons Grid */}
+      <div className="mt-2.5 grid grid-cols-5 gap-1.5">
+        {ALL_AGENTS.map((agent) => {
+          const state = getAgentState(agent.name);
+          const isSelected = selectedAgent?.name === agent.name;
+          const accent = agentAccents[agent.name] || '#0FB5A5';
 
-          <div
-            className="fixed left-[274px] bottom-3 z-50 w-[360px] rounded-2xl border border-slate-200/90 bg-white p-5 shadow-2xl ring-1 ring-black/5 text-slate-900 animate-in fade-in-0 zoom-in-95 duration-150"
-            role="dialog"
-            aria-modal="true"
-            aria-labelledby="agent-flyout-title"
-          >
-            {/* Header: Icon, Name, Persona & Close */}
-            <div className="flex items-start justify-between gap-3">
-              <div className="flex items-center gap-3">
-                <div className="relative shrink-0">
-                  <AgentIcon
-                    agent={selectedAgent.name}
-                    state={getAgentState(selectedAgent.name)}
-                    size="md"
-                    className="shadow-sm"
-                  />
-                </div>
-                <div>
-                  <div className="flex items-center gap-2">
-                    <h3
-                      id="agent-flyout-title"
-                      className="font-heading text-base font-bold capitalize text-slate-900"
-                    >
-                      {selectedAgent.name}
-                    </h3>
-                    <Badge variant="indigo" size="sm">
-                      {selectedAgent.persona}
-                    </Badge>
-                  </div>
-                  <p className="font-heading text-xs font-medium text-slate-500">
-                    {selectedAgent.indic}
-                  </p>
-                </div>
-              </div>
-
-              <button
-                type="button"
-                onClick={() => setSelectedAgent(null)}
-                aria-label="Close agent inspector"
-                className="flex h-7 w-7 items-center justify-center rounded-full text-slate-400 hover:bg-slate-100 hover:text-slate-700 transition-colors cursor-pointer"
-              >
-                ✕
-              </button>
-            </div>
-
-            {/* Metadata Badges: Autonomy & Status */}
-            <div className="mt-3 flex items-center justify-between rounded-lg bg-slate-50 p-2 border border-slate-100 text-xs">
-              <div className="flex items-center gap-1.5">
-                <span className="text-[11px] text-slate-500 font-medium">Autonomy:</span>
-                <span className="font-semibold text-slate-800 text-[11px]">
-                  {selectedAgent.autonomy}
-                </span>
-              </div>
-              <div className="flex items-center gap-1.5">
-                <span className="text-[11px] text-slate-500 font-medium">Status:</span>
-                {getAgentState(selectedAgent.name) === 'working' ? (
-                  <span className="inline-flex items-center gap-1 rounded-full bg-teal-50 px-2 py-0.5 text-[10px] font-semibold text-teal-700 border border-teal-200">
-                    <span className="h-1.5 w-1.5 rounded-full bg-teal-500 animate-ping" />
-                    Working
-                  </span>
-                ) : demoMode === 'thinking' ? (
-                  <span className="inline-flex items-center gap-1 rounded-full bg-amber-50 px-2 py-0.5 text-[10px] font-semibold text-amber-700 border border-amber-200">
-                    Deliberating
-                  </span>
-                ) : (
-                  <span className="inline-flex items-center gap-1 rounded-full bg-slate-200 px-2 py-0.5 text-[10px] font-medium text-slate-700">
-                    Standing by
-                  </span>
-                )}
-              </div>
-            </div>
-
-            {/* Agent Description */}
-            <p className="mt-3 text-xs leading-relaxed text-slate-600">
-              {selectedAgent.description}
-            </p>
-
-            {/* Statutory Guardrail / Architectural Boundary Callout */}
-            <div
-              className={`mt-3 rounded-lg border p-2.5 text-[11px] leading-snug flex items-start gap-2 ${
-                selectedAgent.name === 'karya'
-                  ? 'border-indigo-200 bg-indigo-50/70 text-indigo-900'
-                  : selectedAgent.name === 'sudhaar'
-                    ? 'border-amber-200 bg-amber-50/70 text-amber-900'
-                    : selectedAgent.name === 'drishti'
-                      ? 'border-blue-200 bg-blue-50/70 text-blue-900'
-                      : 'border-slate-200 bg-slate-50 text-slate-700'
+          return (
+            <button
+              key={agent.name}
+              type="button"
+              onClick={() => setSelectedAgent(isSelected ? null : agent)}
+              title={`${agent.name} (${agent.persona}) · Status: ${state}`}
+              className={`group relative flex flex-col items-center justify-center rounded-lg p-1 transition-all cursor-pointer ${
+                isSelected
+                  ? 'bg-slate-200/90 ring-1 ring-slate-400 shadow-2xs'
+                  : 'hover:bg-slate-200/60'
               }`}
             >
-              <span className="shrink-0 text-xs">
-                {selectedAgent.name === 'karya'
-                  ? '🔒'
-                  : selectedAgent.name === 'sudhaar'
-                    ? '⚠️'
-                    : selectedAgent.name === 'drishti'
-                      ? '🇮🇳'
-                      : '📜'}
-              </span>
-              <span>{selectedAgent.statutoryBoundary}</span>
-            </div>
-
-            {/* Live Execution Feedback Banner */}
-            {isExecuting && (
-              <div className="mt-3 rounded-lg border border-teal-200 bg-teal-50/80 p-2.5 text-xs text-teal-800 flex items-center gap-2">
-                <span className="animate-spin text-teal-600 font-bold">↻</span>
-                <span className="font-medium">Invoking {selectedAgent.name} via BFF API…</span>
-              </div>
-            )}
-
-            {lastRunResult && !isExecuting && (
-              <div
-                className={`mt-3 rounded-lg border p-2.5 text-xs flex flex-col gap-1.5 ${
-                  lastRunResult.success
-                    ? 'border-emerald-200 bg-emerald-50 text-emerald-800'
-                    : lastRunResult.status === 'denied'
-                      ? 'border-amber-200 bg-amber-50 text-amber-900'
-                      : 'border-rose-200 bg-rose-50 text-rose-800'
-                }`}
+              <AgentIcon
+                agent={agent.name}
+                state={state}
+                size="sm"
+                showBadge={state === 'working'}
+                className="transition-transform group-hover:scale-105"
+              />
+              <span
+                className="mt-1 truncate text-[9px] font-medium capitalize max-w-full"
+                style={{
+                  color:
+                    state === 'working'
+                      ? accent
+                      : isSelected
+                        ? '#0F172A'
+                        : '#64748B',
+                }}
               >
-                <div className="flex items-center justify-between font-semibold">
-                  <span>
-                    {lastRunResult.success
-                      ? '✓ Task executed'
-                      : lastRunResult.status === 'denied'
-                        ? '🔒 Approval gate enforced'
-                        : '✕ Invocation error'}
-                  </span>
-                  {lastRunResult.latency_ms !== undefined && (
-                    <span className="font-mono text-[10px] opacity-75">
-                      {lastRunResult.latency_ms}ms
-                    </span>
-                  )}
-                </div>
-                <p className="text-[11px] leading-tight opacity-90">
-                  {lastRunResult.message}
-                </p>
-                {lastRunResult.ledgerIds && lastRunResult.ledgerIds.length > 0 && (
-                  <div className="flex items-center gap-1 text-[10px]">
-                    <span className="opacity-75">Ledger proof:</span>
-                    <Link
-                      href={`/ledger?q=${lastRunResult.ledgerIds[0]}`}
-                      className="font-mono underline hover:text-teal-900"
-                    >
-                      #{lastRunResult.ledgerIds.join(', #')}
-                    </Link>
-                  </div>
+                {agent.name}
+              </span>
+            </button>
+          );
+        })}
+      </div>
+
+      {/* System-wide Agent Message / Status Bar */}
+      {showSystemMessage && (
+        <div className="mt-2.5 flex items-center gap-1.5 rounded-lg border border-slate-200 bg-slate-100/90 px-2 py-1 text-[9px] text-slate-700 font-mono">
+          <span
+            className={`h-1.5 w-1.5 shrink-0 rounded-full ${
+              activeCount > 0 || demoMode !== 'live'
+                ? 'bg-teal-500 animate-pulse'
+                : 'bg-[#C9A227]'
+            }`}
+          />
+          <span className="truncate font-mono tracking-tight text-slate-600">
+            {currentBroadcast}
+          </span>
+        </div>
+      )}
+
+      {/* Interactive Detail Inspector with Actions */}
+      {selectedAgent && (
+        <div className="mt-2.5 rounded-lg border border-slate-200 bg-white p-2.5 shadow-md text-slate-800 animate-in fade-in-0 duration-150">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-1.5">
+              <span
+                className="h-2 w-2 rounded-full"
+                style={{ backgroundColor: agentAccents[selectedAgent.name] }}
+              />
+              <span className="font-heading text-xs font-semibold capitalize text-slate-900">
+                {selectedAgent.name}
+              </span>
+              <span className="text-[10px] text-slate-500">· {selectedAgent.persona}</span>
+            </div>
+            <button
+              type="button"
+              onClick={() => setSelectedAgent(null)}
+              className="text-[11px] text-slate-400 hover:text-slate-700 transition-colors cursor-pointer"
+            >
+              ✕
+            </button>
+          </div>
+
+          <p className="mt-1 text-[11px] text-slate-600 leading-tight">
+            {selectedAgent.description}
+          </p>
+
+          <div className="mt-2 flex items-center justify-between border-t border-slate-100 pt-1.5 text-[10px]">
+            <span className="text-slate-500">
+              Autonomy: <strong className="text-indigo-600 font-semibold">{selectedAgent.autonomy}</strong>
+            </span>
+            <span className="font-medium capitalize text-slate-700">
+              State:{' '}
+              <strong
+                className={
+                  getAgentState(selectedAgent.name) === 'working'
+                    ? 'text-teal-600 font-semibold'
+                    : 'text-slate-600'
+                }
+              >
+                {getAgentState(selectedAgent.name)}
+              </strong>
+            </span>
+          </div>
+
+          {/* Live Execution Feedback */}
+          {isExecuting && (
+            <div className="mt-2 rounded border border-teal-200 bg-teal-50 p-1.5 text-[10px] text-teal-800 flex items-center gap-1.5">
+              <span className="animate-spin font-bold text-teal-600">↻</span>
+              <span>Invoking {selectedAgent.name}…</span>
+            </div>
+          )}
+
+          {lastRunResult && !isExecuting && (
+            <div
+              className={`mt-2 rounded border p-1.5 text-[10px] flex flex-col gap-0.5 ${
+                lastRunResult.success
+                  ? 'border-emerald-200 bg-emerald-50 text-emerald-800'
+                  : lastRunResult.status === 'denied'
+                    ? 'border-amber-200 bg-amber-50 text-amber-900'
+                    : 'border-rose-200 bg-rose-50 text-rose-800'
+              }`}
+            >
+              <div className="flex items-center justify-between font-semibold">
+                <span>
+                  {lastRunResult.success
+                    ? '✓ Succeeded'
+                    : lastRunResult.status === 'denied'
+                      ? '🔒 Gate enforced'
+                      : '✕ Error'}
+                </span>
+                {lastRunResult.latency_ms !== undefined && (
+                  <span className="font-mono text-[9px] opacity-75">{lastRunResult.latency_ms}ms</span>
                 )}
               </div>
+              <p className="leading-tight opacity-90 text-[9.5px]">{lastRunResult.message}</p>
+              {lastRunResult.ledgerIds && lastRunResult.ledgerIds.length > 0 && (
+                <div className="text-[9.5px]">
+                  <span className="opacity-75">Ledger proof: </span>
+                  <Link
+                    href={`/ledger?q=${lastRunResult.ledgerIds[0]}`}
+                    className="font-mono underline text-teal-700"
+                  >
+                    #{lastRunResult.ledgerIds.join(', #')}
+                  </Link>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Action Buttons Suite */}
+          <div className="mt-2.5 flex flex-col gap-1.5 pt-2 border-t border-slate-100">
+            {selectedAgent.name === 'karya' ? (
+              <Link
+                href="/approval"
+                className="w-full rounded-md bg-[#1E2A4A] hover:bg-[#151e35] text-white text-[11px] font-semibold py-1.5 px-2.5 flex items-center justify-center gap-1 shadow-2xs transition-colors text-center"
+              >
+                <span>Review & Approve in Console →</span>
+              </Link>
+            ) : (
+              <button
+                type="button"
+                onClick={() => handleRunAgent(selectedAgent)}
+                disabled={isExecuting}
+                className="w-full rounded-md bg-[#0FB5A5] hover:bg-[#0da294] disabled:opacity-60 text-white text-[11px] font-semibold py-1.5 px-2.5 flex items-center justify-center gap-1.5 shadow-2xs transition-colors cursor-pointer"
+              >
+                <span>⚡</span>
+                <span>{isExecuting ? 'Executing…' : selectedAgent.actionLabel}</span>
+              </button>
             )}
 
-            {/* ============================================================ */}
-            {/* ACTION CONTROLS (SOLVING: NOT ALLOWING AGENTS ACTIONS)        */}
-            {/* ============================================================ */}
-            <div className="mt-4 flex flex-col gap-2 pt-2 border-t border-slate-100">
-              {/* 1. Primary Action Button */}
-              {selectedAgent.name === 'karya' ? (
-                <Link
-                  href="/approval"
-                  onClick={() => setSelectedAgent(null)}
-                  className="w-full rounded-lg bg-[#1E2A4A] hover:bg-[#151e35] text-white text-xs font-semibold py-2.5 px-3 flex items-center justify-center gap-1.5 shadow-sm transition-colors text-center"
-                >
-                  <span>Review & Approve Actions in Console</span>
-                  <span>→</span>
-                </Link>
-              ) : (
-                <button
-                  type="button"
-                  onClick={() => handleRunAgent(selectedAgent)}
-                  disabled={isExecuting}
-                  className="w-full rounded-lg bg-[#0FB5A5] hover:bg-[#0da294] disabled:opacity-60 text-white text-xs font-semibold py-2.5 px-3 flex items-center justify-center gap-2 shadow-xs transition-colors cursor-pointer"
-                >
-                  <span>⚡</span>
-                  <span>{isExecuting ? 'Executing…' : selectedAgent.actionLabel}</span>
-                </button>
-              )}
-
-              {/* 2. Direct Module Route Button */}
+            <div className="flex items-center justify-between gap-1 text-[10px] text-slate-500 font-medium pt-0.5">
               <Link
                 href={selectedAgent.modulePath}
-                onClick={() => setSelectedAgent(null)}
-                className="w-full rounded-lg border border-slate-200 bg-slate-50 hover:bg-slate-100 text-slate-700 text-xs font-medium py-2 px-3 flex items-center justify-center gap-1.5 transition-colors text-center"
+                className="hover:text-indigo-600 hover:underline"
               >
-                <span>Open {selectedAgent.moduleLabel} Screen</span>
-                <span className="text-slate-400">→</span>
+                {selectedAgent.moduleLabel} →
               </Link>
-
-              {/* 3. Deep Links: Workbench & Ledger */}
-              <div className="mt-1 flex items-center justify-between px-1 text-[11px] text-slate-500 font-medium">
-                <Link
-                  href={`/workbench?agent=${selectedAgent.name}`}
-                  onClick={() => setSelectedAgent(null)}
-                  className="hover:text-indigo-600 hover:underline flex items-center gap-1 transition-colors"
-                >
-                  <span>Workbench Prompt ↗</span>
-                </Link>
-                <span className="text-slate-300">·</span>
-                <Link
-                  href={`/ledger?agent=${selectedAgent.name}`}
-                  onClick={() => setSelectedAgent(null)}
-                  className="hover:text-indigo-600 hover:underline flex items-center gap-1 transition-colors"
-                >
-                  <span>Audit Ledger Proof ↗</span>
-                </Link>
-              </div>
+              <span className="text-slate-300">·</span>
+              <Link
+                href={`/workbench?agent=${selectedAgent.name}`}
+                className="hover:text-indigo-600 hover:underline"
+              >
+                Workbench ↗
+              </Link>
+              <span className="text-slate-300">·</span>
+              <Link
+                href={`/ledger?agent=${selectedAgent.name}`}
+                className="hover:text-indigo-600 hover:underline"
+              >
+                Ledger ↗
+              </Link>
             </div>
           </div>
-        </>
+        </div>
       )}
-    </>
+    </div>
   );
 }
 

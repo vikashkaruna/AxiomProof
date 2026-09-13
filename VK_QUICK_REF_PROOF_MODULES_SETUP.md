@@ -657,10 +657,15 @@ Follow these manual steps to interactively verify the entire application in your
    - Open **[http://localhost:3001/workbench](http://localhost:3001/workbench)**.
    - Verify current posture score, identified gaps count, and active compliance engagement status.
    - **Bottom-Left Sidebar Agent Panel** (`SidebarAgentPanel`):
+     - Docked cleanly at the bottom of the sidebar in an institutional **solid light theme** (`bg-[#F8FAFC]` with `border-t border-slate-200` and high-contrast typography, avoiding transparency issues).
      - Displays all 10 agents with custom vector mini icons (`size="sm"`).
      - Automatically polls `/api/bff/v1/agents/runs/active` every 4 seconds. When an agent is running a task, its icon smoothly animates into `working` state with an active pulsing beacon.
      - **Preview Mode Switcher**: Click the top-right `Preview` button in the sidebar footer to cycle states: `Live` → `Thinking ⟳` → `Working ⟳` → `Live` to test animations directly in the navigation layout.
-     - **Click-to-Inspect Popover**: Click any agent in the mini grid to view their persona, statutory responsibility description, autonomy tier (`L1` vs `L2`), and live cognitive state.
+     - **Interactive Action & Inspector Panel**: Clicking any agent opens an inline high-contrast card with:
+       - Agent details: Indic name, statutory responsibilities, and autonomy tier (`L1 Autonomous` vs `L2 Approval-Gated`).
+       - **⚡ Direct Action Trigger**: For L1 agents, triggers real-time task execution via the BFF (`/api/bff/v1/agents/:name/run`) with live latency and cryptographic ledger proof link (`#id`).
+       - **Approval Gate Safeguard (ADR-1/ADR-3)**: For Karya (mutating agent), provides a direct jump to the `/approval` console, enforcing that unapproved mutations are blocked.
+       - **Navigation Links**: Quick links to the agent's dedicated module screen (`Open Screen →`), workbench prompt (`Workbench ↗`), and audit ledger (`Ledger ↗`).
    - **Agent Roster Cards**: The main workbench grid features upgraded cards with bespoke mini icons, persona badges, and one-liner descriptions.
 
 2. **Control Library Browser**:
