@@ -16,8 +16,8 @@ def test_redacts_aadhaar():
 
 
 def test_redacts_email():
-    r = redact_text("Contact me at vikash@axiomminds.ai please")
-    assert "vikash@axiomminds.ai" not in r.redacted_text
+    r = redact_text("Contact me at user@example.com please")
+    assert "user@example.com" not in r.redacted_text
 
 
 def test_redacts_phone():

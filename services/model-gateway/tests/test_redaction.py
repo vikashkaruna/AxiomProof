@@ -21,13 +21,13 @@ def test_redacts_aadhaar_no_spaces():
 
 
 def test_redacts_email():
-    r = redact("Email vikash@axiomminds.ai for details")
-    assert "vikash@axiomminds.ai" not in r.redacted_text
+    r = redact("Email user@example.com for details")
+    assert "user@example.com" not in r.redacted_text
 
 
 def test_redacts_upi_id():
-    r = redact("Pay to vikash@ybl")
-    assert "vikash@ybl" not in r.redacted_text
+    r = redact("Pay to testuser@ybl")
+    assert "testuser@ybl" not in r.redacted_text
     assert r.redactions.get("UPI") == 1
 
 
@@ -50,7 +50,7 @@ def test_passes_through_clean():
 def test_redact_variables_recursive():
     variables = {
         "customer": {
-            "name": "Vikash",
+            "name": "Ravi",
             "pan": "ABCDE1234F",
         },
         "notes": ["Call 98765 43210", "clean note"],
