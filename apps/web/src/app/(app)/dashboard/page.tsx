@@ -10,16 +10,46 @@ export default async function DashboardPage() {
   let ledgerCount: number | null = null;
   let evidenceCount: number | null = null;
   let dsarCount: number | null = null;
-  let plansCount: number | null = null;
   let postureScore: number = 74;
+  let passingControlsCount = 32;
+  let totalControlsCount = 43;
   let liveRuns: Array<{ agent: string; status: string; started_at: string }> = [];
+  let openGapsCount = 11;
+  let pendingActionsCount = 4;
+  let dynamicGapDomains: Array<{
+    name: string;
+    open: number;
+    total: number;
+    pct: string;
+    color: string;
+  }> = [];
+  let dynamicPendingPlans: Array<{
+    title: string;
+    count: number;
+    blast: string;
+    risk: string;
+    riskStyle: string;
+  }> = [];
 
   try {
-    const [ledgerRes, evidenceRes, dsarRes, plansRes, engagementsRes, runsRes] = await Promise.all([
+    const [
+      ledgerRes,
+      evidenceRes,
+      dsarRes,
+      plansRes,
+      actionsRes,
+      engagementsRes,
+      runsRes,
+      findingsRes,
+      controlsRes,
+    ] = await Promise.all([
       admin.from('audit_ledger').select('*', { count: 'exact', head: true }),
       admin.from('evidence').select('*', { count: 'exact', head: true }),
       admin.from('dsars').select('*', { count: 'exact', head: true }),
       admin.from('remediation_plans').select('id, title, status', { count: 'exact' }).limit(5),
+      admin
+        .from('remediation_actions')
+        .select('id, plan_id, risk_class, description, blast_radius, approval_status'),
       admin
         .from('engagements')
         .select('posture_score')
@@ -31,17 +61,130 @@ export default async function DashboardPage() {
         .select('agent, status, started_at')
         .order('started_at', { ascending: false })
         .limit(5),
+      admin.from('findings').select('id, control_id, status, score'),
+      admin.from('controls').select('id, domain'),
     ]);
 
     ledgerCount = ledgerRes.count ?? null;
     evidenceCount = evidenceRes.count ?? null;
     dsarCount = dsarRes.count ?? null;
-    plansCount = plansRes.count ?? null;
     if (engagementsRes.data?.posture_score != null) {
-      postureScore = Math.round(engagementsRes.data.posture_score * 100);
+      const rawScore = Number(engagementsRes.data.posture_score);
+      postureScore = Math.round(rawScore <= 1 ? rawScore * 100 : rawScore);
     }
-    if (runsRes.data) {
+    if (controlsRes.data && controlsRes.data.length > 0) {
+      totalControlsCount = controlsRes.data.length;
+    }
+    if (findingsRes.data && findingsRes.data.length > 0) {
+      passingControlsCount = findingsRes.data.filter(
+        (f) => Number(f.score) >= 80 || f.status === 'closed',
+      ).length;
+    }
+    if (runsRes.data && runsRes.data.length > 0) {
       liveRuns = runsRes.data as Array<{ agent: string; status: string; started_at: string }>;
+    }
+
+    // Dynamic pending actions
+    const pendingActions =
+      actionsRes.data?.filter(
+        (a) => a.approval_status === 'awaiting_approval' || a.approval_status === 'draft',
+      ) ?? [];
+    if (pendingActions.length > 0) {
+      pendingActionsCount = pendingActions.length;
+    }
+
+    // Dynamic pending plans
+    if (plansRes.data && plansRes.data.length > 0) {
+      dynamicPendingPlans = plansRes.data.map((p) => {
+        const planActions = actionsRes.data?.filter((a) => a.plan_id === p.id) ?? [];
+        const highestRisk = planActions.some(
+          (a) => a.risk_class === 'critical' || a.risk_class === 'high',
+        )
+          ? 'HIGH risk'
+          : planActions.some((a) => a.risk_class === 'medium')
+            ? 'MED risk'
+            : 'LOW risk';
+        const riskStyle =
+          highestRisk === 'HIGH risk'
+            ? 'bg-[#FCEEEC] text-[#D9534F]'
+            : highestRisk === 'MED risk'
+              ? 'bg-[#FBF3DF] text-[#8a6d10]'
+              : 'bg-[#E5FAF7] text-[#0a8d80]';
+
+        return {
+          title: p.title,
+          count: planActions.length > 0 ? planActions.length : 1,
+          blast: 'db schema & data',
+          risk: highestRisk,
+          riskStyle,
+        };
+      });
+    }
+
+    // Dynamic open gaps & domain breakdown
+    if (
+      findingsRes.data &&
+      findingsRes.data.length > 0 &&
+      controlsRes.data &&
+      controlsRes.data.length > 0
+    ) {
+      const openFindings = findingsRes.data.filter(
+        (f) =>
+          f.status === 'open' ||
+          f.status === 'planned' ||
+          f.status === 'in_remediation' ||
+          f.score < 100,
+      );
+      openGapsCount = openFindings.length;
+
+      // Group by domain
+      const domainMap = new Map<string, { open: number; total: number }>();
+      const domainLabels: Record<string, string> = {
+        CNS: 'Notice & consent',
+        RCD: 'Rights of principals',
+        RTN: 'Retention & erasure',
+        SEC: 'Security safeguards',
+        XBR: 'Cross-border transfer',
+        GOV: 'Grievance redressal',
+        DAT: 'Data processing',
+        BRCH: 'Breach response',
+        CHD: 'Children data safety',
+        SDF: 'Significant fiduciary',
+        DPF: 'Data protection principles',
+        AUD: 'Periodic audit',
+        DPIA: 'Impact assessments',
+      };
+
+      for (const ctrl of controlsRes.data) {
+        const d = ctrl.domain || 'OTHER';
+        if (!domainMap.has(d)) {
+          domainMap.set(d, { open: 0, total: 0 });
+        }
+        domainMap.get(d)!.total += 1;
+      }
+
+      for (const f of openFindings) {
+        const ctrl = controlsRes.data.find((c) => c.id === f.control_id);
+        const d = ctrl?.domain || 'OTHER';
+        if (domainMap.has(d)) {
+          domainMap.get(d)!.open += 1;
+        }
+      }
+
+      const topDomains = ['CNS', 'RCD', 'RTN', 'SEC', 'XBR', 'GOV'];
+      dynamicGapDomains = topDomains
+        .filter((d) => domainMap.has(d))
+        .map((d) => {
+          const stat = domainMap.get(d)!;
+          const pctNum = stat.total > 0 ? Math.round((stat.open / stat.total) * 100) : 0;
+          return {
+            name: domainLabels[d] || d,
+            open: stat.open,
+            total: stat.total,
+            pct: `${pctNum}%`,
+            color: pctNum > 40 ? '#D9534F' : pctNum > 15 ? '#E0A82E' : '#0FB5A5',
+          };
+        });
     }
   } catch {
     // Fallback gracefully if database is unreachable or fresh
@@ -58,8 +201,8 @@ export default async function DashboardPage() {
   const kpis = [
     {
       label: 'Open gaps',
-      value: '11',
-      sub: 'across 8 domains',
+      value: String(openGapsCount),
+      sub: 'across DPDPA domains',
       color: '#D9534F',
       tag: 'ASSESS',
       tagStyle: 'bg-[#FCEEEC] text-[#D9534F]',
@@ -67,8 +210,8 @@ export default async function DashboardPage() {
     },
     {
       label: 'Pending approvals',
-      value: plansCount !== null && plansCount > 0 ? String(plansCount) : '2',
-      sub: plansCount !== null && plansCount > 0 ? 'active plan(s) waiting' : '24 actions waiting',
+      value: String(pendingActionsCount),
+      sub: `${pendingActionsCount} action(s) waiting review`,
       color: '#E0A82E',
       tag: 'P3',
       tagStyle: 'bg-[#FBF3DF] text-[#8a6d10]',
@@ -86,8 +229,9 @@ export default async function DashboardPage() {
     },
     {
       label: 'Open DSARs',
-      value: dsarCount !== null && dsarCount > 0 ? String(dsarCount) : '9',
-      sub: dsarCount !== null && dsarCount > 0 ? `${dsarCount} on record in DB` : '1 nearing SLA',
+      value: dsarCount !== null && dsarCount > 0 ? String(dsarCount) : '4',
+      sub:
+        dsarCount !== null && dsarCount > 0 ? `${dsarCount} requests in pipeline` : '1 nearing SLA',
       color: '#1E2A4A',
       tag: 'P3',
       tagStyle: 'bg-[#F4F6F8] text-[#5b6270]',
@@ -116,31 +260,37 @@ export default async function DashboardPage() {
     },
   ];
 
-  const gapDomains = [
-    { name: 'Notice & consent', open: 2, total: 9, pct: '22%', color: '#E0A82E' },
-    { name: 'Rights of principals', open: 3, total: 7, pct: '43%', color: '#D9534F' },
-    { name: 'Retention & erasure', open: 4, total: 6, pct: '67%', color: '#D9534F' },
-    { name: 'Security safeguards', open: 1, total: 11, pct: '9%', color: '#0FB5A5' },
-    { name: 'Cross-border transfer', open: 1, total: 4, pct: '25%', color: '#E0A82E' },
-    { name: 'Grievance redressal', open: 0, total: 6, pct: '0%', color: '#0FB5A5' },
-  ];
+  const gapDomains =
+    dynamicGapDomains.length > 0
+      ? dynamicGapDomains
+      : [
+          { name: 'Notice & consent', open: 2, total: 9, pct: '22%', color: '#E0A82E' },
+          { name: 'Rights of principals', open: 3, total: 7, pct: '43%', color: '#D9534F' },
+          { name: 'Retention & erasure', open: 4, total: 6, pct: '67%', color: '#D9534F' },
+          { name: 'Security safeguards', open: 1, total: 11, pct: '9%', color: '#0FB5A5' },
+          { name: 'Cross-border transfer', open: 1, total: 4, pct: '25%', color: '#E0A82E' },
+          { name: 'Grievance redressal', open: 0, total: 6, pct: '0%', color: '#0FB5A5' },
+        ];
 
-  const pendingPlans = [
-    {
-      title: 'Retention & erasure remediation',
-      count: 6,
-      blast: '≤41k rec',
-      risk: 'MED risk',
-      riskStyle: 'bg-[#FBF3DF] text-[#8a6d10]',
-    },
-    {
-      title: 'Consent notice rollout (EN+HI)',
-      count: 3,
-      blast: 'config only',
-      risk: 'LOW risk',
-      riskStyle: 'bg-[#E5FAF7] text-[#0a8d80]',
-    },
-  ];
+  const pendingPlans =
+    dynamicPendingPlans.length > 0
+      ? dynamicPendingPlans
+      : [
+          {
+            title: 'Retention & erasure remediation',
+            count: 6,
+            blast: '≤41k rec',
+            risk: 'MED risk',
+            riskStyle: 'bg-[#FBF3DF] text-[#8a6d10]',
+          },
+          {
+            title: 'Consent notice rollout (EN+HI)',
+            count: 3,
+            blast: 'config only',
+            risk: 'LOW risk',
+            riskStyle: 'bg-[#E5FAF7] text-[#0a8d80]',
+          },
+        ];
 
   const agentDots: Record<string, string> = {
     drishti: '#0FB5A5',
@@ -235,7 +385,9 @@ export default async function DashboardPage() {
           </div>
 
           <div className="mt-3 flex items-center justify-between text-xs text-[#a9b3ce]">
-            <span>32/43 controls passing</span>
+            <span>
+              {passingControlsCount}/{totalControlsCount} controls passing
+            </span>
             <span className="font-medium text-[#0FB5A5]">▲ +6 vs last scan</span>
           </div>
 

@@ -39,7 +39,7 @@ test.describe('Approval Console — the trust surface', () => {
   test('approval is blocked for actions without a completed dry-run', async ({ page }) => {
     await page.goto('/plans');
     await expect(
-      page.getByRole('heading', { name: 'Remediation plans', exact: true }),
+      page.getByRole('main').getByRole('heading', { name: /Remediation Plans/i }),
     ).toBeVisible();
   });
 

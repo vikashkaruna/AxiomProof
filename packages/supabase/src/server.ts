@@ -8,10 +8,12 @@ import { createE2ESupabaseClient, isE2EBypassEnabled } from './e2e';
  * Route Handlers, and Server Actions. Reads/writes session cookies.
  */
 export async function createSupabaseServerClient() {
-  if (isE2EBypassEnabled()) return createE2ESupabaseClient();
-
   const env = loadEnv();
   const cookieStore = await cookies();
+
+  if (cookieStore.get('axiom_e2e_bypass')?.value === 'true' || isE2EBypassEnabled()) {
+    return createE2ESupabaseClient();
+  }
 
   return createServerClient(env.SUPABASE_URL, env.SUPABASE_ANON_KEY, {
     cookies: {

@@ -42,6 +42,7 @@ export default async function MonitoringPage() {
         phase: 'P3',
         agent: 'Drishti + Parikshan + Nazar',
         agentKey: 'nazar',
+        agentKeys: ['drishti', 'parikshan', 'nazar'],
         autonomy: 'L1 Autonomous',
         moduleId: 'M3.10',
         statutoryCitation: 'DPDPA §8(4) & §16',

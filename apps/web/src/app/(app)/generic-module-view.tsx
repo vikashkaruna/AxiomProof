@@ -36,7 +36,8 @@ export interface GenericModuleMeta {
   hi: string;
   phase: string;
   agent?: string;
-  agentKey?: AgentName;
+  agentKey?: AgentName | string;
+  agentKeys?: Array<AgentName | string>;
   autonomy: string;
   moduleId: string;
   desc: string;
@@ -48,7 +49,13 @@ export interface GenericModuleMeta {
   telemetryTitle?: string;
 }
 
-export function GenericModuleView({ meta }: { meta: GenericModuleMeta }) {
+export function GenericModuleView({
+  meta,
+  children,
+}: {
+  meta: GenericModuleMeta;
+  children?: React.ReactNode;
+}) {
   const router = useRouter();
   const [isExecuting, setIsExecuting] = useState(false);
   const [runResult, setRunResult] = useState<{
@@ -123,15 +130,42 @@ export function GenericModuleView({ meta }: { meta: GenericModuleMeta }) {
                 {meta.phase}
               </span>
               {meta.agent && (
-                <div className="flex items-center gap-1.5 text-xs font-semibold text-[#0FB5A5]">
-                  {meta.agentKey && (
-                    <AgentIcon
-                      agent={meta.agentKey}
-                      size="xs"
-                      state={isExecuting ? 'working' : 'idle'}
-                    />
+                <div className="flex flex-wrap items-center gap-1.5 text-xs font-semibold text-[#0FB5A5]">
+                  <span>Agent ·</span>
+                  {meta.agent.includes('+') ? (
+                    meta.agent.split('+').map((partRaw, idx) => {
+                      const part = partRaw.trim();
+                      const key =
+                        meta.agentKeys?.[idx] ??
+                        (meta.agentKey && idx === 0 ? meta.agentKey : part.toLowerCase());
+                      return (
+                        <React.Fragment key={idx}>
+                          {idx > 0 && <span className="text-[#0FB5A5]/70">+</span>}
+                          <span className="inline-flex items-center gap-1">
+                            <AgentIcon
+                              agent={key}
+                              size="xs"
+                              variant="on-dark"
+                              state={isExecuting ? 'working' : 'idle'}
+                            />
+                            <span>{part}</span>
+                          </span>
+                        </React.Fragment>
+                      );
+                    })
+                  ) : (
+                    <span className="inline-flex items-center gap-1">
+                      {meta.agentKey && (
+                        <AgentIcon
+                          agent={meta.agentKey}
+                          size="xs"
+                          variant="on-dark"
+                          state={isExecuting ? 'working' : 'idle'}
+                        />
+                      )}
+                      <span>{meta.agent}</span>
+                    </span>
                   )}
-                  <span>Agent · {meta.agent}</span>
                 </div>
               )}
               <span className="text-xs text-[#8a97b8]">Autonomy {meta.autonomy}</span>
@@ -274,6 +308,8 @@ export function GenericModuleView({ meta }: { meta: GenericModuleMeta }) {
           </div>
         ))}
       </div>
+
+      {children}
 
       {/* ============================================================ */}
       {/* 3. RECENT TELEMETRY STREAM FROM ACTUAL LEDGER                */}

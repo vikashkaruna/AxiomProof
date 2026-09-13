@@ -7,11 +7,14 @@ import { cn } from '../utils';
 export type AgentIconState = 'idle' | 'thinking' | 'working';
 export type AgentIconSize = 'xs' | 'sm' | 'md' | 'lg' | number;
 
+export type AgentKey = AgentName | 'policy' | 'policy_engine' | 'incident' | 'dsar' | 'consent';
+
 export interface AgentIconProps extends React.HTMLAttributes<HTMLDivElement> {
-  agent: AgentName;
+  agent: AgentKey | string;
   state?: AgentIconState;
   size?: AgentIconSize;
   showBadge?: boolean;
+  variant?: 'default' | 'on-dark';
   className?: string;
 }
 
@@ -22,15 +25,46 @@ const SIZE_MAP: Record<'xs' | 'sm' | 'md' | 'lg', { box: number; icon: number }>
   lg: { box: 56, icon: 36 },
 };
 
+const ON_DARK_ACCENTS: Record<string, string> = {
+  parikshan: '#818CF8', // high-contrast light indigo on dark background
+  lekha: '#94A3B8', // high-contrast slate on dark background
+  drishti: '#0FB5A5',
+  vibhaag: '#A78BFA',
+  saakshi: '#FACC15',
+  sudhaar: '#38BDF8',
+  karya: '#F87171',
+  nazar: '#4ADE80',
+  prativedan: '#C084FC',
+  sanket: '#FB923C',
+  policy: '#0FB5A5',
+  policy_engine: '#0FB5A5',
+  incident: '#F87171',
+  dsar: '#38BDF8',
+  consent: '#0FB5A5',
+};
+
+const EXTRA_ACCENTS: Record<string, string> = {
+  policy: '#0FB5A5',
+  policy_engine: '#0FB5A5',
+  incident: '#D9534F',
+  dsar: '#0EA5E9',
+  consent: '#0FB5A5',
+};
+
 export function AgentIcon({
   agent,
   state = 'idle',
   size = 'sm',
   showBadge = false,
+  variant = 'default',
   className,
   ...props
 }: AgentIconProps) {
-  const accent = agentAccents[agent] || '#0FB5A5';
+  const accent =
+    variant === 'on-dark'
+      ? ON_DARK_ACCENTS[agent] || '#0FB5A5'
+      : agentAccents[agent as AgentName] || EXTRA_ACCENTS[agent] || '#0FB5A5';
+
   const sizeConfig =
     typeof size === 'number'
       ? { box: size, icon: Math.round(size * 0.65) }
@@ -46,8 +80,8 @@ export function AgentIcon({
       style={{
         width: `${sizeConfig.box}px`,
         height: `${sizeConfig.box}px`,
-        backgroundColor: `${accent}15`,
-        borderColor: `${accent}40`,
+        backgroundColor: variant === 'on-dark' ? 'rgba(255,255,255,0.1)' : `${accent}15`,
+        borderColor: variant === 'on-dark' ? 'rgba(255,255,255,0.2)' : `${accent}40`,
         borderWidth: '1px',
         borderStyle: 'solid',
       }}
@@ -213,7 +247,7 @@ export function AgentIcon({
 }
 
 interface SvgContentProps {
-  agent: AgentName;
+  agent: AgentKey | string;
   state: AgentIconState;
   accent: string;
 }
@@ -715,6 +749,124 @@ function AgentSvgContent({ agent, state, accent }: SvgContentProps) {
                 ? 'sanket-sonar 1.8s cubic-bezier(0, 0.2, 0.8, 1) infinite 0.6s'
                 : undefined,
             }}
+          />
+        </g>
+      );
+
+    // ── 11. Policy Engine (Standing Architectural Guardrails) ───────────
+    case 'policy':
+    case 'policy_engine':
+      return (
+        <g>
+          {/* Shield frame */}
+          <path
+            d="M16 3L27 7V15C27 21.5 22.2 26.5 16 28.5C9.8 26.5 5 21.5 5 15V7L16 3Z"
+            stroke={accent}
+            strokeWidth="1.75"
+            fill={`${accent}18`}
+          />
+          {/* Central scale balance */}
+          <line x1="16" y1="9" x2="16" y2="22" stroke={accent} strokeWidth="1.5" />
+          <line
+            x1="10"
+            y1="13"
+            x2="22"
+            y2="13"
+            stroke={accent}
+            strokeWidth="1.5"
+            strokeLinecap="round"
+          />
+          <path d="M8 17L10 13L12 17H8Z" fill={accent} opacity="0.8" />
+          <path d="M20 17L22 13L24 17H20Z" fill={accent} opacity="0.8" />
+          <circle cx="16" cy="13" r="2" fill={accent} />
+        </g>
+      );
+
+    // ── 12. Incident Ops (Emergency & Breach Response) ───────────────────
+    case 'incident':
+      return (
+        <g>
+          {/* Hexagonal hazard crest */}
+          <polygon
+            points="16,3 27,9 27,23 16,29 5,23 5,9"
+            stroke={accent}
+            strokeWidth="1.75"
+            fill={`${accent}18`}
+          />
+          {/* Alert flash */}
+          <path
+            d="M17 8L10 17H16L15 24L22 15H16L17 8Z"
+            fill={accent}
+            stroke={accent}
+            strokeWidth="0.5"
+            strokeLinejoin="round"
+          />
+        </g>
+      );
+
+    // ── 13. DSAR (Data Principal Rights Engine) ─────────────────────────
+    case 'dsar':
+      return (
+        <g>
+          {/* ID card frame */}
+          <rect
+            x="4"
+            y="6"
+            width="24"
+            height="20"
+            rx="3"
+            stroke={accent}
+            strokeWidth="1.75"
+            fill={`${accent}15`}
+          />
+          <circle cx="12" cy="13" r="3" stroke={accent} strokeWidth="1.5" fill={`${accent}30`} />
+          <path
+            d="M7 21C7 18.5 9.2 17.5 12 17.5C14.8 17.5 17 18.5 17 21"
+            stroke={accent}
+            strokeWidth="1.5"
+            strokeLinecap="round"
+          />
+          <line
+            x1="19"
+            y1="12"
+            x2="24"
+            y2="12"
+            stroke={accent}
+            strokeWidth="1.5"
+            strokeLinecap="round"
+          />
+          <line
+            x1="19"
+            y1="16"
+            x2="24"
+            y2="16"
+            stroke={accent}
+            strokeWidth="1.5"
+            strokeLinecap="round"
+          />
+        </g>
+      );
+
+    // ── 14. Consent Manager (Dual Bilingual Notice & Seals) ─────────────
+    case 'consent':
+      return (
+        <g>
+          {/* Agreement seal ring */}
+          <circle
+            cx="16"
+            cy="16"
+            r="12"
+            stroke={accent}
+            strokeWidth="1.75"
+            fill={`${accent}15`}
+            strokeDasharray={isWorking ? '4 2' : 'none'}
+          />
+          <path
+            d="M10 16L14 20L22 11"
+            stroke={accent}
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
           />
         </g>
       );

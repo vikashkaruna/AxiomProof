@@ -1,6 +1,25 @@
 import type { Metadata } from 'next';
+import { Inter, Inter_Tight, JetBrains_Mono } from 'next/font/google';
 import './globals.css';
 import { BRAND } from '@axiom/config';
+
+const inter = Inter({
+  subsets: ['latin'],
+  display: 'swap',
+  variable: '--font-sans',
+});
+
+const interTight = Inter_Tight({
+  subsets: ['latin'],
+  display: 'swap',
+  variable: '--font-head',
+});
+
+const jetbrainsMono = JetBrains_Mono({
+  subsets: ['latin'],
+  display: 'swap',
+  variable: '--font-mono',
+});
 
 export const metadata: Metadata = {
   title: {
@@ -28,8 +47,11 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" className="h-full">
-      <body className="min-h-full bg-mist-100 font-body text-slate-700 antialiased">
+    <html
+      lang="en"
+      className={`${inter.variable} ${interTight.variable} ${jetbrainsMono.variable} h-full`}
+    >
+      <body className="min-h-full bg-[#F4F6F8] font-body text-slate-700 antialiased">
         {children}
       </body>
     </html>

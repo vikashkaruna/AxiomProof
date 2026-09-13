@@ -37,10 +37,25 @@ describe('AgentIcon Component', () => {
     expect(workingHtml).toContain('saakshi (working)');
   });
 
-  it('renders AgentPill embedding AgentIcon', () => {
-    const pillHtml = renderToString(<AgentPill agent="karya" state="working" showPersona />);
-    expect(pillHtml).toContain('karya');
-    expect(pillHtml).toContain('Execution');
-    expect(pillHtml).toContain('<svg');
+  it('renders on-dark variant with high-contrast borders and accents', () => {
+    const onDarkParikshan = renderToString(
+      <AgentIcon agent="parikshan" state="working" size="xs" variant="on-dark" />,
+    );
+    expect(onDarkParikshan).toContain('rgba(255,255,255,0.2)');
+    expect(onDarkParikshan).toContain('#818CF8'); // high-contrast light indigo
+
+    const onDarkLekha = renderToString(
+      <AgentIcon agent="lekha" state="working" size="xs" variant="on-dark" />,
+    );
+    expect(onDarkLekha).toContain('#94A3B8'); // high-contrast slate
+  });
+
+  it('renders bespoke SVGs for domain agent keys: policy, incident, dsar, consent', () => {
+    const domainAgents = ['policy', 'policy_engine', 'incident', 'dsar', 'consent'] as const;
+    for (const key of domainAgents) {
+      const html = renderToString(<AgentIcon agent={key} size="xs" variant="on-dark" />);
+      expect(html).toContain(key);
+      expect(html).toContain('<svg');
+    }
   });
 });

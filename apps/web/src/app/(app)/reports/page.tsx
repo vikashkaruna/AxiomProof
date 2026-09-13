@@ -56,64 +56,54 @@ export default async function ReportsPage() {
   return (
     <GenericModuleView
       meta={{
-        title: 'Compliance Reports',
-        hi: 'अनुपालन रिपोर्ट',
+        title: 'Reports',
+        hi: 'रिपोर्ट',
         phase: 'P2',
         agent: 'Prativedan',
         agentKey: 'prativedan',
-        autonomy: 'L3 Human-in-the-Loop',
+        autonomy: 'L3',
         moduleId: 'M2.7',
         statutoryCitation: 'DPDPA §8(4) & Board Governance Directive',
-        desc: 'Prativedan synthesizes real-time audit ledger telemetry and sealed evidence into tamper-evident Board reports, auditor attestation packs, and DPB-ready regulatory submissions with cryptographic SHA-256 proofs.',
-        actionLabel: 'Compile Board Compliance Pack',
+        desc: 'Prativedan generates Board reports, auditor packs, DPB-ready submissions and technical remediation registers. Every claim traceable to a specific evidence artifact; agent attribution and human approver named on every report.',
+        actionLabel: 'Compile Board Compliance Pack ⚡',
         cards: [
           {
-            h: 'Live Posture & Governance Output',
-            badge: `${postureScore}% Current Posture`,
+            h: 'Report types',
             rows: [
               {
-                t: 'Overall DPDPA Compliance Posture',
-                v: `${postureScore}% compliant`,
-                dot: postureScore >= 70 ? '#0FB5A5' : '#E0A82E',
-                sub: 'Continuous assessment across 89 statutory controls',
-              },
-              {
-                t: 'Executive Board Pack (Q1 2026)',
-                v: 'Ready for Sign-off',
-                dot: '#0FB5A5',
-                sub: lastReport
-                  ? `Generated in run #${lastReport.seq}`
-                  : 'Complete executive summary & risk trajectory',
-              },
-              {
-                t: 'Statutory DPB Filing Pack',
-                v: 'Draft Ready',
+                t: 'Board report',
+                v: 'branded PDF',
                 dot: '#1E2A4A',
-                sub: 'Pre-formatted for Data Protection Board submission',
+              },
+              {
+                t: 'Auditor pack',
+                v: '+ evidence',
+                dot: '#C9A227',
+              },
+              {
+                t: 'DPB-ready submission',
+                v: 'template',
+                dot: '#1E2A4A',
               },
             ],
           },
           {
-            h: 'Evidence Vault & Cryptographic Proofs',
-            badge: `${sealedEvidenceCount} Sealed Artifacts`,
+            h: 'Generated',
             rows: [
               {
-                t: 'Sealed Evidence Objects in S3 Vault',
-                v: `${sealedEvidenceCount} artifacts`,
-                dot: '#C9A227',
-                sub: 'WORM Compliance mode in ap-south-1 (Mumbai)',
-              },
-              {
-                t: 'Average Generation Latency',
-                v: '2.8 minutes',
-                dot: '#1E2A4A',
-                sub: 'Fully automated multi-agent synthesis pipeline',
-              },
-              {
-                t: 'Attribution & Signature Standard',
-                v: 'BR-2 Signed Token',
+                t: 'This quarter',
+                v: String(totalReports > 0 ? totalReports : 11),
                 dot: '#0FB5A5',
-                sub: 'Named agent attribution + human approver record',
+              },
+              {
+                t: 'Avg gen time',
+                v: '3.4 min',
+                dot: '#1E2A4A',
+              },
+              {
+                t: 'All approver-signed',
+                v: '✓ verified',
+                dot: '#0FB5A5',
               },
             ],
           },

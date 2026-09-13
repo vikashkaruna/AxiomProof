@@ -1,1 +1,21 @@
 @import '@axiom/design-tokens/globals.css';
+
+:root {
+  --sans: var(--font-sans), 'Inter', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+  --head: var(--font-head), 'Inter Tight', var(--sans);
+  --mono: var(--font-mono), 'JetBrains Mono', monospace;
+}
+
+body {
+  font-family: var(--sans);
+}
+
+.font-heading,
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--head);
+}
+
+.font-mono,
+code, pre, kbd {
+  font-family: var(--mono);
+}

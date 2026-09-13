@@ -7,7 +7,7 @@ export const dynamic = 'force-dynamic';
 const TARGET_ENFORCEMENT_DATE = new Date('2027-05-13T00:00:00+05:30');
 const DAYS_REMAINING_TO_ENFORCEMENT = Math.max(
   0,
-  Math.ceil((TARGET_ENFORCEMENT_DATE.getTime() - Date.now()) / (1000 * 60 * 60 * 24))
+  Math.ceil((TARGET_ENFORCEMENT_DATE.getTime() - Date.now()) / (1000 * 60 * 60 * 24)),
 );
 
 export default async function RegWatchPage() {
@@ -18,7 +18,9 @@ export default async function RegWatchPage() {
   try {
     const { data, count } = await admin
       .from('audit_ledger')
-      .select('seq, correlation_id, action, target_ref, timestamp, entry_hash, result', { count: 'exact' })
+      .select('seq, correlation_id, action, target_ref, timestamp, entry_hash, result', {
+        count: 'exact',
+      })
       .or('actor.eq.nazar,action.ilike.%gazette%,action.ilike.%reg%')
       .order('seq', { ascending: false })
       .limit(6);

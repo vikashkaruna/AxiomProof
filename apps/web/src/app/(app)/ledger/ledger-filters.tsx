@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { useTransition } from 'react';
 import { useRouter, usePathname, useSearchParams } from 'next/navigation';
 
 export interface LedgerFiltersProps {
@@ -48,6 +48,7 @@ export function LedgerFilters({ totalCount, filteredCount }: LedgerFiltersProps)
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
+  const [isPending, startTransition] = useTransition();
 
   const currentAgent = searchParams.get('agent') ?? '';
   const currentAction = searchParams.get('action') ?? '';
@@ -63,11 +64,18 @@ export function LedgerFilters({ totalCount, filteredCount }: LedgerFiltersProps)
     } else {
       params.delete(key);
     }
-    router.push(`${pathname}?${params.toString()}`);
+    // Always reset to page 1 when filter changes
+    params.delete('page');
+
+    startTransition(() => {
+      router.push(`${pathname}?${params.toString()}`);
+    });
   };
 
   const clearAllFilters = () => {
-    router.push(pathname);
+    startTransition(() => {
+      router.push(pathname);
+    });
   };
 
   const handleSearchSubmit = (e: React.FormEvent<HTMLFormElement>) => {
@@ -78,20 +86,24 @@ export function LedgerFilters({ totalCount, filteredCount }: LedgerFiltersProps)
   };
 
   return (
-    <div className="flex flex-col gap-3 rounded-xl border border-slate-200 bg-white p-3.5 shadow-xs">
+    <div className="flex flex-col gap-3 rounded-xl border border-slate-200 bg-white p-3.5 shadow-2xs">
       {/* Primary Filter Bar */}
       <div className="flex flex-wrap items-center gap-2.5">
         {/* Search Query Input */}
         <form onSubmit={handleSearchSubmit} className="relative flex-1 min-w-[220px]">
           <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3 text-slate-400">
-            <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
-              />
-            </svg>
+            {isPending ? (
+              <span className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-teal-600 border-t-transparent" />
+            ) : (
+              <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+                />
+              </svg>
+            )}
           </div>
           <input
             type="text"
@@ -104,7 +116,7 @@ export function LedgerFilters({ totalCount, filteredCount }: LedgerFiltersProps)
             <button
               type="button"
               onClick={() => updateParam('q', '')}
-              className="absolute inset-y-0 right-0 flex items-center pr-2.5 text-xs text-slate-400 hover:text-slate-700"
+              className="absolute inset-y-0 right-0 flex items-center pr-2.5 text-xs text-slate-400 hover:text-slate-700 cursor-pointer"
               title="Clear search"
             >
               ✕
@@ -117,7 +129,8 @@ export function LedgerFilters({ totalCount, filteredCount }: LedgerFiltersProps)
           <select
             value={currentAgent}
             onChange={(e) => updateParam('agent', e.target.value)}
-            className="h-9 w-full rounded-lg border border-slate-300 bg-slate-50/50 px-2.5 text-xs font-medium text-slate-700 transition-colors hover:bg-white focus:border-teal-500 focus:bg-white focus:outline-none focus:ring-1 focus:ring-teal-500 cursor-pointer"
+            disabled={isPending}
+            className="h-9 w-full rounded-lg border border-slate-300 bg-slate-50/50 px-2.5 text-xs font-medium text-slate-700 transition-colors hover:bg-white focus:border-teal-500 focus:bg-white focus:outline-none focus:ring-1 focus:ring-teal-500 cursor-pointer disabled:opacity-50"
             aria-label="Filter by Actor"
           >
             <option value="">All actors ({AGENTS.length})</option>
@@ -134,7 +147,8 @@ export function LedgerFilters({ totalCount, filteredCount }: LedgerFiltersProps)
           <select
             value={currentAction}
             onChange={(e) => updateParam('action', e.target.value)}
-            className="h-9 w-full rounded-lg border border-slate-300 bg-slate-50/50 px-2.5 text-xs font-medium text-slate-700 transition-colors hover:bg-white focus:border-teal-500 focus:bg-white focus:outline-none focus:ring-1 focus:ring-teal-500 cursor-pointer"
+            disabled={isPending}
+            className="h-9 w-full rounded-lg border border-slate-300 bg-slate-50/50 px-2.5 text-xs font-medium text-slate-700 transition-colors hover:bg-white focus:border-teal-500 focus:bg-white focus:outline-none focus:ring-1 focus:ring-teal-500 cursor-pointer disabled:opacity-50"
             aria-label="Filter by Action Type"
           >
             <option value="">All action chains</option>
@@ -151,7 +165,8 @@ export function LedgerFilters({ totalCount, filteredCount }: LedgerFiltersProps)
           <select
             value={currentResult}
             onChange={(e) => updateParam('result', e.target.value)}
-            className="h-9 w-full rounded-lg border border-slate-300 bg-slate-50/50 px-2.5 text-xs font-medium text-slate-700 transition-colors hover:bg-white focus:border-teal-500 focus:bg-white focus:outline-none focus:ring-1 focus:ring-teal-500 cursor-pointer"
+            disabled={isPending}
+            className="h-9 w-full rounded-lg border border-slate-300 bg-slate-50/50 px-2.5 text-xs font-medium text-slate-700 transition-colors hover:bg-white focus:border-teal-500 focus:bg-white focus:outline-none focus:ring-1 focus:ring-teal-500 cursor-pointer disabled:opacity-50"
             aria-label="Filter by Result"
           >
             <option value="">All results</option>
@@ -168,29 +183,39 @@ export function LedgerFilters({ totalCount, filteredCount }: LedgerFiltersProps)
           <button
             type="button"
             onClick={clearAllFilters}
-            className="h-9 rounded-lg border border-slate-200 px-3 text-xs font-medium text-slate-600 hover:bg-slate-50 hover:text-slate-900 transition-colors cursor-pointer"
+            disabled={isPending}
+            className="h-9 rounded-lg border border-slate-200 px-3 text-xs font-semibold text-slate-600 hover:bg-slate-50 hover:text-slate-900 transition-colors cursor-pointer"
           >
             Reset
           </button>
         )}
       </div>
 
-      {/* Active Filter Chips & Match Count */}
+      {/* Active Filter Chips & Match Count + Loading Status */}
       <div className="flex flex-wrap items-center justify-between gap-2 border-t border-slate-100 pt-2.5 text-[11px] text-slate-500">
         <div className="flex flex-wrap items-center gap-1.5">
-          <span>Showing</span>
-          <strong className="font-semibold text-slate-800">{filteredCount}</strong>
-          <span>of {totalCount} total entries</span>
+          {isPending ? (
+            <span className="inline-flex items-center gap-1.5 text-teal-700 font-medium">
+              <span className="h-2 w-2 rounded-full bg-teal-500 animate-ping" />
+              Filtering ledger records…
+            </span>
+          ) : (
+            <>
+              <span>Filtered:</span>
+              <strong className="font-semibold text-slate-800">{filteredCount}</strong>
+              <span>of {totalCount} total entries</span>
+            </>
+          )}
 
           {hasActiveFilters && (
             <div className="ml-2 flex flex-wrap items-center gap-1.5">
               {currentQ && (
-                <span className="inline-flex items-center gap-1 rounded-md bg-mist-100 px-2 py-0.5 font-medium text-slate-700">
+                <span className="inline-flex items-center gap-1 rounded-md bg-slate-100 px-2 py-0.5 font-medium text-slate-700">
                   Search: <code className="font-mono text-[10px]">{currentQ}</code>
                   <button
                     type="button"
                     onClick={() => updateParam('q', '')}
-                    className="hover:text-ember-600"
+                    className="hover:text-red-600 cursor-pointer"
                   >
                     ✕
                   </button>
@@ -202,7 +227,7 @@ export function LedgerFilters({ totalCount, filteredCount }: LedgerFiltersProps)
                   <button
                     type="button"
                     onClick={() => updateParam('agent', '')}
-                    className="hover:text-ember-600"
+                    className="hover:text-red-600 cursor-pointer"
                   >
                     ✕
                   </button>
@@ -214,7 +239,7 @@ export function LedgerFilters({ totalCount, filteredCount }: LedgerFiltersProps)
                   <button
                     type="button"
                     onClick={() => updateParam('action', '')}
-                    className="hover:text-ember-600"
+                    className="hover:text-red-600 cursor-pointer"
                   >
                     ✕
                   </button>
@@ -226,7 +251,7 @@ export function LedgerFilters({ totalCount, filteredCount }: LedgerFiltersProps)
                   <button
                     type="button"
                     onClick={() => updateParam('result', '')}
-                    className="hover:text-ember-600"
+                    className="hover:text-red-600 cursor-pointer"
                   >
                     ✕
                   </button>
@@ -240,7 +265,7 @@ export function LedgerFilters({ totalCount, filteredCount }: LedgerFiltersProps)
           <button
             type="button"
             onClick={clearAllFilters}
-            className="text-teal-700 hover:text-teal-900 font-medium hover:underline"
+            className="text-teal-700 hover:text-teal-900 font-medium hover:underline cursor-pointer"
           >
             Clear all filters
           </button>

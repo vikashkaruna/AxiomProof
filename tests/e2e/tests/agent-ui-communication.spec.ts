@@ -14,17 +14,25 @@ test.describe('Agent ↔ UI communication', () => {
   test('agent progress events update the UI', async ({ page }) => {
     await page.goto('/workbench');
 
-    // The workbench should show the agent roster regardless of data state
-    const main = page.getByRole('main');
-    await expect(main.getByText(/^Drishti$/i)).toBeVisible();
-    await expect(main.getByText(/^Parikshan$/i)).toBeVisible();
-    await expect(main.getByText(/^Sudhaar$/i)).toBeVisible();
-    await expect(main.getByText(/^Karya$/i)).toBeVisible();
+    // The workbench renders the agent fleet and interactive cockpit
+    await expect(
+      page.getByRole('main').getByRole('heading', { name: /Agent Workbench/i }),
+    ).toBeVisible();
+    await expect(page.getByText('Agent fleet')).toBeVisible();
+    await expect(page.getByText('10 / 10 Online')).toBeVisible();
+    await expect(page.getByText('Prompt registry')).toBeVisible();
+
+    // Verify key named agents exist in the cockpit execution selector
+    await expect(page.locator('option[value="drishti"]')).toContainText(/Drishti/i);
+    await expect(page.locator('option[value="parikshan"]')).toContainText(/Parikshan/i);
+    await expect(page.locator('option[value="sudhaar"]')).toContainText(/Sudhaar/i);
+    await expect(page.locator('option[value="karya"]')).toContainText(/Karya/i);
   });
 
   test('the workbench renders the autonomy badges', async ({ page }) => {
     await page.goto('/workbench');
-    await expect(page.getByText(/L0 — L1 Autonomy/i)).toBeVisible();
-    await expect(page.getByText(/Phase 0 — 1/i)).toBeVisible();
+    await expect(page.getByText(/Autonomy/i).first()).toBeVisible();
+    await expect(page.getByText(/Env: Production/i)).toBeVisible();
+    await expect(page.getByText(/ap-south-1/i).first()).toBeVisible();
   });
 });

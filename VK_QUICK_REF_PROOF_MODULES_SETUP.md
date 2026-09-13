@@ -1233,3 +1233,119 @@ All secondary modules (`/discovery`, `/classification`, `/datamap`, `/execution`
 - **Type Safety**: Built under strict TypeScript mode with zero errors (`pnpm --filter @axiom/web typecheck`).
 - **Residency Guarantee**: All queries and agent execution run strictly within the Indian sovereign boundary (`ap-south-1 Mumbai`).
 - **Cryptographic Traceability**: Every agent action automatically appends to the immutable PostgreSQL ledger via `append_ledger()` with unbroken SHA-256 chain links.
+
+---
+
+### 14.10 Header Agent Icon Positioning & Multi-Agent Design Architecture
+
+To eliminate visual congestion caused by consecutive stacked icons before labels in multi-agent headers (e.g. `[Icon1][Icon2] Agent · Drishti + Saakshi`), Axiom Proof establishes a clear typographical and visual hierarchy across all module headers:
+
+#### 1. Architectural Positioning Standard
+
+- **Format**: The icon is positioned **immediately adjacent to and preceding the agent's name**, directly following `"Agent · "`.
+  - **Single-Agent Modules**: `Agent · [Icon] AgentName`
+  - **Multi-Agent Modules**: `Agent · [Icon1] Name1 + [Icon2] Name2` (and for three agents: `Agent · [Icon1] Name1 + [Icon2] Name2 + [Icon3] Name3`)
+- **Visual Separation**: The mathematical `+` symbol cleanly segments each agent's identity with appropriate tracking and color contrast (`text-[#0FB5A5]/70`).
+- **High-Contrast `variant="on-dark"` Rendering**:
+  - Embedded inside dark indigo hero banners (`from-[#1E2A4A] via-[#1E2A4A] to-[#243356]`), standard dark indigo (`#1E2A4A`) or dark slate (`#525B71`) agent glyphs produce insufficient contrast.
+  - `variant="on-dark"` activates luminous, accessible tints:
+    - **Parikshan**: `#818CF8` (high-contrast light indigo calipers & scale)
+    - **Lekha**: `#94A3B8` (high-contrast slate mist ledger glyph)
+    - **Drishti**: `#0FB5A5` (teal aperture)
+    - **Vibhaag**: `#A78BFA` (light violet prism)
+    - **Saakshi**: `#FACC15` (proof gold starburst)
+    - **Sudhaar**: `#38BDF8` (sky drafting compass)
+    - **Karya**: `#F87171` (ember planetary gears)
+    - **Nazar**: `#4ADE80` (emerald surveillance dish)
+    - **Prativedan**: `#C084FC` (amethyst executive dossier)
+    - **Sanket**: `#FB923C` (solar transmission tower)
+  - Translucent container backing (`rgba(255,255,255,0.1)`) with crisp perimeter border (`rgba(255,255,255,0.2)`).
+
+#### 2. Bespoke Domain Agent SVGs
+
+Specialized modules not tied directly to the 10 core named agents are equipped with custom SVG iconography and dynamic states:
+
+- **`policy` / `policy_engine`**: Architectural shield with central scale balance beam and verified security node.
+- **`incident`**: Hexagonal hazard crest with alert flash.
+- **`dsar`**: Data Principal ID card with biometric user badge and rights key.
+- **`consent`**: Agreement seal ring with dual verified checkmarks.
+
+#### 3. Module Route & Agent Header Mapping Table
+
+| Route             | Primary Module        | Header Agent Text & Layout                                 | Agent Keys Rendered                          | Autonomy Level                |
+| :---------------- | :-------------------- | :--------------------------------------------------------- | :------------------------------------------- | :---------------------------- |
+| **`/controls`**   | Control Library       | `Agent · [Icon] Parikshan`                                 | `parikshan` (`#818CF8`)                      | `—` (Read-only catalog)       |
+| **`/approval`**   | Approval Console      | `Agent · [Icon] Sudhaar + [Icon] Karya`                    | `sudhaar` (`#38BDF8`), `karya` (`#F87171`)   | Human Gate (ADR-1)            |
+| **`/evidence`**   | Evidence Explorer     | `Agent · [Icon] Saakshi`                                   | `saakshi` (`#FACC15`)                        | L3 (Write-once WORM)          |
+| **`/ledger`**     | Audit Ledger          | `Agent · [Icon] Lekha`                                     | `lekha` (`#94A3B8`)                          | L3 (Append-only)              |
+| **`/dsars`**      | Rights Requests       | `Agent · [Icon] Drishti + [Icon] Saakshi`                  | `drishti` (`#0FB5A5`), `saakshi` (`#FACC15`) | L2 (Workflow automation)      |
+| **`/consent`**    | Consent Manager       | `Agent · [Icon] Lekha + [Icon] Consent`                    | `lekha` (`#94A3B8`), `consent` (`#0FB5A5`)   | L2 (Ledger-backed)            |
+| **`/breaches`**   | Breach & Incident Ops | `Agent · [Icon] Sanket + [Icon] Incident Ops`              | `sanket` (`#FB923C`), `incident` (`#F87171`) | L1 (72hr notification clock)  |
+| **`/monitoring`** | Continuous Monitoring | `Agent · [Icon] Drishti + [Icon] Parikshan + [Icon] Nazar` | `drishti`, `parikshan`, `nazar`              | L1 (Autonomous drift monitor) |
+| **`/policies`**   | Standing Policies     | `Agent · [Icon] Policy Engine`                             | `policy` (`#0FB5A5`)                         | L3 (Guardrail enforcement)    |
+| **`/workbench`**  | Agent Workbench       | `Agent · [Icon] {selectedAgent} (fleet)`                   | Selected agent dynamic                       | Cockpit / Admin Fleet         |
+
+---
+
+### 14.11 Multi-Environment Configuration, Pre-Requisites & Testing Matrix
+
+This section organizes environment-specific settings, automated and manual verification procedures, pre-flight prerequisites, and post-deployment validation checks.
+
+#### 1. Environment Architecture & Matrix
+
+| Environment            | Purpose                              | Auth Mechanism                          | Database & Storage                       | Model Gateway                             |
+| :--------------------- | :----------------------------------- | :-------------------------------------- | :--------------------------------------- | :---------------------------------------- |
+| **Local Dev**          | Rapid iteration & debugging          | Local Supabase GoTrue (`55321`)         | Local Postgres (`55322`) + Local S3 mock | Self-hosted Ollama or Bedrock mock        |
+| **E2E / CI**           | Automated Playwright regression      | `axiom_e2e_bypass` cookie & mock client | In-memory deterministic fixture store    | Mocked PII redaction layer                |
+| **Staging / Pre-Prod** | UAT, auditor partner dry-runs        | Supabase Cloud / IAM JWT                | Managed AWS RDS Postgres (`ap-south-1`)  | AWS Bedrock in `ap-south-1`               |
+| **On-Premise**         | Air-gapped enterprise deployment     | Active Directory / OIDC / Kerberos      | Customer PostgreSQL (SECURITY DEFINER)   | Self-hosted vLLM / Ollama in enclave      |
+| **Production**         | Live sovereign enterprise compliance | Supabase Enterprise / Multi-Tenant RLS  | Sovereign AWS RDS + S3 Object Lock Vault | Dedicated AWS Bedrock / Mistral Sovereign |
+
+#### 2. Pre-Requisites Checklist (Before Deployment / Audit)
+
+- [ ] **Node.js & Tooling**: Node.js 22 LTS, `pnpm 9.12+`, `python 3.11+`, `uv 0.4+`, `docker` compose v2.
+- [ ] **Sovereign Residency Guarantee**: Confirm AWS region is strictly `ap-south-1` (Mumbai) or `ap-south-2` (Hyderabad). Zero egress outside India.
+- [ ] **PostgreSQL Security Definer Role**: Confirm `ledger_writer` role has INSERT-only grants on `audit_ledger`, and only `append_ledger()` function can write records.
+- [ ] **AWS S3 Object Lock**: Ensure evidence bucket has Object Lock enabled in **Compliance mode** (cannot be deleted or overridden even by root).
+- [ ] **Port Allocations (Local)**:
+  - `3000`: Marketing Site
+  - `3001`: Web Workbench & Compliance Console
+  - `4000`: BFF API Gate
+  - `8000`: Agent Runtime (FastAPI)
+  - `8001`: Model Gateway (PII Redaction)
+  - `7233` / `8233`: Temporal Server & Web UI
+  - `55321`–`55324`: Supabase Local Stack (Kong, DB, Studio, Inbucket)
+
+#### 3. Automated Test Suites Execution
+
+Execute all test suites in sequence to verify full-stack compliance:
+
+```bash
+# 1. Typecheck all 12 monorepo packages (TypeScript strict mode)
+pnpm typecheck
+
+# 2. Vitest UI & shared library unit tests (10/10 passed)
+pnpm test
+
+# 3. Python Agent Runtime test suite (36/36 passed)
+cd services/agent-runtime && uv run pytest
+
+# 4. End-to-End Playwright test suite (11/11 passed)
+cd ../..
+pnpm --dir tests/e2e test:e2e
+```
+
+#### 4. Post-Deployment Verification & Operational Health Checks
+
+- [ ] **HTTP 200 Probes**: Verify all primary module endpoints return 200 OK:
+  ```bash
+  for route in controls approval evidence ledger dsars consent breaches monitoring policies workbench; do
+    curl -sf -o /dev/null -w "%{http_code} $route\n" "http://localhost:3001/$route"
+  done
+  ```
+- [ ] **Header Agent Icon Inspection**: Confirm each module hero banner renders `Agent · [Icon] Name` with SVG content present in DOM.
+- [ ] **Cryptographic Hash-Chain Integrity**: Run verification via BFF or direct SQL:
+  ```bash
+  curl -s http://localhost:3001/api/ledger?page=1&limit=1 | jq .
+  ```
+- [ ] **Emergency Kill Switch Test**: Probe `/api/bff/v1/emergency/kill-switch` to ensure mutating actions immediately halt if triggered.
