@@ -100,6 +100,27 @@ export default async function PlanDetailPage({ params }: PageProps) {
   );
   const aggregateBlast = typedPlan.aggregate_blast_radius;
 
+  let activeApprovalToken: string | null = null;
+  let activeApprovedActionIds: string[] = [];
+  if (typedPlan.status === 'approved') {
+    const { data: tokenRow } = await supabase
+      .from('approval_tokens')
+      .select('*')
+      .eq('plan_id', id)
+      .eq('status', 'issued')
+      .order('created_at', { ascending: false })
+      .limit(1)
+      .maybeSingle();
+
+    if (tokenRow && tokenRow.signed_payload && tokenRow.signature) {
+      activeApprovalToken = JSON.stringify({
+        spec: tokenRow.signed_payload,
+        signature: tokenRow.signature,
+      });
+      activeApprovedActionIds = tokenRow.action_ids || [];
+    }
+  }
+
   return (
     <div className="flex flex-col gap-6">
       <PageHeader
@@ -186,6 +207,8 @@ export default async function PlanDetailPage({ params }: PageProps) {
             actions={actions}
             eligible={eligible}
             blocked={blocked}
+            initialApprovalToken={activeApprovalToken}
+            initialApprovedActionIds={activeApprovedActionIds}
           />
         </CardContent>
       </Card>

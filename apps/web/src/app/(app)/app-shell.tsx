@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { AxiomLogo } from '@axiom/ui';
@@ -184,8 +184,8 @@ export function AppShell({
           sector: 'Enterprise',
           mark: t.name.slice(0, 2).toUpperCase(),
           color: '#1E2A4A',
-          employees: 500,
-          score: 74,
+          employees: 150,
+          score: 70,
           env: 'Production',
         }))[0]
     : undefined;
@@ -207,6 +207,77 @@ export function AppShell({
       : DEFAULT_TENANTS[0]!);
 
   const [selectedTenant, setSelectedTenant] = useState<TenantOption>(initialTenant);
+
+  useEffect(() => {
+    let active = true;
+    async function fetchKillStatus() {
+      try {
+        const res = await fetch('/api/bff/v1/kill-switch/status', {
+          headers: { 'X-Tenant-Id': selectedTenant.id },
+        });
+        if (res.ok) {
+          const data = await res.json();
+          if (active && typeof data.engaged === 'boolean') {
+            setKillOn(data.engaged);
+          }
+        }
+      } catch {
+        // Fallback
+      }
+    }
+    fetchKillStatus();
+
+    const handleEvent = (e: Event) => {
+      const custom = e as CustomEvent<{ engaged: boolean }>;
+      if (typeof custom.detail?.engaged === 'boolean') {
+        setKillOn(custom.detail.engaged);
+      }
+    };
+    window.addEventListener('axiom:kill-switch-changed', handleEvent);
+    return () => {
+      active = false;
+      window.removeEventListener('axiom:kill-switch-changed', handleEvent);
+    };
+  }, [selectedTenant.id]);
+
+  async function handleToggleKillSwitch() {
+    if (!killOn) {
+      if (!confirm('ENGAGE KILL SWITCH?\n\nThis will halt ALL in-flight agent execution globally.'))
+        return;
+      try {
+        const res = await fetch('/api/bff/v1/kill-switch/engage', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'X-Tenant-Id': selectedTenant.id },
+          body: JSON.stringify({ scope: 'tenant', reason: 'Engaged from navigation bar' }),
+        });
+        if (res.ok) {
+          setKillOn(true);
+          window.dispatchEvent(
+            new CustomEvent('axiom:kill-switch-changed', { detail: { engaged: true } }),
+          );
+        }
+      } catch (err) {
+        console.error('Failed to engage kill switch:', err);
+      }
+    } else {
+      if (!confirm('DISENGAGE KILL SWITCH?\n\nThis will resume autonomous agent executions.'))
+        return;
+      try {
+        const res = await fetch('/api/bff/v1/kill-switch/release', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'X-Tenant-Id': selectedTenant.id },
+        });
+        if (res.ok) {
+          setKillOn(false);
+          window.dispatchEvent(
+            new CustomEvent('axiom:kill-switch-changed', { detail: { engaged: false } }),
+          );
+        }
+      } catch (err) {
+        console.error('Failed to release kill switch:', err);
+      }
+    }
+  }
 
   const handleSelectTenant = (t: TenantOption) => {
     setSelectedTenant(t);
@@ -399,15 +470,15 @@ export function AppShell({
 
           {/* Kill Switch Toggle */}
           <button
-            onClick={() => setKillOn(!killOn)}
+            onClick={handleToggleKillSwitch}
             className={`flex items-center gap-1.5 rounded-lg border px-3 py-1.5 text-xs font-semibold transition-colors ${
               killOn
-                ? 'border-[#D9534F] bg-[#D9534F] text-white shadow-sm'
+                ? 'border-[#D9534F] bg-[#D9534F] text-white shadow-sm animate-pulse'
                 : 'border-[#e4e8ee] bg-white text-[#D9534F] hover:bg-[#FCEEEC]'
             }`}
             title="Global kill switch for autonomous agents"
           >
-            <span>⏻</span> Kill switch
+            <span>⏻</span> {killOn ? 'Kill switch active' : 'Kill switch'}
           </button>
         </header>
 
@@ -419,8 +490,8 @@ export function AppShell({
               <span>KILL SWITCH ENGAGED — all in-flight agent execution halted globally.</span>
             </div>
             <button
-              onClick={() => setKillOn(false)}
-              className="font-normal underline hover:text-white/80"
+              onClick={handleToggleKillSwitch}
+              className="font-normal underline hover:text-white/80 cursor-pointer"
             >
               Disengage
             </button>

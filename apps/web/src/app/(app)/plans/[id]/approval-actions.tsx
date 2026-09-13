@@ -21,6 +21,8 @@ interface Props {
   actions: Action[];
   eligible: Action[];
   blocked: Action[];
+  initialApprovalToken?: string | null;
+  initialApprovedActionIds?: string[];
 }
 
 export function ApprovalActions({
@@ -30,6 +32,8 @@ export function ApprovalActions({
   actions,
   eligible,
   blocked,
+  initialApprovalToken = null,
+  initialApprovedActionIds = [],
 }: Props) {
   const router = useRouter();
   const [selected, setSelected] = useState<Set<string>>(new Set(eligible.map((a) => a.id)));
@@ -38,8 +42,10 @@ export function ApprovalActions({
   const [stopOnFailure, setStopOnFailure] = useState(true);
   const [expiresInMinutes, setExpiresInMinutes] = useState(60);
   const [submitting, setSubmitting] = useState(false);
-  const [approvalToken, setApprovalToken] = useState<string | null>(null);
-  const [approvedActionIds, setApprovedActionIds] = useState<string[]>([]);
+  const [approvalToken, setApprovalToken] = useState<string | null>(initialApprovalToken);
+  const [approvedActionIds, setApprovedActionIds] = useState<string[]>(
+    initialApprovedActionIds.length > 0 ? initialApprovedActionIds : eligible.map((a) => a.id),
+  );
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
 
@@ -69,12 +75,20 @@ export function ApprovalActions({
           concurrency,
           stopOnFailure,
           expiresInMinutes,
-          reason: reason || null,
+          reason: reason.trim() ? reason.trim() : undefined,
         }),
       });
       if (!res.ok) {
         const body = await res.json().catch(() => ({}));
-        setError(body?.error?.message ?? `Approval failed (HTTP ${res.status})`);
+        let errorMsg = body?.error?.message ?? `Approval failed (HTTP ${res.status})`;
+        if (body?.error?.details) {
+          const detailStr =
+            typeof body.error.details === 'object'
+              ? JSON.stringify(body.error.details)
+              : String(body.error.details);
+          errorMsg += `: ${detailStr}`;
+        }
+        setError(errorMsg);
         return;
       }
       const body = await res.json();

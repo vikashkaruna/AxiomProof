@@ -1,38 +1,161 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { Button } from '@axiom/ui';
 
-export function KillSwitchButton({ planId, tenantId }: { planId: string; tenantId: string }) {
+export function KillSwitchButton({
+  planId,
+  tenantId,
+  className,
+}: {
+  planId?: string;
+  tenantId: string;
+  className?: string;
+}) {
   const router = useRouter();
   const [busy, setBusy] = useState(false);
+  const [engaged, setEngaged] = useState(false);
+  const [feedback, setFeedback] = useState<string | null>(null);
 
-  async function engage() {
-    if (
-      !confirm(
-        'ENGAGE KILL SWITCH?\n\nThis will halt ALL in-flight execution globally and ' +
-          'prevent any further agent execution until reset. This action is recorded ' +
-          'in the audit ledger and is not reversible by the system — only by the founder.',
-      )
-    )
-      return;
-    setBusy(true);
-    try {
-      await fetch('/api/bff/v1/kill-switch/engage', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'X-Tenant-Id': tenantId },
-        body: JSON.stringify({ scope: 'tenant', reason: 'Manual engagement from UI' }),
-      });
-      router.refresh();
-    } finally {
-      setBusy(false);
+  useEffect(() => {
+    let mounted = true;
+    async function checkStatus() {
+      try {
+        const res = await fetch('/api/bff/v1/kill-switch/status', {
+          headers: { 'X-Tenant-Id': tenantId },
+        });
+        if (res.ok) {
+          const data = await res.json();
+          if (mounted && typeof data.engaged === 'boolean') {
+            setEngaged(data.engaged);
+          }
+        }
+      } catch {
+        // Fallback
+      }
+    }
+    checkStatus();
+
+    const handleEvent = (e: Event) => {
+      const custom = e as CustomEvent<{ engaged: boolean }>;
+      if (typeof custom.detail?.engaged === 'boolean') {
+        setEngaged(custom.detail.engaged);
+      }
+    };
+    window.addEventListener('axiom:kill-switch-changed', handleEvent);
+    return () => {
+      mounted = false;
+      window.removeEventListener('axiom:kill-switch-changed', handleEvent);
+    };
+  }, [tenantId]);
+
+  async function toggle() {
+    if (!engaged) {
+      if (
+        !confirm(
+          'ENGAGE KILL SWITCH?\n\nThis will halt ALL in-flight agent execution globally and ' +
+            'prevent any further mutations until reset. This action is recorded ' +
+            'in the audit ledger (ADR-1 / ADR-3).',
+        )
+      ) {
+        return;
+      }
+      setBusy(true);
+      setFeedback(null);
+      try {
+        const res = await fetch('/api/bff/v1/kill-switch/engage', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'X-Tenant-Id': tenantId },
+          body: JSON.stringify({ scope: 'tenant', reason: 'Manual engagement from UI' }),
+        });
+        if (!res.ok) {
+          const err = await res.json().catch(() => ({}));
+          setFeedback(err?.error?.message || 'Failed to engage kill switch');
+          return;
+        }
+        setEngaged(true);
+        setFeedback('Kill switch ENGAGED. All in-flight agent executions halted.');
+        window.dispatchEvent(
+          new CustomEvent('axiom:kill-switch-changed', { detail: { engaged: true } }),
+        );
+        router.refresh();
+      } catch (e) {
+        setFeedback(e instanceof Error ? e.message : 'Error engaging kill switch');
+      } finally {
+        setBusy(false);
+      }
+    } else {
+      if (
+        !confirm(
+          'DISENGAGE KILL SWITCH?\n\nThis will reset the kill switch and resume normal ' +
+            'agent operations and remediation execution.',
+        )
+      ) {
+        return;
+      }
+      setBusy(true);
+      setFeedback(null);
+      try {
+        const res = await fetch('/api/bff/v1/kill-switch/release', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'X-Tenant-Id': tenantId },
+        });
+        if (!res.ok) {
+          const err = await res.json().catch(() => ({}));
+          setFeedback(err?.error?.message || 'Failed to disengage kill switch');
+          return;
+        }
+        setEngaged(false);
+        setFeedback('Kill switch DISENGAGED. Agent execution resumed.');
+        window.dispatchEvent(
+          new CustomEvent('axiom:kill-switch-changed', { detail: { engaged: false } }),
+        );
+        router.refresh();
+      } catch (e) {
+        setFeedback(e instanceof Error ? e.message : 'Error disengaging kill switch');
+      } finally {
+        setBusy(false);
+      }
     }
   }
 
   return (
-    <Button variant="danger" size="sm" onClick={engage} loading={busy}>
-      Engage kill switch
-    </Button>
+    <div className={`flex flex-col items-end gap-1.5 ${className || ''}`}>
+      <div className="flex items-center gap-2">
+        {engaged ? (
+          <Button
+            variant="danger"
+            size="sm"
+            onClick={toggle}
+            loading={busy}
+            className="animate-pulse bg-[#D9534F] hover:bg-[#c4433f] text-white font-bold border-2 border-red-700 shadow-md"
+          >
+            <span className="mr-1">⏻</span> Kill switch engaged · Disengage
+          </Button>
+        ) : (
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={toggle}
+            loading={busy}
+            className="border-red-300 text-red-700 hover:bg-red-50"
+          >
+            <span className="mr-1">⏻</span> Engage kill switch
+          </Button>
+        )}
+      </div>
+      {feedback && (
+        <div
+          className={`rounded px-2 py-1 text-xs font-semibold ${
+            engaged
+              ? 'bg-red-100 text-red-900 border border-red-300'
+              : 'bg-teal-100 text-teal-900 border border-teal-300'
+          }`}
+        >
+          {feedback}
+        </div>
+      )}
+    </div>
   );
 }

@@ -5,6 +5,7 @@ import { formatDate } from '@axiom/ui';
 import { createSupabaseServerClient, createSupabaseAdmin } from '@axiom/supabase';
 import type { StatusKind } from '@axiom/ui';
 import { GenericModuleView, type ModuleTelemetryEvent } from '../generic-module-view';
+import { KillSwitchButton } from './[id]/kill-switch-button';
 
 export const dynamic = 'force-dynamic';
 
@@ -135,9 +136,17 @@ export default async function PlansListPage() {
             <CardTitle className="text-base font-semibold text-[#1E2A4A]">
               Active Plans ({pending.length})
             </CardTitle>
-            <Link href="/approval" className="text-xs font-semibold text-[#0FB5A5] hover:underline">
-              Open Approval Console →
-            </Link>
+            <div className="flex items-center gap-3">
+              <KillSwitchButton
+                tenantId={topActive?.tenant_id || '00000000-0000-0000-0000-000000000001'}
+              />
+              <Link
+                href="/approval"
+                className="text-xs font-semibold text-[#0FB5A5] hover:underline"
+              >
+                Open Approval Console →
+              </Link>
+            </div>
           </CardHeader>
           <CardContent>
             {pending.length === 0 ? (

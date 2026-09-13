@@ -196,7 +196,7 @@ export const IssueApprovalRequestSchema = z
       .positive()
       .max(7 * 24 * 60)
       .default(60),
-    reason: z.string().max(2000).optional(),
+    reason: z.string().max(2000).nullish(),
     conditions: z.record(z.string(), z.unknown()).default({}),
   })
   .superRefine((value, ctx) => {
@@ -211,7 +211,7 @@ export const IssueApprovalRequestSchema = z
 export type IssueApprovalRequest = z.infer<typeof IssueApprovalRequestSchema>;
 
 export const RevokeApprovalRequestSchema = z.object({
-  reason: z.string().max(2000).optional(),
+  reason: z.string().max(2000).nullish(),
 });
 export type RevokeApprovalRequest = z.infer<typeof RevokeApprovalRequestSchema>;
 
