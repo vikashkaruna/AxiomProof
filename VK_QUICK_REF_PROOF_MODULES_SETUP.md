@@ -27,20 +27,23 @@ Authoritative references:
 | Supabase Studio     |   55323 local | Supabase                                       |
 | Valkey/Redis        | 6379 normally | Optional model cache                           |
 
-The ten specialized DPDPA compliance agents:
+### 1.1 Functional Agent Iconography & Animation Matrix
 
-| Agent | DPDPA Persona & Role | Brand Accent | Functional Icon Concept & Dynamics | Autonomy Ceiling |
-| :--- | :--- | :--- | :--- | :--- |
-| **Drishti** | Discovery & Data Mapping | `#0FB5A5` (Teal) | Cybernetic aperture & 360° radar sweep reticle | L1 → L2 (read-only connectors) |
-| **Vibhaag** | Statutory Classification | `#7C3AED` (Violet) | Geometric prism splitting data into category facets | L1 |
-| **Parikshan** | Statutory Control Testing | `#1E2A4A` (Indigo) | Inspection shield with precision caliper & check pulse | L1 |
-| **Saakshi** | Evidence Sealer & Witness | `#C9A227` (Gold) | 8-point wax seal with vault padlock & golden shockwaves | L1 |
-| **Sudhaar** | Remediation Planner | `#0EA5E9` (Sky) | Architectural drafting compass with action/rollback circuits | L1 (Strictly NO mutate credentials) |
-| **Karya** | Execution Engine (Mutator) | `#D9534F` (Ember) | High-voltage energy core in counter-rotating gears | L2 (Requires signed approval token) |
-| **Lekha** | Audit Ledger & Hash Chain | `#525B71` (Slate) | Merkle block chain with hash link rings | L1 |
-| **Nazar** | Regulatory Watchdog | `#16A34A` (Green) | Observatory dish & perimeter surveillance sweep | L1 |
-| **Prativedan** | Reporting & Board Dossiers | `#9333EA` (Purple) | Formal wax-sealed dossier scroll with flipping pages | L1 |
-| **Sanket** | Signal & Early Warning | `#EA580C` (Orange) | Transmission tower with radiating spherical sonar waves | L1 (internal) |
+Each of the 10 named agents is designed with bespoke, hardware-accelerated SVG iconography and multi-speed CSS keyframe animations that visually represent their exact DPDPA compliance function and autonomy boundary:
+
+| Agent | DPDPA Statutory Function | Brand Accent | Functional SVG Icon Concept | Cognitive Dynamics (`thinking` state) | Execution Dynamics (`working` state) | Autonomy Ceiling & Gate |
+| :--- | :--- | :--- | :--- | :--- | :--- | :--- |
+| **Drishti** | Personal data scanning, system inventory, cross-border data flow detection | `#0FB5A5` (Teal) | Cybernetic aperture with reticle crosshairs & central scanner pupil | Iris aperture slowly pulses and dilates; concentric scan rings breathe | Continuous 360° rotating radar sweep line across reticle + sweeping laser line | L1 → L2 (Read-only discovery connectors) |
+| **Vibhaag** | Statutory categorization (Govt ID, financial, health, child data, contact) & tagging | `#7C3AED` (Violet) | Geometric segmented prism separating raw streams into color-coded category facets | Subtle harmonic shifting of facet opacities & ambient violet glow | 180° alternating crystal rotation + data particle sorting through facets | L1 (Autonomous classification) |
+| **Parikshan** | Gap assessment across all 46 controls in DPDPA v0.1.0, risk weights & posture scoring | `#1E2A4A` (Indigo) | Inspection shield crest with calibrated gauge scale & verification needle | Circular gauge meter breathes in steady evaluation rhythm | Oscillating precision caliper arms measuring statutory thresholds + verified checkmark pulse | L1 (Read-only library assessment) |
+| **Saakshi** | Cryptographic evidence sealing into AWS S3 Object Lock Compliance vault | `#C9A227` (Gold — reserved for proof) | Eight-point starburst wax seal stamp surrounding a vault lock & crypto keyhole | Golden shimmer runs along seal facet edges; lock body steady | Radiant solar flare & seal stamp compression with expanding golden shockwaves | L1 (WORM-vault evidence sealer) |
+| **Sudhaar** | Blueprint remediation planning with blast radius & mandatory rollback definitions | `#0EA5E9` (Sky) | Technical drafting compass with branching action & rollback circuit paths | Compass legs subtly pivot while calculating risk coordinates | Divergent blueprint circuits sequentially illuminate along action & rollback pathways | L1 (Strictly NO mutate credentials; ADR-3) |
+| **Karya** | Mutating execution engine; closes compliance gaps and executes approved rollbacks | `#D9534F` (Ember — alert tone) | High-voltage energy core housed inside dual precision planetary gears | Core pulsates with contained thermal ember energy; gears idle | Counter-rotating dual planetary gears with electric energy arcs pulsing through core | L2 (Requires signed, scope-bound approval token; BR-2) |
+| **Lekha** | Immutable audit ledger witness; appends hash-chained records via `append_ledger()` | `#525B71` (Slate) | Merkle block chain; interlocking ledger folios connected by cryptographic link rings | Micro-hash dots shift sequentially like a rolling cryptographic cipher | Blocks slide and interlock into chain with luminous link-weld pulse | L1 (Security definer append-only witness) |
+| **Nazar** | Continuous regulatory watchdog; monitors MeitY notifications, DPB orders & gazette | `#16A34A` (Green) | Deep-space observatory dish & 360° perimeter surveillance radar | Observatory dish oscillates angle with undulating signal carrier waves | Continuous 360° sweep beam with active amber ping blips on outer perimeter | L1 (Government gazette & DPB scraper) |
+| **Prativedan** | Executive reporting; compiles Board packs, auditor dossiers & RoPA PDFs | `#9333EA` (Purple) | Formal executive dossier scroll with certified wax seal ribbon & drafting stylus | Stylus hovers above folio with rhythmic ink pulsation | Document pages compile and turn sequentially while certified ribbon seal stamps each section | L1 (Auditor pack compiler) |
+| **Sanket** | Market & breach signal monitoring; early warning telemetry & buying signals | `#EA580C` (Orange) | Broadcast transmission tower with concentric spherical radio wave emitters | Spire glows with intermittent carrier frequency pulses | Concentric spherical sonar waves rapidly expand and radiate outward in continuous waves | L1 (Internal market & incident signal monitor) |
+
 
 
 ## 2. Local prerequisites
