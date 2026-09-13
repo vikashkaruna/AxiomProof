@@ -32,7 +32,7 @@ const INITIAL_REPORTS: ReportItem[] = [
     tenantName: 'Meridian Pay',
     tenantSlug: 'meridian',
     createdAt: '12 Sep 2026',
-    reviewer: 'Vikash Karunakaran (Founder & Principal Reviewer)',
+    reviewer: 'Chief Privacy Officer & Principal Reviewer',
     postureScore: 74,
     exposureCr: 18.5,
     evidenceCount: 14,
@@ -213,12 +213,24 @@ export function ReportsClient({
   <meta charset="utf-8"/>
   <title>${rep.title} — Axiom Proof</title>
   <style>
-    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; line-height: 1.6; color: #1E2A4A; max-width: 860px; margin: 40px auto; padding: 0 20px; }
-    .header { border-bottom: 3px solid #0FB5A5; padding-bottom: 20px; margin-bottom: 28px; }
+    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; line-height: 1.6; color: #1E2A4A; max-width: 860px; margin: 0 auto; padding: 0; }
+    .ax-header { background: #1E2A4A; padding: 16px 28px; display: flex; align-items: center; justify-content: space-between; }
+    .ax-header-left { display: flex; align-items: center; gap: 12px; }
+    .ax-logo-mark { width: 32px; height: 32px; border-radius: 6px; background: #0FB5A5; display: flex; align-items: center; justify-content: center; }
+    .ax-logo-mark svg { width: 18px; height: 18px; }
+    .ax-logo-text { color: #fff; font-size: 16px; font-weight: 700; letter-spacing: -0.3px; }
+    .ax-logo-text span { color: #0FB5A5; }
+    .ax-header-link { color: #8a97b8; font-size: 11px; text-decoration: none; }
+    .ax-header-link:hover { color: #0FB5A5; }
+    .ax-teal-bar { height: 3px; background: linear-gradient(90deg, #0FB5A5, #1E2A4A); }
+    .content { padding: 28px 28px 20px; }
+    .prepared-for { background: #F4F6F8; border-radius: 8px; padding: 14px 18px; margin-bottom: 24px; font-size: 12px; color: #525B71; }
+    .prepared-for strong { color: #1E2A4A; font-size: 14px; display: block; margin-bottom: 2px; }
     .badge { display: inline-block; background: #0FB5A5; color: #04322d; padding: 4px 10px; border-radius: 4px; font-weight: bold; font-size: 11px; text-transform: uppercase; }
     .gold-badge { display: inline-block; background: #C9A227; color: #fff; padding: 4px 10px; border-radius: 4px; font-weight: bold; font-size: 11px; }
-    h1 { margin: 12px 0 6px 0; color: #1E2A4A; }
+    h1 { margin: 12px 0 6px 0; color: #1E2A4A; font-size: 22px; }
     .citation { color: #5b6270; font-size: 13px; font-family: monospace; }
+    .meta-line { margin-top: 6px; font-size: 13px; color: #5b6270; }
     .summary-box { background: #F4F6F8; border-left: 4px solid #1E2A4A; padding: 16px 20px; margin: 24px 0; border-radius: 0 8px 8px 0; }
     .score-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin: 24px 0; }
     .score-card { background: #fff; border: 1px solid #e4e8ee; border-radius: 8px; padding: 16px; text-align: center; }
@@ -227,90 +239,118 @@ export function ReportsClient({
     .section { margin: 32px 0; }
     .section h2 { border-bottom: 1px solid #eef1f5; padding-bottom: 8px; color: #1E2A4A; font-size: 18px; }
     .evidence-tag { font-family: monospace; font-size: 11px; background: #E5FAF7; color: #0a6b61; padding: 3px 8px; border-radius: 4px; margin-right: 8px; }
-    .footer { margin-top: 48px; border-top: 1px solid #e4e8ee; padding-top: 20px; font-size: 12px; color: #8a909b; text-align: center; }
+    .ax-footer { border-top: 2px solid #e4e8ee; padding: 14px 28px; display: flex; align-items: center; justify-content: space-between; font-size: 11px; color: #8a909b; background: #FBFCFD; }
+    .ax-footer-left { display: flex; align-items: center; gap: 8px; }
+    .ax-footer-logo { width: 16px; height: 16px; border-radius: 3px; background: #1E2A4A; display: inline-flex; align-items: center; justify-content: center; }
+    .ax-footer-logo svg { width: 10px; height: 10px; }
+    .ax-footer a { color: #0FB5A5; text-decoration: none; }
+    .ax-footer a:hover { text-decoration: underline; }
+    @media print { .ax-header, .ax-footer { -webkit-print-color-adjust: exact; print-color-adjust: exact; } }
   </style>
 </head>
 <body>
-  <div class="header">
+  <!-- ========== HEADER: Axiom Proof ========== -->
+  <div class="ax-header">
+    <div class="ax-header-left">
+      <div class="ax-logo-mark">
+        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M12 2L2 19h20L12 2z" fill="#1E2A4A"/><path d="M12 8l-4 8h8l-4-8z" fill="#fff"/></svg>
+      </div>
+      <div class="ax-logo-text">Axiom <span>Proof</span></div>
+    </div>
+    <a href="https://axiomproof.ai" class="ax-header-link">axiomproof.ai</a>
+  </div>
+  <div class="ax-teal-bar"></div>
+
+  <div class="content">
+    <!-- Prepared For -->
+    <div class="prepared-for">
+      <strong>Prepared for: ${rep.tenantName}</strong>
+      Compiled: ${rep.createdAt} · Report ID: ${rep.id} · Reviewed by: ${rep.reviewer}
+    </div>
+
     <span class="badge">Axiom Proof Certified</span>
     <span class="gold-badge">WORM Sealed Artifact</span>
     <h1>${rep.title}</h1>
     <div class="citation">Citation: ${rep.statutoryCitation} · ID: ${rep.id}</div>
-    <div style="margin-top: 6px; font-size: 13px; color: #5b6270;">
-      Tenant: <strong>${rep.tenantName}</strong> · Compiled: <strong>${rep.createdAt}</strong> · Sign-off: <strong>${rep.reviewer}</strong>
-    </div>
-  </div>
 
-  <div class="score-grid">
-    <div class="score-card">
-      <div class="score-val" style="color: #0FB5A5;">${rep.postureScore}/100</div>
-      <div class="score-lbl">Statutory Posture Score</div>
+    <div class="score-grid">
+      <div class="score-card">
+        <div class="score-val" style="color: #0FB5A5;">${rep.postureScore}/100</div>
+        <div class="score-lbl">Statutory Posture Score</div>
+      </div>
+      <div class="score-card">
+        <div class="score-val" style="color: #D9534F;">₹${rep.exposureCr.toFixed(1)} Cr</div>
+        <div class="score-lbl">Max Residual Exposure</div>
+      </div>
+      <div class="score-card">
+        <div class="score-val" style="color: #C9A227;">${rep.evidenceCount}</div>
+        <div class="score-lbl">WORM Evidence Seals</div>
+      </div>
     </div>
-    <div class="score-card">
-      <div class="score-val" style="color: #D9534F;">₹${rep.exposureCr.toFixed(1)} Cr</div>
-      <div class="score-lbl">Max Residual Exposure</div>
-    </div>
-    <div class="score-card">
-      <div class="score-val" style="color: #C9A227;">${rep.evidenceCount}</div>
-      <div class="score-lbl">WORM Evidence Seals</div>
-    </div>
-  </div>
 
-  <div class="summary-box">
-    <strong>Executive Summary:</strong><br/>
-    ${rep.summary}
-  </div>
+    <div class="summary-box">
+      <strong>Executive Summary:</strong><br/>
+      ${rep.summary}
+    </div>
 
-  ${rep.sections
-    .map(
-      (sec) => `
-    <div class="section">
-      <h2>${sec.title}</h2>
-      <p>${sec.content}</p>
-      ${
-        sec.findings
-          ? `
-        <table style="width: 100%; border-collapse: collapse; margin-top: 12px; font-size: 13px;">
-          <tr style="background: #F4F6F8; text-align: left;">
-            <th style="padding: 8px;">Control</th>
-            <th style="padding: 8px;">Severity</th>
-            <th style="padding: 8px;">Status</th>
-            <th style="padding: 8px;">Finding Detail</th>
-          </tr>
-          ${sec.findings
-            .map(
-              (f) => `
-            <tr style="border-bottom: 1px solid #eef1f5;">
-              <td style="padding: 8px; font-family: monospace; font-weight: bold;">${f.control}</td>
-              <td style="padding: 8px; color: ${f.severity === 'CRITICAL' ? '#D9534F' : '#E0A82E'}; font-weight: bold;">${f.severity}</td>
-              <td style="padding: 8px; color: #0FB5A5; font-weight: bold;">${f.status}</td>
-              <td style="padding: 8px;">${f.detail}</td>
+    ${rep.sections
+      .map(
+        (sec) => `
+      <div class="section">
+        <h2>${sec.title}</h2>
+        <p>${sec.content}</p>
+        ${
+          sec.findings
+            ? `
+          <table style="width: 100%; border-collapse: collapse; margin-top: 12px; font-size: 13px;">
+            <tr style="background: #F4F6F8; text-align: left;">
+              <th style="padding: 8px;">Control</th>
+              <th style="padding: 8px;">Severity</th>
+              <th style="padding: 8px;">Status</th>
+              <th style="padding: 8px;">Finding Detail</th>
             </tr>
-          `,
-            )
-            .join('')}
-        </table>
-      `
-          : ''
-      }
-      ${
-        sec.evidenceLinks
-          ? `
-        <div style="margin-top: 12px;">
-          ${sec.evidenceLinks
-            .map((e) => `<span class="evidence-tag">${e.id} (${e.name}) · H:${e.hash}</span>`)
-            .join(' ')}
-        </div>
-      `
-          : ''
-      }
-    </div>
-  `,
-    )
-    .join('')}
+            ${sec.findings
+              .map(
+                (f) => `
+              <tr style="border-bottom: 1px solid #eef1f5;">
+                <td style="padding: 8px; font-family: monospace; font-weight: bold;">${f.control}</td>
+                <td style="padding: 8px; color: ${f.severity === 'CRITICAL' ? '#D9534F' : '#E0A82E'}; font-weight: bold;">${f.severity}</td>
+                <td style="padding: 8px; color: #0FB5A5; font-weight: bold;">${f.status}</td>
+                <td style="padding: 8px;">${f.detail}</td>
+              </tr>
+            `,
+              )
+              .join('')}
+          </table>
+        `
+            : ''
+        }
+        ${
+          sec.evidenceLinks
+            ? `
+          <div style="margin-top: 12px;">
+            ${sec.evidenceLinks
+              .map((e) => `<span class="evidence-tag">${e.id} (${e.name}) · H:${e.hash}</span>`)
+              .join(' ')}
+          </div>
+        `
+            : ''
+        }
+      </div>
+    `,
+      )
+      .join('')}
+  </div>
 
-  <div class="footer">
-    Compiled by Prativedan Agent · Axiom Proof Cryptographic Governance Engine · Form DPDPA-V3
+  <!-- ========== FOOTER: Axiom Minds + Axiom Proof ========== -->
+  <div class="ax-footer">
+    <div class="ax-footer-left">
+      <span class="ax-footer-logo">
+        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M12 2L2 19h20L12 2z" fill="#fff"/></svg>
+      </span>
+      <span>© ${new Date().getFullYear()} <strong>Axiom Minds Pvt. Ltd.</strong> · <a href="https://axiomminds.ai">axiomminds.ai</a></span>
+    </div>
+    <span>Powered by <strong>Axiom Proof</strong> · <a href="https://axiomproof.ai">axiomproof.ai</a> · Compiled by Prativedan Agent</span>
   </div>
 </body>
 </html>`;
@@ -374,7 +414,7 @@ export function ReportsClient({
         tenantName: genTenant,
         tenantSlug: genTenant.toLowerCase().replace(/[^a-z0-9]/g, ''),
         createdAt: 'Just now',
-        reviewer: 'Vikash Karunakaran (Founder/DPO)',
+        reviewer: 'Designated Data Protection Officer',
         postureScore: Math.round(72 + Math.random() * 15),
         exposureCr: Number((10 + Math.random() * 12).toFixed(1)),
         evidenceCount: Math.round(15 + Math.random() * 15),
@@ -605,149 +645,217 @@ export function ReportsClient({
       {/* ============================================================ */}
       {selectedReport && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 animate-in fade-in-0 duration-150 backdrop-blur-xs">
-          <div className="max-h-[90vh] w-full max-w-3xl overflow-y-auto rounded-2xl bg-white p-6 md:p-8 shadow-2xl border border-slate-200 space-y-6">
-            {/* Modal Header */}
-            <div className="flex items-start justify-between border-b border-slate-100 pb-4">
-              <div>
-                <div className="flex items-center gap-2">
-                  <span className="rounded bg-[#0FB5A5] px-2 py-0.5 text-[10px] font-bold text-[#04322d] uppercase">
-                    Axiom Proof Certified
-                  </span>
-                  <span className="rounded bg-[#C9A227] px-2 py-0.5 text-[10px] font-bold text-white uppercase">
-                    WORM Sealed Artifact
-                  </span>
-                  <code className="font-mono text-xs font-bold text-slate-500">
-                    {selectedReport.id}
-                  </code>
+          <div className="max-h-[90vh] w-full max-w-3xl overflow-y-auto rounded-2xl bg-white shadow-2xl border border-slate-200 space-y-0">
+            {/* Axiom Proof Branded Header */}
+            <div className="flex items-center justify-between rounded-t-2xl bg-[#1E2A4A] px-6 py-3">
+              <div className="flex items-center gap-2.5">
+                <div className="flex h-7 w-7 items-center justify-center rounded-md bg-[#0FB5A5]">
+                  <svg
+                    viewBox="0 0 24 24"
+                    className="h-4 w-4"
+                    fill="none"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <path d="M12 2L2 19h20L12 2z" fill="#1E2A4A" />
+                    <path d="M12 8l-4 8h8l-4-8z" fill="#fff" />
+                  </svg>
                 </div>
-                <h2 className="mt-2 text-xl font-bold text-[#1E2A4A]">{selectedReport.title}</h2>
-                <div className="mt-1 font-mono text-xs text-slate-500">
-                  {selectedReport.statutoryCitation}
-                </div>
-                <div className="mt-0.5 text-xs text-slate-500">
-                  Tenant: <strong>{selectedReport.tenantName}</strong> · Sign-off Reviewer:{' '}
-                  <strong>{selectedReport.reviewer}</strong>
-                </div>
+                <span className="text-sm font-bold text-white tracking-tight">
+                  Axiom <span className="text-[#0FB5A5]">Proof</span>
+                </span>
+                <span className="text-[10px] text-[#8a97b8]">axiomproof.ai</span>
               </div>
               <button
                 onClick={() => setSelectedReport(null)}
-                className="text-slate-400 hover:text-slate-600 text-lg font-bold p-1"
+                className="text-[#8a97b8] hover:text-white text-sm font-bold p-1 transition-colors"
               >
                 ✕
               </button>
             </div>
+            <div className="h-[3px] bg-gradient-to-r from-[#0FB5A5] to-[#1E2A4A]" />
 
-            {/* Scorecard Bar */}
-            <div className="grid grid-cols-3 gap-3 rounded-xl bg-[#F4F6F8] p-4 text-center">
-              <div>
-                <div className="text-xl font-bold text-teal-700">
-                  {selectedReport.postureScore}/100
+            <div className="p-6 md:p-8 space-y-6">
+              {/* Prepared For */}
+              <div className="rounded-xl bg-[#F4F6F8] p-4 text-xs text-slate-600">
+                <div className="text-sm font-bold text-[#1E2A4A] mb-1">
+                  Prepared for: {selectedReport.tenantName}
                 </div>
-                <div className="text-[10px] font-bold uppercase text-slate-500">
-                  Statutory Posture
+                Compiled: {selectedReport.createdAt} · Report ID: {selectedReport.id} · Reviewed by:{' '}
+                {selectedReport.reviewer}
+              </div>
+
+              {/* Modal Header */}
+              <div className="flex items-start justify-between border-b border-slate-100 pb-4">
+                <div>
+                  <div className="flex items-center gap-2">
+                    <span className="rounded bg-[#0FB5A5] px-2 py-0.5 text-[10px] font-bold text-[#04322d] uppercase">
+                      Axiom Proof Certified
+                    </span>
+                    <span className="rounded bg-[#C9A227] px-2 py-0.5 text-[10px] font-bold text-white uppercase">
+                      WORM Sealed Artifact
+                    </span>
+                    <code className="font-mono text-xs font-bold text-slate-500">
+                      {selectedReport.id}
+                    </code>
+                  </div>
+                  <h2 className="mt-2 text-xl font-bold text-[#1E2A4A]">{selectedReport.title}</h2>
+                  <div className="mt-1 font-mono text-xs text-slate-500">
+                    {selectedReport.statutoryCitation}
+                  </div>
                 </div>
               </div>
-              <div>
-                <div className="text-xl font-bold text-[#D9534F]">
-                  ₹{selectedReport.exposureCr} Cr
+
+              {/* Scorecard Bar */}
+              <div className="grid grid-cols-3 gap-3 rounded-xl bg-[#F4F6F8] p-4 text-center">
+                <div>
+                  <div className="text-xl font-bold text-teal-700">
+                    {selectedReport.postureScore}/100
+                  </div>
+                  <div className="text-[10px] font-bold uppercase text-slate-500">
+                    Statutory Posture
+                  </div>
                 </div>
-                <div className="text-[10px] font-bold uppercase text-slate-500">
-                  Max Residual Exposure
+                <div>
+                  <div className="text-xl font-bold text-[#D9534F]">
+                    ₹{selectedReport.exposureCr} Cr
+                  </div>
+                  <div className="text-[10px] font-bold uppercase text-slate-500">
+                    Max Residual Exposure
+                  </div>
+                </div>
+                <div>
+                  <div className="text-xl font-bold text-[#C9A227]">
+                    {selectedReport.evidenceCount}
+                  </div>
+                  <div className="text-[10px] font-bold uppercase text-slate-500">
+                    WORM Evidence Seals
+                  </div>
                 </div>
               </div>
-              <div>
-                <div className="text-xl font-bold text-[#C9A227]">
-                  {selectedReport.evidenceCount}
-                </div>
-                <div className="text-[10px] font-bold uppercase text-slate-500">
-                  WORM Evidence Seals
-                </div>
+
+              {/* Executive Summary Box */}
+              <div className="rounded-xl border-l-4 border-[#1E2A4A] bg-[#F4F6F8] p-4 text-xs text-slate-700 leading-relaxed">
+                <strong className="text-[#1E2A4A] block mb-1">Executive Summary:</strong>
+                {selectedReport.summary}
               </div>
-            </div>
 
-            {/* Executive Summary Box */}
-            <div className="rounded-xl border-l-4 border-[#1E2A4A] bg-[#F4F6F8] p-4 text-xs text-slate-700 leading-relaxed">
-              <strong className="text-[#1E2A4A] block mb-1">Executive Summary:</strong>
-              {selectedReport.summary}
-            </div>
+              {/* Sections */}
+              <div className="space-y-5">
+                {selectedReport.sections.map((sec, sIdx) => (
+                  <div key={sIdx} className="space-y-2 border-b border-slate-100 pb-4">
+                    <h4 className="font-bold text-sm text-[#1E2A4A]">{sec.title}</h4>
+                    <p className="text-xs text-slate-600 leading-relaxed">{sec.content}</p>
 
-            {/* Sections */}
-            <div className="space-y-5">
-              {selectedReport.sections.map((sec, sIdx) => (
-                <div key={sIdx} className="space-y-2 border-b border-slate-100 pb-4">
-                  <h4 className="font-bold text-sm text-[#1E2A4A]">{sec.title}</h4>
-                  <p className="text-xs text-slate-600 leading-relaxed">{sec.content}</p>
-
-                  {sec.findings && (
-                    <div className="overflow-x-auto rounded-lg border border-slate-200 mt-2">
-                      <table className="w-full text-xs text-left">
-                        <thead className="bg-slate-50 text-[10px] uppercase font-bold text-slate-500">
-                          <tr>
-                            <th className="px-3 py-2">Control</th>
-                            <th className="px-3 py-2">Severity</th>
-                            <th className="px-3 py-2">Status</th>
-                            <th className="px-3 py-2">Detail</th>
-                          </tr>
-                        </thead>
-                        <tbody className="divide-y divide-slate-100">
-                          {sec.findings.map((f, fIdx) => (
-                            <tr key={fIdx}>
-                              <td className="px-3 py-2 font-mono font-bold text-slate-700">
-                                {f.control}
-                              </td>
-                              <td
-                                className={`px-3 py-2 font-bold ${
-                                  f.severity === 'CRITICAL' ? 'text-[#D9534F]' : 'text-amber-600'
-                                }`}
-                              >
-                                {f.severity}
-                              </td>
-                              <td className="px-3 py-2 font-bold text-teal-700">{f.status}</td>
-                              <td className="px-3 py-2 text-slate-600">{f.detail}</td>
+                    {sec.findings && (
+                      <div className="overflow-x-auto rounded-lg border border-slate-200 mt-2">
+                        <table className="w-full text-xs text-left">
+                          <thead className="bg-slate-50 text-[10px] uppercase font-bold text-slate-500">
+                            <tr>
+                              <th className="px-3 py-2">Control</th>
+                              <th className="px-3 py-2">Severity</th>
+                              <th className="px-3 py-2">Status</th>
+                              <th className="px-3 py-2">Detail</th>
                             </tr>
-                          ))}
-                        </tbody>
-                      </table>
-                    </div>
-                  )}
+                          </thead>
+                          <tbody className="divide-y divide-slate-100">
+                            {sec.findings.map((f, fIdx) => (
+                              <tr key={fIdx}>
+                                <td className="px-3 py-2 font-mono font-bold text-slate-700">
+                                  {f.control}
+                                </td>
+                                <td
+                                  className={`px-3 py-2 font-bold ${
+                                    f.severity === 'CRITICAL' ? 'text-[#D9534F]' : 'text-amber-600'
+                                  }`}
+                                >
+                                  {f.severity}
+                                </td>
+                                <td className="px-3 py-2 font-bold text-teal-700">{f.status}</td>
+                                <td className="px-3 py-2 text-slate-600">{f.detail}</td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+                    )}
 
-                  {sec.evidenceLinks && (
-                    <div className="flex flex-wrap gap-2 pt-2">
-                      {sec.evidenceLinks.map((e, eIdx) => (
-                        <span
-                          key={eIdx}
-                          className="rounded bg-[#E5FAF7] px-2 py-1 font-mono text-[10px] text-[#0a6b61] border border-teal-200"
-                        >
-                          {e.id} ({e.name}) · H:{e.hash}
-                        </span>
-                      ))}
-                    </div>
-                  )}
+                    {sec.evidenceLinks && (
+                      <div className="flex flex-wrap gap-2 pt-2">
+                        {sec.evidenceLinks.map((e, eIdx) => (
+                          <span
+                            key={eIdx}
+                            className="rounded bg-[#E5FAF7] px-2 py-1 font-mono text-[10px] text-[#0a6b61] border border-teal-200"
+                          >
+                            {e.id} ({e.name}) · H:{e.hash}
+                          </span>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+
+              {/* Modal Footer Actions */}
+              <div className="flex items-center justify-between pt-2 border-t border-slate-100">
+                <span className="text-[11px] text-slate-400">
+                  Cryptographically anchored by Prativedan Agent
+                </span>
+                <div className="flex gap-2">
+                  <button
+                    type="button"
+                    onClick={() => downloadHtmlReport(selectedReport)}
+                    className="rounded-lg bg-[#0FB5A5] hover:bg-[#0da294] px-4 py-2 text-xs font-bold text-white shadow-xs cursor-pointer"
+                  >
+                    Download Printable HTML
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => downloadJsonBundle(selectedReport)}
+                    className="rounded-lg border border-teal-200 bg-teal-50 hover:bg-teal-100 px-4 py-2 text-xs font-bold text-teal-800 cursor-pointer"
+                  >
+                    Export JSON Bundle
+                  </button>
                 </div>
-              ))}
+              </div>
             </div>
 
-            {/* Modal Footer Actions */}
-            <div className="flex items-center justify-between pt-2 border-t border-slate-100">
-              <span className="text-[11px] text-slate-400">
-                Cryptographically anchored by Prativedan Agent
-              </span>
-              <div className="flex gap-2">
-                <button
-                  type="button"
-                  onClick={() => downloadHtmlReport(selectedReport)}
-                  className="rounded-lg bg-[#0FB5A5] hover:bg-[#0da294] px-4 py-2 text-xs font-bold text-white shadow-xs cursor-pointer"
-                >
-                  Download Printable HTML
-                </button>
-                <button
-                  type="button"
-                  onClick={() => downloadJsonBundle(selectedReport)}
-                  className="rounded-lg border border-teal-200 bg-teal-50 hover:bg-teal-100 px-4 py-2 text-xs font-bold text-teal-800 cursor-pointer"
-                >
-                  Export JSON Bundle
-                </button>
+            {/* Axiom Minds Footer Branding */}
+            <div className="flex items-center justify-between rounded-b-2xl border-t-2 border-slate-200 bg-[#FBFCFD] px-6 py-3 text-[11px] text-slate-400">
+              <div className="flex items-center gap-2">
+                <span className="inline-flex h-4 w-4 items-center justify-center rounded bg-[#1E2A4A]">
+                  <svg
+                    viewBox="0 0 24 24"
+                    className="h-2.5 w-2.5"
+                    fill="none"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <path d="M12 2L2 19h20L12 2z" fill="#fff" />
+                  </svg>
+                </span>
+                <span>
+                  © {new Date().getFullYear()}{' '}
+                  <strong className="text-slate-500">Axiom Minds Pvt. Ltd.</strong> ·{' '}
+                  <a
+                    href="https://axiomminds.ai"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-[#0FB5A5] hover:underline"
+                  >
+                    axiomminds.ai
+                  </a>
+                </span>
               </div>
+              <span>
+                Powered by <strong className="text-slate-500">Axiom Proof</strong> ·{' '}
+                <a
+                  href="https://axiomproof.ai"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-[#0FB5A5] hover:underline"
+                >
+                  axiomproof.ai
+                </a>
+              </span>
             </div>
           </div>
         </div>

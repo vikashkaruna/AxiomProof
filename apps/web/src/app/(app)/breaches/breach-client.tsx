@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { AgentIcon } from '@axiom/ui';
 
 export interface BreachItem {
@@ -31,6 +31,16 @@ export function BreachClient({ initialBreach }: { initialBreach?: BreachItem | n
   const seconds = secondsRemaining % 60;
   const clockStr = `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
   const pctStr = `${Math.min(100, Math.round((secondsRemaining / (72 * 3600)) * 100))}%`;
+
+  // Auto-dismissing toast state (replaces blocking alert())
+  const [toast, setToast] = useState<{ message: string; kind: 'info' | 'success' } | null>(null);
+
+  const showToast = useCallback((message: string, kind: 'info' | 'success' = 'info') => {
+    setToast({ message, kind });
+    // Auto-dismiss: ~80ms per character, min 3s, max 8s
+    const duration = Math.min(8000, Math.max(3000, message.length * 80));
+    setTimeout(() => setToast(null), duration);
+  }, []);
 
   const timelineSteps = [
     {
@@ -84,6 +94,29 @@ export function BreachClient({ initialBreach }: { initialBreach?: BreachItem | n
 
   return (
     <div className="mx-auto max-w-[1180px] space-y-5 animate-in fade-in-0 duration-200">
+      {/* Auto-dismissing Toast Notification */}
+      {toast && (
+        <div
+          className={`fixed top-4 right-4 z-[60] max-w-sm rounded-xl border p-4 shadow-lg animate-in slide-in-from-top-2 fade-in-0 duration-300 ${
+            toast.kind === 'success'
+              ? 'border-teal-300 bg-[#E5FAF7] text-[#04322d]'
+              : 'border-indigo-200 bg-[#EEF0F7] text-[#1E2A4A]'
+          }`}
+        >
+          <div className="flex items-start gap-2.5">
+            <span className="mt-0.5 text-sm">{toast.kind === 'success' ? '✓' : 'ℹ'}</span>
+            <div className="flex-1">
+              <p className="text-xs font-semibold leading-relaxed">{toast.message}</p>
+            </div>
+            <button
+              onClick={() => setToast(null)}
+              className="text-xs font-bold opacity-50 hover:opacity-100 transition-opacity shrink-0"
+            >
+              ✕
+            </button>
+          </div>
+        </div>
+      )}
       {/* ============================================================ */}
       {/* 1. HERO BANNER                                               */}
       {/* ============================================================ */}
@@ -128,7 +161,12 @@ export function BreachClient({ initialBreach }: { initialBreach?: BreachItem | n
           <div className="flex items-center gap-2.5">
             <button
               type="button"
-              onClick={() => alert('Simulated tabletop incident exercise initiated.')}
+              onClick={() =>
+                showToast(
+                  'Simulated tabletop incident exercise initiated. Sanket agent is coordinating containment drills.',
+                  'success',
+                )
+              }
               className="rounded-[9px] bg-white/10 hover:bg-white/20 text-white text-xs font-bold py-2 px-3 transition-all"
             >
               Simulate tabletop drill
@@ -247,7 +285,12 @@ export function BreachClient({ initialBreach }: { initialBreach?: BreachItem | n
             </h3>
             <button
               type="button"
-              onClick={() => alert('Opening statutory DPB notification review...')}
+              onClick={() =>
+                showToast(
+                  'Opening statutory DPB notification for review. Form 1 (Section 8(6) & Rule 7) is ready for DPO sign-off.',
+                  'info',
+                )
+              }
               className="rounded-lg bg-[#1E2A4A] hover:bg-[#283863] text-white text-xs font-semibold px-3 py-1.5 shadow-2xs transition-colors"
             >
               Review DPB notification →

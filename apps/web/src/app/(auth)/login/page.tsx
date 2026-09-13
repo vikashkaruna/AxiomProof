@@ -95,7 +95,7 @@ export default async function LoginPage({
                   type="text"
                   required
                   autoComplete="name"
-                  placeholder="Vikash Karuna"
+                  placeholder="Ravi Sharma"
                 />
               </div>
             )}

@@ -326,7 +326,7 @@ export function GapScanForm() {
                   id="cn"
                   value={contactName}
                   onChange={(e) => setContactName(e.target.value)}
-                  placeholder="Vikash Karuna"
+                  placeholder="Ravi Sharma"
                 />
               </div>
               <div className="flex flex-col gap-1.5">

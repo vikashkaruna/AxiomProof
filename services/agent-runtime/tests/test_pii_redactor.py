@@ -33,12 +33,12 @@ def test_passes_through_clean_text():
 
 def test_redact_dict_recursive():
     payload = {
-        "name": "Vikash Karuna",
+        "name": "Ravi Sharma",
         "metadata": {"pan": "ABCDE1234F", "notes": "ok"},
         "list": [{"aadhaar": "1234 5678 9012"}, "no PII here"],
     }
     redacted, log = redact_dict(payload)
-    assert redacted["name"] == "Vikash Karuna"  # no pattern matched
+    assert redacted["name"] == "Ravi Sharma"  # no pattern matched
     assert "ABCDE1234F" not in str(redacted)
     assert "1234 5678 9012" not in str(redacted)
     assert any(r["type"] == "PAN" for r in log)

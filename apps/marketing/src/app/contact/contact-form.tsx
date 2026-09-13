@@ -123,7 +123,7 @@ export function ContactForm() {
           required
           value={name}
           onChange={(e) => setName(e.target.value)}
-          placeholder="Vikash Karuna"
+          placeholder="Ravi Sharma"
           disabled={submitting}
         />
         {fieldErrors.name && <p className="text-xs text-ember-600">{fieldErrors.name[0]}</p>}
