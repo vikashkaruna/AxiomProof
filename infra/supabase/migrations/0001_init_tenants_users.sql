@@ -120,7 +120,7 @@ $$;
 
 -- Helper: roles in current tenant
 create or replace function public.current_tenant_roles() returns user_role[]
-language sql stable
+language sql security definer set search_path = public
 as $$
   select coalesce(array_agg(role), '{}'::user_role[])
   from public.tenant_users
@@ -130,7 +130,7 @@ $$;
 
 -- Helper: is the current user a member of the given tenant?
 create or replace function public.is_tenant_member(check_tenant uuid) returns boolean
-language sql stable
+language sql security definer set search_path = public
 as $$
   select exists (
     select 1 from public.tenant_users
@@ -139,9 +139,19 @@ as $$
   );
 $$;
 
+-- Helper: does the current user have Axiom internal privileges?
+create or replace function public.is_axiom_internal() returns boolean
+language sql security definer set search_path = public
+as $$
+  select exists (
+    select 1 from public.users
+    where id = auth.uid() and is_axiom_internal = true
+  );
+$$;
+
 -- Helper: does the current user have ANY of the given roles in current tenant?
 create or replace function public.has_role(allowed_roles user_role[]) returns boolean
-language sql stable
+language sql security definer set search_path = public
 as $$
   select exists (
     select 1
@@ -162,7 +172,7 @@ alter table public.tenant_users enable row level security;
 create policy "tenants_select_member" on public.tenants
   for select using (
     -- Axiom internal users (founder / agents) see all tenants
-    exists (select 1 from public.users where id = auth.uid() and is_axiom_internal)
+    public.is_axiom_internal()
     -- Tenant members see their own tenant
     or public.is_tenant_member(id)
     -- Public gap-scan can see tenant name for whitelabeling — none today
@@ -170,12 +180,12 @@ create policy "tenants_select_member" on public.tenants
 
 create policy "tenants_insert_axiom_only" on public.tenants
   for insert with check (
-    exists (select 1 from public.users where id = auth.uid() and is_axiom_internal)
+    public.is_axiom_internal()
   );
 
 create policy "tenants_update_axiom_or_owner" on public.tenants
   for update using (
-    exists (select 1 from public.users where id = auth.uid() and is_axiom_internal)
+    public.is_axiom_internal()
     or public.has_role(array['owner']::user_role[])
   );
 
@@ -188,7 +198,7 @@ create policy "users_select_self_or_tenant_member" on public.users
       join public.tenant_users them on me.tenant_id = them.tenant_id
       where me.user_id = auth.uid() and them.user_id = users.id
     )
-    or exists (select 1 from public.users where id = auth.uid() and is_axiom_internal)
+    or public.is_axiom_internal()
   );
 
 create policy "users_insert_self" on public.users
@@ -197,7 +207,7 @@ create policy "users_insert_self" on public.users
 create policy "users_update_self_or_axiom" on public.users
   for update using (
     id = auth.uid()
-    or exists (select 1 from public.users where id = auth.uid() and is_axiom_internal)
+    or public.is_axiom_internal()
   );
 
 -- Tenant membership
@@ -205,11 +215,11 @@ create policy "tenant_users_select_member" on public.tenant_users
   for select using (
     user_id = auth.uid()
     or public.is_tenant_member(tenant_id)
-    or exists (select 1 from public.users where id = auth.uid() and is_axiom_internal)
+    or public.is_axiom_internal()
   );
 
 create policy "tenant_users_modify_axiom_or_owner" on public.tenant_users
   for all using (
-    exists (select 1 from public.users where id = auth.uid() and is_axiom_internal)
+    public.is_axiom_internal()
     or public.has_role(array['owner']::user_role[])
   );
