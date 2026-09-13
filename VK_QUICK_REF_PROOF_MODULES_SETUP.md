@@ -1403,6 +1403,7 @@ Every step can be executed interactively via the **Web Console (UI)** at `http:/
 #### Detailed Step-by-Step Execution Guide
 
 ##### Step 1: Create or Log into a Supabase Auth User
+
 - **Web UI**: Navigate to `http://localhost:3001/login`, input compliance officer credentials (`dpo@enterprise.co.in` / `AxiomSecureAudit2026!`), and sign in.
   > [!TIP]
   > **Sign Out & Account Switching**: To log out or switch users, click **Sign out** at the bottom of the left navigation panel. The session and authentication cookies will be completely cleared, safely redirecting back to `http://localhost:3001/login`.
@@ -1428,6 +1429,7 @@ Every step can be executed interactively via the **Web Console (UI)** at `http:/
   ```
 
 ##### Step 2: Create or Select a Tenant
+
 - **Web UI**: Use the TopBar organization switcher or `http://localhost:3001/portal?tenant=demo-client` to bind to the client organization.
 - **CLI / SQL**: Ensure user is bound to the target tenant in `public.tenant_users` with role `owner` or `approver`:
   ```bash
@@ -1443,6 +1445,7 @@ Every step can be executed interactively via the **Web Console (UI)** at `http:/
   ```
 
 ##### Step 3: Open the Web Workbench
+
 - **Web UI**: Navigate to `http://localhost:3001/workbench`.
 - **Functionality**:
   - Displays the 10-agent fleet status (**10/10 Online**).
@@ -1455,6 +1458,7 @@ Every step can be executed interactively via the **Web Console (UI)** at `http:/
   ```
 
 ##### Step 4: Create an Engagement
+
 - **Web UI**: Navigate to `http://localhost:3001/assessment` or click **New Assessment**.
 - **CLI / cURL**:
   ```bash
@@ -1470,6 +1474,7 @@ Every step can be executed interactively via the **Web Console (UI)** at `http:/
   ```
 
 ##### Step 5 & 6: Provide Discovery Interview & Run Drishti Discovery
+
 - **Web UI**: In `http://localhost:3001/discovery`, trigger **⚡ Run Discovery Scan**.
 - **Statutory Scope**: Sweeps datastores, inventories tables/buckets, samples schema names, and evaluates geographic residency under DPDPA §16 (warning if any non-Indian region is detected).
 - **CLI / cURL**:
@@ -1502,6 +1507,7 @@ Every step can be executed interactively via the **Web Console (UI)** at `http:/
   ```
 
 ##### Step 7: Run Vibhaag Classification
+
 - **Web UI**: In `http://localhost:3001/classification`, click **⚡ Run Classification Scan**.
 - **Statutory Scope**: Maps discovered fields into 9 statutory categories (e.g. Aadhaar/PAN to `government_id`, bank accounts to `financial`).
 - **CLI / cURL**:
@@ -1524,6 +1530,7 @@ Every step can be executed interactively via the **Web Console (UI)** at `http:/
   ```
 
 ##### Step 8: Run Parikshan Assessment against the Control Library
+
 - **Web UI**: In `http://localhost:3001/assessment`, run the 5-stage assessment pipeline runner. Review the 46-control score, posture ratio (e.g. 74/100), and statutory penalty exposure range (₹18–46 Cr).
 - **CLI / cURL**:
   ```bash
@@ -1538,6 +1545,7 @@ Every step can be executed interactively via the **Web Console (UI)** at `http:/
   ```
 
 ##### Step 9: Generate a Plan with Sudhaar
+
 - **Web UI**: In `http://localhost:3001/plans`, view generated remediation plans (`PLAN-118`).
 - **Architectural Principle (ADR-3)**: Sudhaar is read-only (`can_mutate = False`). It proposes typed remediation actions, calculates blast radii, and generates rollback definitions, but cannot execute them.
 - **CLI / cURL**:
@@ -1550,6 +1558,7 @@ Every step can be executed interactively via the **Web Console (UI)** at `http:/
   ```
 
 ##### Step 10: Review Findings, Blast Radius, Dry-Run Output & Rollback Definition
+
 - **Web UI**: Open the Approval Console at `http://localhost:3001/approval`:
   - **Statutory Gap Citation**: DPDP Act §8(7), Rule 8, and Schedule III.
   - **Blast Radius Cards**: Record counts (e.g. 14,200 rows in `user_events_archive`), endpoints (4 gateways), log indexes (27,062 rows).
@@ -1557,6 +1566,7 @@ Every step can be executed interactively via the **Web Console (UI)** at `http:/
   - **Rollback Definition**: Validated snapshot recovery specification (`RB-118a`) within 45 seconds.
 
 ##### Step 11: Approve the Plan through the Approval Console
+
 - **Web UI**: Select the actions in `http://localhost:3001/approval` and click **Approve Selected (Token Signed)** in the sticky bottom bar.
 - **Security Mechanism**: Generates an HMAC-SHA256 scope-bound approval token containing action IDs, plan hash, approver ID, and single-use nonce.
 - **CLI / cURL**:
@@ -1581,6 +1591,7 @@ Every step can be executed interactively via the **Web Console (UI)** at `http:/
   ```
 
 ##### Step 12: Verify the Approval Token, Ledger Chain & Execution Status
+
 - **Web UI**: Navigate to `http://localhost:3001/execution` and `http://localhost:3001/ledger`.
 - **CLI / cURL**: Dispatch token-gated execution to Karya and verify the cryptographic ledger:
   ```bash
@@ -1604,6 +1615,7 @@ Every step can be executed interactively via the **Web Console (UI)** at `http:/
   Expected output: `{"intact": true}`.
 
 ##### Step 13: Generate or Review Evidence through Saakshi and Prativedan
+
 - **Saakshi**: Seals the compliance proof into the S3 Object Lock Compliance vault with SHA-256 hash.
 - **Prativedan**: Compiles the executive Board pack, auditor pack, and DPB regulatory filing.
 - **CLI / cURL**:
@@ -1646,4 +1658,3 @@ The entire 13-step pipeline can be executed in a single automated command via [`
 # Execute full statutory compliance audit
 ./scripts/run-full-audit.sh
 ```
-

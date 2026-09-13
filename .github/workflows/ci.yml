@@ -113,6 +113,9 @@ jobs:
     runs-on: ubuntu-latest
     needs: [test-ts, test-python-runtime, test-python-gateway]
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    permissions:
+      contents: read
+      packages: write
     steps:
       - uses: actions/checkout@v5
       - uses: docker/setup-buildx-action@v3
@@ -124,9 +127,10 @@ jobs:
       - name: Build and push
         run: |
           IMAGE_TAG=${{ github.sha }}
+          OWNER_LC=$(echo "${{ github.repository_owner }}" | tr '[:upper:]' '[:lower:]')
           for component in web marketing bff agent-runtime model-gateway temporal-worker; do
             docker build -f infra/docker/Dockerfile.${component} \
-              -t ghcr.io/axiom-minds/axiom-${component}:${IMAGE_TAG} \
+              -t ghcr.io/${OWNER_LC}/axiom-${component}:${IMAGE_TAG} \
               .
-            docker push ghcr.io/axiom-minds/axiom-${component}:${IMAGE_TAG}
+            docker push ghcr.io/${OWNER_LC}/axiom-${component}:${IMAGE_TAG}
           done

@@ -137,9 +137,13 @@ export function PortalClient({
   const totalControls = engagement?.totalControls ?? 43;
   const passingPct = Math.round((passingControls / (totalControls || 1)) * 100);
 
-  const pendingPlanCount = plans.filter((p) => p.status === 'review' || p.status === 'draft').length;
+  const pendingPlanCount = plans.filter(
+    (p) => p.status === 'review' || p.status === 'draft',
+  ).length;
   const totalActionsCount = plans.reduce((acc, p) => acc + (p.actions?.length || 0), 0);
-  const openDsarCount = dsars.filter((d) => d.status !== 'completed' && d.status !== 'rejected').length;
+  const openDsarCount = dsars.filter(
+    (d) => d.status !== 'completed' && d.status !== 'rejected',
+  ).length;
 
   return (
     <div className="mx-auto max-w-[1240px] space-y-6 animate-in fade-in-0 duration-200">
@@ -179,8 +183,9 @@ export function PortalClient({
             </div>
 
             <p className="mt-2 max-w-3xl text-xs leading-relaxed text-[#c7cfe0]">
-              Tenant-scoped executive portal for client leadership, compliance officers, and statutory auditors.
-              Real-time posture surveillance, cryptographic evidence verification, and safe human-in-the-loop approvals.
+              Tenant-scoped executive portal for client leadership, compliance officers, and
+              statutory auditors. Real-time posture surveillance, cryptographic evidence
+              verification, and safe human-in-the-loop approvals.
             </p>
           </div>
 
@@ -222,9 +227,16 @@ export function PortalClient({
               <span className="font-medium text-white">Live Operations Mode</span>
             </span>
             <span>·</span>
-            <span>Residency: <strong className="text-white">ap-south-1 (Mumbai)</strong></span>
+            <span>
+              Residency: <strong className="text-white">ap-south-1 (Mumbai)</strong>
+            </span>
             <span>·</span>
-            <span>Tenant Tier: <strong className="text-[#0FB5A5] capitalize">{activeTenant.tier || 'Growth Enterprise'}</strong></span>
+            <span>
+              Tenant Tier:{' '}
+              <strong className="text-[#0FB5A5] capitalize">
+                {activeTenant.tier || 'Growth Enterprise'}
+              </strong>
+            </span>
             {activeTenant.is_sdf && (
               <>
                 <span>·</span>
@@ -236,7 +248,10 @@ export function PortalClient({
           </div>
 
           <div className="text-[11px] font-mono text-[#8a97b8]">
-            Tenant ID: <span className="text-white">{activeTenant.id.slice(0, 8)}…{activeTenant.id.slice(-4)}</span>
+            Tenant ID:{' '}
+            <span className="text-white">
+              {activeTenant.id.slice(0, 8)}…{activeTenant.id.slice(-4)}
+            </span>
           </div>
         </div>
       </div>
@@ -247,9 +262,13 @@ export function PortalClient({
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
         {/* Posture Score */}
         <div className="rounded-2xl border border-[#e4e8ee] bg-white p-4 shadow-2xs">
-          <div className="text-[11px] font-medium text-[#64748b] uppercase tracking-wider">Compliance Posture</div>
+          <div className="text-[11px] font-medium text-[#64748b] uppercase tracking-wider">
+            Compliance Posture
+          </div>
           <div className="mt-2 flex items-baseline gap-1.5">
-            <span className="font-heading text-2xl font-bold text-[#1E2A4A]">{normalizedScore}</span>
+            <span className="font-heading text-2xl font-bold text-[#1E2A4A]">
+              {normalizedScore}
+            </span>
             <span className="text-xs text-[#94a3b8]">/100</span>
           </div>
           <div className="mt-2 flex items-center gap-1.5 text-[11px] text-[#0FB5A5] font-semibold">
@@ -259,56 +278,60 @@ export function PortalClient({
 
         {/* Statutory Exposure */}
         <div className="rounded-2xl border border-[#e4e8ee] bg-white p-4 shadow-2xs">
-          <div className="text-[11px] font-medium text-[#64748b] uppercase tracking-wider">Estimated Exposure</div>
+          <div className="text-[11px] font-medium text-[#64748b] uppercase tracking-wider">
+            Estimated Exposure
+          </div>
           <div className="mt-2 font-heading text-xl font-bold text-[#D9534F] tracking-tight">
             {exposureDisplay}
           </div>
-          <div className="mt-2 text-[11px] text-[#64748b]">
-            DPDPA §33 ceiling
-          </div>
+          <div className="mt-2 text-[11px] text-[#64748b]">DPDPA §33 ceiling</div>
         </div>
 
         {/* Controls Passing */}
         <div className="rounded-2xl border border-[#e4e8ee] bg-white p-4 shadow-2xs">
-          <div className="text-[11px] font-medium text-[#64748b] uppercase tracking-wider">Controls Passing</div>
+          <div className="text-[11px] font-medium text-[#64748b] uppercase tracking-wider">
+            Controls Passing
+          </div>
           <div className="mt-2 flex items-baseline gap-1.5">
-            <span className="font-heading text-2xl font-bold text-[#0FB5A5]">{passingControls}</span>
+            <span className="font-heading text-2xl font-bold text-[#0FB5A5]">
+              {passingControls}
+            </span>
             <span className="text-xs text-[#94a3b8]">/{totalControls}</span>
           </div>
-          <div className="mt-2 text-[11px] text-[#64748b]">
-            {passingPct}% audit verified
-          </div>
+          <div className="mt-2 text-[11px] text-[#64748b]">{passingPct}% audit verified</div>
         </div>
 
         {/* Pending Approvals */}
         <div className="rounded-2xl border border-[#e4e8ee] bg-white p-4 shadow-2xs">
-          <div className="text-[11px] font-medium text-[#64748b] uppercase tracking-wider">Pending Approvals</div>
+          <div className="text-[11px] font-medium text-[#64748b] uppercase tracking-wider">
+            Pending Approvals
+          </div>
           <div className="mt-2 flex items-baseline gap-1.5">
-            <span className="font-heading text-2xl font-bold text-[#C9A227]">{pendingPlanCount}</span>
+            <span className="font-heading text-2xl font-bold text-[#C9A227]">
+              {pendingPlanCount}
+            </span>
             <span className="text-xs text-[#94a3b8]">plans</span>
           </div>
-          <div className="mt-2 text-[11px] text-[#64748b]">
-            {totalActionsCount} actions drafted
-          </div>
+          <div className="mt-2 text-[11px] text-[#64748b]">{totalActionsCount} actions drafted</div>
         </div>
 
         {/* Sealed Evidence */}
         <div className="rounded-2xl border border-[#e4e8ee] bg-white p-4 shadow-2xs">
-          <div className="text-[11px] font-medium text-[#64748b] uppercase tracking-wider">Sealed Proofs</div>
+          <div className="text-[11px] font-medium text-[#64748b] uppercase tracking-wider">
+            Sealed Proofs
+          </div>
           <div className="mt-2 font-heading text-2xl font-bold text-[#1E2A4A]">
             {evidence.length}
           </div>
-          <div className="mt-2 text-[11px] text-[#0FB5A5] font-medium">
-            WORM lock active
-          </div>
+          <div className="mt-2 text-[11px] text-[#0FB5A5] font-medium">WORM lock active</div>
         </div>
 
         {/* Open DSARs */}
         <div className="rounded-2xl border border-[#e4e8ee] bg-white p-4 shadow-2xs">
-          <div className="text-[11px] font-medium text-[#64748b] uppercase tracking-wider">Active DSARs</div>
-          <div className="mt-2 font-heading text-2xl font-bold text-[#1E2A4A]">
-            {openDsarCount}
+          <div className="text-[11px] font-medium text-[#64748b] uppercase tracking-wider">
+            Active DSARs
           </div>
+          <div className="mt-2 font-heading text-2xl font-bold text-[#1E2A4A]">{openDsarCount}</div>
           <div className="mt-2 text-[11px] text-[#64748b]">
             {dsars.filter((d) => d.slaDays <= 3).length > 0 ? (
               <span className="text-[#D9534F] font-semibold">1 nearing SLA</span>
@@ -415,25 +438,40 @@ export function PortalClient({
                       Active Statutory Engagement
                     </span>
                     <span className="text-xs text-[#94a3b8]">
-                      Started: {engagement.startedAt ? new Date(engagement.startedAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' }) : 'Live'}
+                      Started:{' '}
+                      {engagement.startedAt
+                        ? new Date(engagement.startedAt).toLocaleDateString('en-IN', {
+                            day: 'numeric',
+                            month: 'short',
+                            year: 'numeric',
+                          })
+                        : 'Live'}
                     </span>
                   </div>
                   <h2 className="mt-2 font-heading text-xl font-bold text-[#1E2A4A]">
                     {engagement.title}
                   </h2>
                   <p className="mt-1 text-xs text-[#64748b] max-w-2xl">
-                    Full statutory readiness scope across DPDPA 2023 provisions: Notice & Consent (§5-6), Purpose Limitation (§7), Reasonable Security Safeguards (§8(5)), and Data Principal Rights (§11-14).
+                    Full statutory readiness scope across DPDPA 2023 provisions: Notice & Consent
+                    (§5-6), Purpose Limitation (§7), Reasonable Security Safeguards (§8(5)), and
+                    Data Principal Rights (§11-14).
                   </p>
                 </div>
 
                 <div className="flex items-center gap-4 bg-slate-50 border border-slate-200 rounded-xl p-4">
                   <div>
-                    <div className="text-[10px] uppercase font-bold text-[#64748b]">Readiness Status</div>
-                    <div className="text-sm font-semibold text-[#1E2A4A] capitalize">{engagement.status}</div>
+                    <div className="text-[10px] uppercase font-bold text-[#64748b]">
+                      Readiness Status
+                    </div>
+                    <div className="text-sm font-semibold text-[#1E2A4A] capitalize">
+                      {engagement.status}
+                    </div>
                   </div>
                   <div className="h-8 w-px bg-slate-200" />
                   <div>
-                    <div className="text-[10px] uppercase font-bold text-[#64748b]">Passing Ratio</div>
+                    <div className="text-[10px] uppercase font-bold text-[#64748b]">
+                      Passing Ratio
+                    </div>
                     <div className="text-sm font-bold text-[#0FB5A5]">{passingPct}% Compliant</div>
                   </div>
                 </div>
@@ -443,7 +481,9 @@ export function PortalClient({
               <div className="mt-5 space-y-2">
                 <div className="flex justify-between text-xs font-medium text-[#1E2A4A]">
                   <span>Statutory Controls Passing</span>
-                  <span>{passingControls} of {totalControls} Verified</span>
+                  <span>
+                    {passingControls} of {totalControls} Verified
+                  </span>
                 </div>
                 <div className="h-2.5 w-full rounded-full bg-slate-100 overflow-hidden">
                   <div
@@ -482,7 +522,9 @@ export function PortalClient({
                   className="rounded-xl border border-slate-200 p-3 hover:border-[#0FB5A5] hover:bg-teal-50/20 transition-all flex items-center justify-between"
                 >
                   <div>
-                    <div className="text-xs font-semibold text-[#1E2A4A]">Executive Report Pack</div>
+                    <div className="text-xs font-semibold text-[#1E2A4A]">
+                      Executive Report Pack
+                    </div>
                     <div className="text-[11px] text-slate-500">Board & DPB attestations</div>
                   </div>
                   <span className="text-[#0FB5A5] text-xs font-bold">View →</span>
@@ -509,7 +551,8 @@ export function PortalClient({
               </span>
             </div>
             <p className="mt-2 text-xs text-slate-600">
-              Zero open security incidents or personal data breaches on record. Tabletop readiness protocol validated with 6-hour CERT-In and 72-hour DPB statutory notification SLAs.
+              Zero open security incidents or personal data breaches on record. Tabletop readiness
+              protocol validated with 6-hour CERT-In and 72-hour DPB statutory notification SLAs.
             </p>
           </div>
         </div>
@@ -524,13 +567,11 @@ export function PortalClient({
                 Pending Remediation Plans ({plans.length})
               </h2>
               <p className="text-xs text-[#64748b]">
-                Drafted by Sudhaar and validated with zero schema lock contention. Require human approval before execution.
+                Drafted by Sudhaar and validated with zero schema lock contention. Require human
+                approval before execution.
               </p>
             </div>
-            <Link
-              href="/approval"
-              className="text-xs font-bold text-[#0FB5A5] hover:underline"
-            >
+            <Link href="/approval" className="text-xs font-bold text-[#0FB5A5] hover:underline">
               Open Full Approval Console →
             </Link>
           </div>
@@ -580,27 +621,41 @@ export function PortalClient({
                     </div>
                     <div className="divide-y divide-slate-100 border border-slate-200 rounded-xl overflow-hidden">
                       {plan.actions.map((act, idx) => (
-                        <div key={act.id || idx} className="p-3 bg-white flex flex-wrap items-center justify-between gap-3 text-xs">
+                        <div
+                          key={act.id || idx}
+                          className="p-3 bg-white flex flex-wrap items-center justify-between gap-3 text-xs"
+                        >
                           <div className="flex items-start gap-2.5 flex-1 min-w-[260px]">
-                            <span className="font-mono text-[10px] text-slate-400 mt-0.5">#{idx + 1}</span>
+                            <span className="font-mono text-[10px] text-slate-400 mt-0.5">
+                              #{idx + 1}
+                            </span>
                             <div>
                               <p className="font-medium text-[#1E2A4A]">{act.description}</p>
                               <div className="mt-1 flex items-center gap-2 text-[11px] text-slate-500">
                                 <span className="font-mono">{act.actionType}</span>
                                 <span>·</span>
                                 <span>
-                                  Blast radius: {act.blastRadius?.rows ? `${act.blastRadius.rows.toLocaleString()} rows` : act.blastRadius?.endpoints ? `${act.blastRadius.endpoints} endpoints` : 'Scoped'}
+                                  Blast radius:{' '}
+                                  {act.blastRadius?.rows
+                                    ? `${act.blastRadius.rows.toLocaleString()} rows`
+                                    : act.blastRadius?.endpoints
+                                      ? `${act.blastRadius.endpoints} endpoints`
+                                      : 'Scoped'}
                                 </span>
                               </div>
                             </div>
                           </div>
 
                           <div className="flex items-center gap-2">
-                            <span className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase ${
-                              act.riskClass === 'high' ? 'bg-rose-50 text-rose-700 border border-rose-200' :
-                              act.riskClass === 'medium' ? 'bg-amber-50 text-amber-700 border border-amber-200' :
-                              'bg-emerald-50 text-emerald-700 border border-emerald-200'
-                            }`}>
+                            <span
+                              className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase ${
+                                act.riskClass === 'high'
+                                  ? 'bg-rose-50 text-rose-700 border border-rose-200'
+                                  : act.riskClass === 'medium'
+                                    ? 'bg-amber-50 text-amber-700 border border-amber-200'
+                                    : 'bg-emerald-50 text-emerald-700 border border-emerald-200'
+                              }`}
+                            >
                               {act.riskClass} Risk
                             </span>
                             <span className="text-[11px] font-medium text-slate-500 capitalize">
@@ -627,13 +682,11 @@ export function PortalClient({
                 Cryptographic Evidence Vault ({evidence.length})
               </h2>
               <p className="text-xs text-[#64748b]">
-                Immutable proofs sealed with SHA-256 and protected by AWS S3 Object Lock in ap-south-1.
+                Immutable proofs sealed with SHA-256 and protected by AWS S3 Object Lock in
+                ap-south-1.
               </p>
             </div>
-            <Link
-              href="/evidence"
-              className="text-xs font-bold text-[#0FB5A5] hover:underline"
-            >
+            <Link href="/evidence" className="text-xs font-bold text-[#0FB5A5] hover:underline">
               Open Evidence Console →
             </Link>
           </div>
@@ -654,12 +707,24 @@ export function PortalClient({
                         </span>
                         <div className="flex items-center gap-1 text-xs text-slate-600">
                           <span>Sealed by</span>
-                          <AgentIcon agent={item.collectedByAgent || 'saakshi'} size="xs" variant="default" />
-                          <span className="font-medium capitalize">{item.collectedByAgent || 'Saakshi'}</span>
+                          <AgentIcon
+                            agent={item.collectedByAgent || 'saakshi'}
+                            size="xs"
+                            variant="default"
+                          />
+                          <span className="font-medium capitalize">
+                            {item.collectedByAgent || 'Saakshi'}
+                          </span>
                         </div>
                         <span className="text-xs text-slate-400">·</span>
                         <span className="text-xs text-slate-500">
-                          {item.collectedAt ? new Date(item.collectedAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' }) : 'Recent'}
+                          {item.collectedAt
+                            ? new Date(item.collectedAt).toLocaleDateString('en-IN', {
+                                day: 'numeric',
+                                month: 'short',
+                                year: 'numeric',
+                              })
+                            : 'Recent'}
                         </span>
                       </div>
 
@@ -670,7 +735,10 @@ export function PortalClient({
                       {item.demonstratesControlIds && item.demonstratesControlIds.length > 0 && (
                         <div className="mt-2 flex flex-wrap gap-1.5">
                           {item.demonstratesControlIds.map((cid) => (
-                            <span key={cid} className="rounded bg-slate-100 text-slate-700 px-1.5 py-0.5 font-mono text-[10px]">
+                            <span
+                              key={cid}
+                              className="rounded bg-slate-100 text-slate-700 px-1.5 py-0.5 font-mono text-[10px]"
+                            >
                               {cid}
                             </span>
                           ))}
@@ -681,7 +749,9 @@ export function PortalClient({
                     <div className="flex flex-col items-end gap-1.5">
                       <div className="flex items-center gap-1.5 bg-slate-100 px-2.5 py-1 rounded-lg border border-slate-200">
                         <span className="text-[11px] font-mono text-slate-700">
-                          {item.contentHash ? `${item.contentHash.slice(0, 8)}…${item.contentHash.slice(-6)}` : 'sha256'}
+                          {item.contentHash
+                            ? `${item.contentHash.slice(0, 8)}…${item.contentHash.slice(-6)}`
+                            : 'sha256'}
                         </span>
                         <button
                           type="button"
@@ -692,7 +762,12 @@ export function PortalClient({
                         </button>
                       </div>
                       <span className="text-[10px] font-mono text-slate-400">
-                        {item.storageUri ? item.storageUri.replace('s3://axiom-evidence-prod-ap-south-1/', 's3://…/') : 's3://evidence-vault'}
+                        {item.storageUri
+                          ? item.storageUri.replace(
+                              's3://axiom-evidence-prod-ap-south-1/',
+                              's3://…/',
+                            )
+                          : 's3://evidence-vault'}
                       </span>
                     </div>
                   </div>
@@ -712,13 +787,11 @@ export function PortalClient({
                 Data Principal Rights Requests ({dsars.length})
               </h2>
               <p className="text-xs text-[#64748b]">
-                Under DPDPA §11-14: Access, Correction, Erasure, and Grievance Redressal workflows with statutory SLA tracking.
+                Under DPDPA §11-14: Access, Correction, Erasure, and Grievance Redressal workflows
+                with statutory SLA tracking.
               </p>
             </div>
-            <Link
-              href="/dsars"
-              className="text-xs font-bold text-[#0FB5A5] hover:underline"
-            >
+            <Link href="/dsars" className="text-xs font-bold text-[#0FB5A5] hover:underline">
               Open DSAR Console →
             </Link>
           </div>
@@ -730,21 +803,32 @@ export function PortalClient({
           ) : (
             <div className="divide-y divide-[#eef1f5] rounded-2xl border border-[#e4e8ee] bg-white shadow-2xs overflow-hidden">
               {dsars.map((d) => (
-                <div key={d.id} className="p-4 flex flex-wrap items-center justify-between gap-3 text-xs">
+                <div
+                  key={d.id}
+                  className="p-4 flex flex-wrap items-center justify-between gap-3 text-xs"
+                >
                   <div className="flex items-center gap-3">
-                    <span className={`px-2.5 py-1 rounded-full font-bold uppercase text-[10px] ${
-                      d.kind === 'erasure' ? 'bg-rose-50 text-rose-700 border border-rose-200' :
-                      d.kind === 'access' ? 'bg-blue-50 text-blue-700 border border-blue-200' :
-                      d.kind === 'correction' ? 'bg-amber-50 text-amber-700 border border-amber-200' :
-                      'bg-teal-50 text-teal-700 border border-teal-200'
-                    }`}>
+                    <span
+                      className={`px-2.5 py-1 rounded-full font-bold uppercase text-[10px] ${
+                        d.kind === 'erasure'
+                          ? 'bg-rose-50 text-rose-700 border border-rose-200'
+                          : d.kind === 'access'
+                            ? 'bg-blue-50 text-blue-700 border border-blue-200'
+                            : d.kind === 'correction'
+                              ? 'bg-amber-50 text-amber-700 border border-amber-200'
+                              : 'bg-teal-50 text-teal-700 border border-teal-200'
+                      }`}
+                    >
                       {d.kind}
                     </span>
 
                     <div>
                       <div className="font-semibold text-[#1E2A4A]">{d.principalName}</div>
                       <div className="text-[11px] text-slate-500">
-                        Received: {d.receivedAt ? new Date(d.receivedAt).toLocaleDateString('en-IN') : 'Recent'}
+                        Received:{' '}
+                        {d.receivedAt
+                          ? new Date(d.receivedAt).toLocaleDateString('en-IN')
+                          : 'Recent'}
                       </div>
                     </div>
                   </div>
@@ -756,7 +840,9 @@ export function PortalClient({
 
                     <div className="text-right">
                       <div className="text-[11px] font-semibold text-[#1E2A4A]">
-                        {d.dueBy ? `Due ${new Date(d.dueBy).toLocaleDateString('en-IN')}` : 'SLA: 30 days'}
+                        {d.dueBy
+                          ? `Due ${new Date(d.dueBy).toLocaleDateString('en-IN')}`
+                          : 'SLA: 30 days'}
                       </div>
                       <div className="text-[10px] text-slate-500">
                         {d.slaDays > 0 ? `${d.slaDays} days remaining` : 'Delivered'}
@@ -782,10 +868,7 @@ export function PortalClient({
                 Append-only PostgreSQL cryptographic ledger with SHA-256 chaining.
               </p>
             </div>
-            <Link
-              href="/ledger"
-              className="text-xs font-bold text-[#0FB5A5] hover:underline"
-            >
+            <Link href="/ledger" className="text-xs font-bold text-[#0FB5A5] hover:underline">
               Open Full Audit Ledger →
             </Link>
           </div>
@@ -797,7 +880,10 @@ export function PortalClient({
           ) : (
             <div className="divide-y divide-[#eef1f5] rounded-2xl border border-[#e4e8ee] bg-white shadow-2xs overflow-hidden">
               {ledger.map((entry) => (
-                <div key={entry.sequenceNo} className="p-3.5 flex flex-wrap items-center justify-between gap-3 text-xs">
+                <div
+                  key={entry.sequenceNo}
+                  className="p-3.5 flex flex-wrap items-center justify-between gap-3 text-xs"
+                >
                   <div className="flex items-center gap-3">
                     <span className="font-mono text-xs font-bold text-[#1E2A4A] bg-slate-100 px-2 py-0.5 rounded">
                       #{entry.sequenceNo}
@@ -805,7 +891,9 @@ export function PortalClient({
 
                     <div className="flex items-center gap-1.5">
                       <AgentIcon agent={entry.actorId} size="xs" variant="default" />
-                      <span className="font-semibold capitalize text-[#1E2A4A]">{entry.actorId}</span>
+                      <span className="font-semibold capitalize text-[#1E2A4A]">
+                        {entry.actorId}
+                      </span>
                     </div>
 
                     <span className="text-slate-400">·</span>
@@ -813,18 +901,29 @@ export function PortalClient({
                   </div>
 
                   <div className="flex items-center gap-3">
-                    <span className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase ${
-                      entry.result === 'success' ? 'bg-emerald-50 text-emerald-700' : 'bg-slate-100 text-slate-600'
-                    }`}>
+                    <span
+                      className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase ${
+                        entry.result === 'success'
+                          ? 'bg-emerald-50 text-emerald-700'
+                          : 'bg-slate-100 text-slate-600'
+                      }`}
+                    >
                       {entry.result}
                     </span>
 
                     <span className="font-mono text-[10px] text-slate-400">
-                      {entry.entryHash ? `${entry.entryHash.slice(0, 6)}…${entry.entryHash.slice(-4)}` : ''}
+                      {entry.entryHash
+                        ? `${entry.entryHash.slice(0, 6)}…${entry.entryHash.slice(-4)}`
+                        : ''}
                     </span>
 
                     <span className="text-[11px] text-slate-500">
-                      {entry.occurredAt ? new Date(entry.occurredAt).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' }) : ''}
+                      {entry.occurredAt
+                        ? new Date(entry.occurredAt).toLocaleTimeString('en-IN', {
+                            hour: '2-digit',
+                            minute: '2-digit',
+                          })
+                        : ''}
                     </span>
                   </div>
                 </div>

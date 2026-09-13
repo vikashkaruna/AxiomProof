@@ -16,7 +16,12 @@ describe('StatusBadge Component', () => {
   });
 
   it('renders statutory dry-run statuses without error', () => {
-    for (const status of ['awaiting_dry_run', 'dry_run_pending', 'dry_run_failed', 'awaiting_approval']) {
+    for (const status of [
+      'awaiting_dry_run',
+      'dry_run_pending',
+      'dry_run_failed',
+      'awaiting_approval',
+    ]) {
       const html = renderToString(<StatusBadge status={status} />);
       expect(html).toBeDefined();
       expect(html.length).toBeGreaterThan(0);

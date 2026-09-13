@@ -70,7 +70,9 @@ export default async function ClientPortalPage({
   const activeTenant: TenantSummary =
     (activeTenantSlug
       ? tenants.find((t) => t.slug === activeTenantSlug || t.id === activeTenantSlug)
-      : null) || tenants[0] || DEFAULT_TENANT;
+      : null) ||
+    tenants[0] ||
+    DEFAULT_TENANT;
 
   // 3. Load live actuals for the active tenant
   let engagement: EngagementSummary | null = null;
@@ -111,7 +113,9 @@ export default async function ClientPortalPage({
         .select('id, plan_id, description, action_type, risk_class, blast_radius, approval_status'),
       admin
         .from('evidence')
-        .select('id, content_hash, storage_uri, evidence_type, description, collected_by_agent, collected_at, demonstrates_control_ids')
+        .select(
+          'id, content_hash, storage_uri, evidence_type, description, collected_by_agent, collected_at, demonstrates_control_ids',
+        )
         .eq('tenant_id', activeTenant.id)
         .order('collected_at', { ascending: false })
         .limit(20),
@@ -138,7 +142,10 @@ export default async function ClientPortalPage({
     // Parse engagement & control counts
     const dbEngagement = engagementsRes.data?.[0];
     const totalControls = controlsRes.count || 43;
-    const passingControls = Math.max(32, totalControls - ((findingsRes.data || []).filter((f) => f.status === 'open').length || 11));
+    const passingControls = Math.max(
+      32,
+      totalControls - ((findingsRes.data || []).filter((f) => f.status === 'open').length || 11),
+    );
 
     if (dbEngagement) {
       engagement = {
