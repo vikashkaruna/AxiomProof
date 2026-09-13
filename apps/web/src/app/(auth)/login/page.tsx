@@ -15,15 +15,22 @@ export default async function LoginPage({
     error?: string;
     message?: string;
     redirect?: string;
+    force?: string;
   }>;
 }) {
   const resolvedSearchParams = await searchParams;
+
+  // Do not open the login page on standard navigation; take directly to dashboard
+  if (resolvedSearchParams.force !== 'true' && resolvedSearchParams.mode !== 'signup') {
+    redirect(resolvedSearchParams.redirect || '/dashboard');
+  }
+
   const supabase = await createSupabaseServerClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
 
-  if (user) {
+  if (user && resolvedSearchParams.force !== 'true') {
     redirect(resolvedSearchParams.redirect || '/dashboard');
   }
 

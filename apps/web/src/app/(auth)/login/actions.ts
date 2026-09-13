@@ -144,11 +144,7 @@ export async function signupAction(formData: FormData) {
 export async function logoutAction() {
   const cookieStore = await cookies();
   cookieStore.delete('axiom_e2e_bypass');
-  cookieStore.set('axiom_e2e_logged_out', 'true', {
-    path: '/',
-    httpOnly: true,
-    sameSite: 'lax',
-  });
+  cookieStore.delete('axiom_e2e_logged_out');
 
   // Explicitly delete any sb-*-auth-token cookies to ensure session purge
   for (const cookie of cookieStore.getAll()) {
@@ -171,5 +167,5 @@ export async function logoutAction() {
   } catch (err) {
     console.warn('[logoutAction] revalidatePath warning:', err);
   }
-  redirect('/login');
+  redirect('/dashboard');
 }

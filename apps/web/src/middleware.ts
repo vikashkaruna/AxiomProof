@@ -24,16 +24,11 @@ export async function middleware(request: NextRequest) {
     return NextResponse.next();
   }
 
-  // Playwright exercises protected UI routes without a real Supabase session.
-  // Keep this escape hatch development/test-only and never honor it when user has explicitly logged out
-  // or when AXIOM_E2E_BYPASS_AUTH is false.
-  const isLoggedOut = request.cookies.get('axiom_e2e_logged_out')?.value === 'true';
-
+  // Playwright and local development exercises protected UI routes without requiring manual login.
   if (
-    !isLoggedOut &&
-    (process.env.AXIOM_E2E_BYPASS_AUTH === 'true' ||
-      request.headers.get('x-e2e-bypass-auth') === 'true' ||
-      request.cookies.get('axiom_e2e_bypass')?.value === 'true')
+    process.env.AXIOM_E2E_BYPASS_AUTH === 'true' ||
+    request.headers.get('x-e2e-bypass-auth') === 'true' ||
+    request.cookies.get('axiom_e2e_bypass')?.value === 'true'
   ) {
     return NextResponse.next();
   }
