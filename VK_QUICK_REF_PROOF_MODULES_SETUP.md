@@ -1349,3 +1349,21 @@ pnpm --dir tests/e2e test:e2e
   curl -s http://localhost:3001/api/ledger?page=1&limit=1 | jq .
   ```
 - [ ] **Emergency Kill Switch Test**: Probe `/api/bff/v1/emergency/kill-switch` to ensure mutating actions immediately halt if triggered.
+
+---
+
+### 14.12 Client Portal Dynamic Screen Architecture (`/portal`)
+
+The Client Portal (`http://localhost:3001/portal`) provides an executive- and auditor-facing view of a client organization's live compliance posture.
+
+#### 1. Dynamic Architecture & Data Sources
+
+- **Tenant Scoping**: Reads `searchParams.tenant` (slug or UUID) with automatic resolution across the `tenants` table. Multi-tenant auditors can seamlessly switch between client realms.
+- **Direct Database Execution (`createSupabaseAdmin()`)**: Bypasses E2E mock facades in server components to deliver 100% live database telemetry:
+  - **Engagement & Posture**: Active engagement details (`DPDPA 2023 Statutory Compliance Assessment`), normalized posture score (`74/100`), passing controls ratio (`32/43`), and statutory penalty exposure (`₹18.4 Cr`).
+  - **Pending Remediation Plans**: Live `remediation_plans` and `remediation_actions` drafted by Sudhaar awaiting client review (`PLAN-118`), including blast radius estimations.
+  - **Sealed Evidence Vault**: Real-time proofs sealed by Saakshi with SHA-256 hashes, S3 Object Lock URIs, and control links (`NOT-01`, `SEC-09`, `RTS-01`, `GOV-01`, `BRC-02`).
+  - **Data Principal Rights (DSAR)**: Active rights requests across erasure, access, correction, and portability with statutory SLA countdowns.
+  - **Incident & Breach Radar**: Live verification of 0 open breaches and CERT-In 6h / DPB 72h tabletop drill readiness.
+  - **Immutable Audit Ledger**: Append-only cryptographic ledger sequence events (#92, #91, #90...) for the organization.
+- **Design System Parity**: Features the authoritative Deep Indigo Hero Banner (`from-[#1E2A4A] via-[#1E2A4A] to-[#243356]`), Indic subtitle (`ग्राहक पोर्टल`), agent attribution (`Agent · Saakshi + Sudhaar`), and 6 live KPI cards.
