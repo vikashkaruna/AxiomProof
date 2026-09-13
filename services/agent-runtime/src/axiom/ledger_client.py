@@ -13,7 +13,7 @@ from __future__ import annotations
 import os
 import uuid
 from dataclasses import dataclass
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Any, Literal
 
 from supabase import Client, create_client
@@ -100,7 +100,7 @@ class LedgerClient:
 
     def _append_in_memory(self, input: AppendInput) -> AppendResult:
         import time
-        from datetime import datetime as _dt
+        from datetime import datetime as _dt, timezone as _tz
         from .canonicalise import canonical_json as _cj
 
         detail = input.detail or {}
@@ -110,7 +110,7 @@ class LedgerClient:
         chain = self._mem_chains.setdefault(input.tenant_id, {"last_seq": 0, "last_hash": None})
         seq = int(chain["last_seq"]) + 1
         prev_hash = chain["last_hash"]
-        ts = _dt.utcnow().isoformat()
+        ts = _dt.now(_tz.utc).isoformat()
         payload = "|".join(
             [
                 str(seq),
@@ -198,7 +198,7 @@ class LedgerClient:
         )
         result = rpc.execute()
         new_id = str(result.data) if result.data else "0"
-        return AppendResult(id=new_id, occurred_at=datetime.utcnow())
+        return AppendResult(id=new_id, occurred_at=datetime.now(timezone.utc))
 
     async def verify(
         self, tenant_id: str, from_sequence: int = 1
