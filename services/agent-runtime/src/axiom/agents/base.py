@@ -138,11 +138,20 @@ class BaseAgent(ABC, Generic[InputT, OutputT]):
 
         # Validate input
         if not isinstance(raw_input, BaseModel):
-            input_obj = self.input_schema()(**(raw_input or {}))
+            try:
+                input_obj = self.input_schema()(**(raw_input or {}))
+            except Exception as e:
+                self.log.error("agent.input_validation_failed", err=str(e))
+                return AgentRunResult(
+                    agent=self.name,
+                    correlation_id=correlation_id,
+                    status="failed",
+                    error=f"validation_failed: {e}",
+                )
         else:
             input_obj = raw_input
 
-        tenant_id = getattr(input_obj, "tenant_id", None) or ""
+        tenant_id = getattr(input_obj, "tenant_id", None) or "00000000-0000-0000-0000-000000000001"
         engagement_id = getattr(input_obj, "engagement_id", None)
 
         # Initial "started" ledger entry

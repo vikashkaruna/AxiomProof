@@ -1131,6 +1131,31 @@ The Audit Ledger screen (`/ledger`, `apps/web/src/app/(app)/ledger/`) features s
 - Queries PostgreSQL via Supabase Admin Client using server-side pagination and filtering.
 - Preserves cryptographic ledger integrity proof (`verify_ledger` RPC) and unbroken SHA-256 hash chains.
 
+---
+
+### 14.8 Bottom-Left Agent Panel: Actionable Controls & High-Contrast Flyout Architecture
+
+To address the constraint where the sidebar agent panel previously only rendered passive descriptions in an inline box that could get cut off at the bottom of the viewport, the bottom-left agent panel (`sidebar-agent-panel.tsx`) was completely overhauled with an elevated dock and an interactive flyout action card adhering to UI/UX best practices:
+
+#### 1. Elevated Dock Container in Dark Sidebar
+- **Higher Contrast Background (`#243458` on `#1E2A4A`)**: Replaced the murky transparent background with an elevated card surface featuring `border border-white/20`, subtle drop shadows, and high-contrast text (`text-slate-100`, `text-slate-200`).
+- **Tactile Agent Tiles**: Each of the 10 agents sits in a dedicated button tile (`bg-white/[0.08] hover:bg-white/[0.18] border border-white/10 hover:border-white/25`) with animated mini icons and bright, legible labels.
+- **Selection Indicator**: Clicking an agent sets active ring styling (`ring-2 ring-[#0FB5A5] border-teal-400 bg-teal-500/30 text-white`).
+
+#### 2. High-Contrast Floating Action Card (`fixed left-[274px] bottom-3 z-50`)
+- **Viewport Anchor (Never Cut Off)**: Positions the card outside the fixed-height sidebar canvas directly beside the agent dock. Never clipped by sidebar scrolling or bottom viewport bounds.
+- **Light Contrast Surface (`bg-white text-slate-900 border border-slate-200 shadow-2xl`)**: Provides clean, crisp typography, high contrast, and unmistakable visual hierarchy.
+- **Bilingual Identity & Autonomy**: Displays bespoke animated agent icon, English persona, Indic Hindi transliteration (e.g. `दृष्टि · Data Discovery`), autonomy level, and real-time state badge (`Working`, `Deliberating`, or `Standing by`).
+- **Statutory Boundary Callouts**: Contextual architectural guardrails (e.g. `Sudhaar: ADR-3 read-only planning`, `Karya: ADR-1 approval token gate`, `Drishti: ap-south-1 residency`, `Saakshi: S3 Object Lock Compliance mode`).
+
+#### 3. Direct Agent Actions & Execution Engine
+- **Primary Quick Action Button**: Single-click trigger (`⚡ Run Discovery Scan`, `⚡ Run 46-Control Assessment`, `⚡ Verify Ledger Chain`, `⚡ Seal Attestation Proof`, etc.) communicating directly with `/api/bff/v1/agents/${agent}/run`.
+- **Live Execution Feedback**: Displays progress spinner, latency in milliseconds, and generated immutable ledger sequence numbers with direct clickable links (`#33, #34` → `/ledger?q=33`).
+- **Architectural Gate Enforcer (Karya)**: For mutating actions, Karya refuses unapproved execution per ADR-1/ADR-3, explains that a human approval token is required, and renders a direct CTA `Review & Approve Actions in Console →` (`/approval`).
+- **Direct Module Route**: Direct link to each agent's primary domain screen (`Open Data Discovery Screen →`, `Open Assessment Screen →`, `Open Remediation Screen →`).
+- **Deep Links**: Direct shortcuts to `Agent Workbench ↗` (`/workbench?agent=${agent.name}`) and `Audit Ledger Proof ↗` (`/ledger?agent=${agent.name}`).
+
+
 
 
 

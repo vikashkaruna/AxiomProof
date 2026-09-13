@@ -21,7 +21,7 @@ from .base import AgentName, AutonomyLevel, BaseAgent
 
 
 class SaakshiInput(BaseModel):
-    tenant_id: str
+    tenant_id: str = "00000000-0000-0000-0000-000000000001"
     engagement_id: str | None = None
     evidence_type: Literal[
         "document",
@@ -32,9 +32,9 @@ class SaakshiInput(BaseModel):
         "interview",
         "inventory",
         "report",
-    ]
-    description: str = ""
-    content: str | None = None
+    ] = "document"
+    description: str = "Automated compliance evidence seal"
+    content: str = "Axiom Proof automated statutory compliance attestation"
     filename: str | None = None
     mime_type: str = "text/plain"
     demonstrates_control_ids: list[str] = Field(default_factory=list)

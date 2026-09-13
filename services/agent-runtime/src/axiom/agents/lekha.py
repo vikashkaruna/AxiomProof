@@ -22,8 +22,8 @@ from .base import AgentName, AutonomyLevel, BaseAgent
 
 
 class LekhaInput(BaseModel):
-    tenant_id: str
-    operation: str  # 'verify' | 'reconstruct' | 'export'
+    tenant_id: str = "00000000-0000-0000-0000-000000000001"
+    operation: str = "verify"  # 'verify' | 'reconstruct' | 'export'
     correlation_id: str | None = None  # for reconstruct
     from_sequence: int = 1
     to_sequence: int | None = None

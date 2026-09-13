@@ -31,6 +31,7 @@ class BuyingSignal(BaseModel):
 
 
 class SanketInput(BaseModel):
+    tenant_id: str = "00000000-0000-0000-0000-000000000001"
     sectors: list[str] = Field(default_factory=lambda: ["BFSI", "Healthcare", "SaaS / Tech"])
     geo: str = "India"
     since: str | None = None  # ISO datetime; default last 14 days

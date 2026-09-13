@@ -25,11 +25,11 @@ from .base import AgentName, AutonomyLevel, BaseAgent
 
 
 class KaryaInput(BaseModel):
-    tenant_id: str
-    plan_id: str
-    action_id: str
-    approval_token: dict[str, Any] = Field(
-        ...,
+    tenant_id: str = "00000000-0000-0000-0000-000000000001"
+    plan_id: str = "00000000-0000-0000-0000-000000000001"
+    action_id: str = "00000000-0000-0000-0000-000000000001"
+    approval_token: dict[str, Any] | None = Field(
+        default=None,
         description="The signed approval token, including spec and signature",
     )
     parameters: dict[str, Any] = Field(default_factory=dict)
@@ -68,6 +68,15 @@ class KaryaAgent(BaseAgent[KaryaInput, KaryaOutput]):
     async def _run(
         self, *, correlation_id: str, input: KaryaInput, **deps: Any
     ) -> KaryaOutput:
+        # ADR-1 / ADR-3 Gate: unapproved mutating execution is architecturally refused
+        if not input.approval_token:
+            return KaryaOutput(
+                action_id=input.action_id,
+                status="denied",
+                error="approval_token_required: Karya refuses mutating execution without a signed, scope-bound approval token (ADR-1, ADR-3).",
+                notes="Review and approve actions via the Approval Console (/approval) before execution.",
+            )
+
         # Phase 0/1 stub: refuse to execute without explicit phase
         # activation. The BFF gates all real execution in Phase 3+.
         if not self.settings.feature_execution_engine:

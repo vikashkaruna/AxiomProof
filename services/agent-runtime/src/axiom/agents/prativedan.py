@@ -36,10 +36,10 @@ from ..model_gateway import ModelRequest, TaskKind
 
 
 class PrativedanInput(BaseModel):
-    tenant_id: str
+    tenant_id: str = "00000000-0000-0000-0000-000000000001"
     engagement_id: str | None = None
     kind: ReportKind = ReportKind.BOARD
-    title: str
+    title: str = "Executive Board Compliance Report"
     findings: list[dict[str, Any]] = Field(default_factory=list)
     posture_score: float | None = None
     estimated_exposure_inr: int | None = None
