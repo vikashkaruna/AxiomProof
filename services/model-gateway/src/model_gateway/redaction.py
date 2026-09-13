@@ -39,11 +39,15 @@ def _presidio_analyzer() -> Any | None:
     """Load Presidio once when its language model is available.
 
     Regexes remain the deterministic baseline. A missing Presidio model must
-    not make the gateway crash during local development, but production
-    deployments should install and verify the analyzer model as documented in
-    the Phase 1 security report.
+    not make the gateway crash or stall downloading hundreds of MBs during
+    local development.
     """
     try:
+        import spacy
+
+        if not (spacy.util.is_package("en_core_web_lg") or spacy.util.is_package("en_core_web_sm")):
+            return None
+
         from presidio_analyzer import AnalyzerEngine
 
         return AnalyzerEngine()

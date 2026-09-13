@@ -713,12 +713,25 @@ curl -s -X POST http://localhost:8001/v1/chat/completions \
       }
     ],
     "tenant_id": "00000000-0000-0000-0000-000000000001"
-  }' | jq .choices[0].message.content
+  }' | jq -r '.choices[0].message.content'
 ```
+
+*(Note: Ensure `.choices[0].message.content` is wrapped in single quotes to prevent zsh from interpreting `[0]` as a file glob pattern).*
 
 *Expected Output*:
 ```text
-"Model Gateway received prompt with PII redacted: Verify consent for Aadhaar <AADHAAR_REDACTED>, PAN <PAN_REDACTED>, and mobile <PHONE_REDACTED>."
+Model Gateway received prompt with PII redacted: Verify consent for Aadhaar [REDACTED:AADHAAR], PAN [REDACTED:PAN], and mobile [REDACTED:PHONE_IN].
+```
+
+You can also query the gateway's direct completion endpoint:
+```bash
+curl -s -X POST http://localhost:8001/v1/complete \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer dev-model-gateway-key-axiom" \
+  -d '{
+    "prompt": "Verify consent for Aadhaar 3456 7890 1234, PAN ABCDE1234F, and mobile +91 98765 43210.",
+    "task": "reasoning"
+  }' | jq .
 ```
 
 ---

@@ -46,6 +46,43 @@ class CompleteResponse(BaseModel):
     correlation_id: str
 
 
+class ChatMessage(BaseModel):
+    role: str
+    content: str
+
+
+class ChatCompletionRequest(BaseModel):
+    model: str = "stub-dpdpa-specialist"
+    messages: list[ChatMessage]
+    temperature: float = 0.2
+    max_tokens: int = 4096
+    tenant_id: str | None = None
+    task: TaskKind = "reasoning"
+    pii_redact: bool = True
+
+
+class ChatChoiceMessage(BaseModel):
+    role: str = "assistant"
+    content: str
+
+
+class ChatChoice(BaseModel):
+    index: int = 0
+    message: ChatChoiceMessage
+    finish_reason: str = "stop"
+
+
+class ChatCompletionResponse(BaseModel):
+    id: str
+    object: str = "chat.completion"
+    created: int
+    model: str
+    choices: list[ChatChoice]
+    usage: dict[str, int]
+    pii_redacted: bool
+    redactions: dict[str, int] = {}
+
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     settings = get_settings()
@@ -170,6 +207,74 @@ async def complete(req: CompleteRequest, request: Request):
         prompt_hash=req.prompt_hash or _hash(redacted_prompt),
         route_reason=decision.reason,
         correlation_id=correlation_id,
+    )
+
+
+@app.post("/v1/chat/completions", response_model=ChatCompletionResponse)
+async def chat_completions(req: ChatCompletionRequest, request: Request):
+    settings: Settings = app.state.settings
+    log = structlog.get_logger()
+    completion_id = f"chatcmpl-{uuid.uuid4().hex[:12]}"
+
+    # Auth check if configured
+    if settings.api_key:
+        provided = request.headers.get("authorization", "").removeprefix("Bearer ").strip()
+        if provided and provided != settings.api_key:
+            raise HTTPException(status_code=401, detail="invalid api key")
+
+    # Extract user prompt from messages
+    user_prompts = [m.content for m in req.messages if m.role == "user"]
+    raw_prompt = "\n".join(user_prompts) if user_prompts else ""
+
+    redactions: dict[str, int] = {}
+    pii_redacted = False
+    redacted_prompt = raw_prompt
+
+    decision = decide_route(req.task, req.model, settings)
+    must_redact = decision.provider != "self_hosted"
+    if settings.pii_redaction_enabled and (req.pii_redact or must_redact):
+        r = redact(raw_prompt)
+        redacted_prompt = r.redacted_text
+        pii_redacted = True
+        redactions = dict(r.redactions)
+
+    log.info(
+        "model_gateway.chat_completions",
+        model=req.model,
+        pii_redacted=pii_redacted,
+        redactions=redactions,
+        id=completion_id,
+    )
+
+    if req.model.startswith("stub"):
+        content = f"Model Gateway received prompt with PII redacted: {redacted_prompt}"
+    else:
+        content = (
+            f"[Model Gateway · {decision.provider}/{decision.model}] "
+            f"Processed prompt with PII redacted: {redacted_prompt}"
+        )
+
+    in_tokens = max(1, len(raw_prompt) // 4)
+    out_tokens = max(1, len(content) // 4)
+
+    return ChatCompletionResponse(
+        id=completion_id,
+        created=int(time.time()),
+        model=decision.model,
+        choices=[
+            ChatChoice(
+                index=0,
+                message=ChatChoiceMessage(role="assistant", content=content),
+                finish_reason="stop",
+            )
+        ],
+        usage={
+            "prompt_tokens": in_tokens,
+            "completion_tokens": out_tokens,
+            "total_tokens": in_tokens + out_tokens,
+        },
+        pii_redacted=pii_redacted,
+        redactions=redactions,
     )
 
 
