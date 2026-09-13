@@ -799,7 +799,11 @@ curl -s -X POST http://localhost:8001/v1/complete \
 Axiom Proof audits target systems using autonomous compliance agents that record all findings and decisions to the append-only ledger.
 
 ##### A. Target Discovery Audit (Drishti)
-Drishti discovers data repositories (PostgreSQL, MySQL, S3 buckets, APIs), identifies personal data categories (Aadhaar, PAN, phone, email), and flags statutory escalations (e.g. cross-border transfer under Section 16).
+Drishti discovers data repositories (PostgreSQL, MySQL, S3 buckets, APIs), identifies personal data categories (Aadhaar, PAN, phone, email), evaluates Indian data residency (`ap-south-1` Mumbai default), and flags statutory escalations under Section 16 & Rule 16.
+
+> **DPDPA Data Residency & Cross-Border Enforcement**:
+> - All target systems and logs default to India (`ap-south-1` / Mumbai).
+> - If an operator designates a foreign destination (e.g., `us-east-1` USA, `eu-central-1` Frankfurt) even with `"cross_border": false`, Drishti **allows** the destination, but automatically flags `cross_border: true`, triggers an escalation (`escalate: true`, `escalation_reason: "cross_border_transfer_detected"`), and emits a statutory warning (`[DPDPA-XBD-01]`) requiring transfer safeguards and RoPA documentation under Section 16.
 
 Trigger Drishti via the BFF API:
 ```bash
@@ -813,6 +817,7 @@ curl -s -X POST http://localhost:4000/v1/agents/drishti/run \
         "name": "Production Customer DB",
         "type": "postgres",
         "description": "Core database holding user credentials and KYC docs",
+        "region": "ap-south-1",
         "hosts_personal_data": true,
         "data_categories": ["aadhaar", "pan", "phone", "email"],
         "cross_border": false
@@ -823,7 +828,7 @@ curl -s -X POST http://localhost:4000/v1/agents/drishti/run \
         "description": "Log telemetry archive in us-east-1",
         "hosts_personal_data": true,
         "data_categories": ["ip_address", "telemetry"],
-        "cross_border": true
+        "cross_border": false
       }
     ]
   }' | jq .

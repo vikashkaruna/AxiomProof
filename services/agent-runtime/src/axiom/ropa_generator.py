@@ -12,6 +12,8 @@ from typing import Any
 
 from pydantic import BaseModel, Field
 
+from .agents.drishti import INDIAN_REGIONS
+
 
 class RopaRecord(BaseModel):
     activity_id: str
@@ -22,6 +24,7 @@ class RopaRecord(BaseModel):
     lawful_basis: str
     retention_period: str
     processors: list[str] = Field(default_factory=list)
+    region: str = "ap-south-1"
     cross_border: bool = False
     transfer_safeguards: str | None = None
     evidence_refs: list[str] = Field(default_factory=list)
@@ -62,6 +65,17 @@ def build_ropa_records(
         purpose = str(system.get("description") or "Purpose to be confirmed by the Data Fiduciary")
         review_required = not bool(fields and system.get("description"))
         cross_border = bool(system.get("cross_border", False))
+        region = str(system.get("region") or "").strip()
+        if not cross_border and region and region.lower() not in INDIAN_REGIONS:
+            cross_border = True
+
+        safeguards = None
+        if cross_border:
+            if region and region.lower() not in INDIAN_REGIONS:
+                safeguards = f"Mandatory cross-border transfer safeguards required under DPDPA §16 (Destination: {region})"
+            else:
+                safeguards = "To be documented"
+
         records.append(
             RopaRecord(
                 activity_id=f"ropa-{slug}-{index}",
@@ -72,8 +86,9 @@ def build_ropa_records(
                 lawful_basis="To be confirmed by the Data Fiduciary",
                 retention_period="To be confirmed by the retention schedule",
                 processors=processors,
+                region=region or "ap-south-1",
                 cross_border=cross_border,
-                transfer_safeguards=("To be documented" if cross_border else None),
+                transfer_safeguards=safeguards,
                 evidence_refs=[str(ref) for ref in system.get("evidence_refs", []) or []],
                 review_required=review_required or cross_border,
             )
