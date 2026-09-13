@@ -649,7 +649,7 @@ Follow these manual steps to interactively verify the entire application in your
 
 2. **Control Library Browser**:
    - Open **[http://localhost:3001/controls](http://localhost:3001/controls)**.
-   - Browse the **47 DPDPA Controls** across all 9 statutory domains (`DPDPA-GOV`, `DPDPA-CNS`, `DPDPA-NOT`, `DPDPA-RCD`, `DPDPA-SEC`, `DPDPA-DSR`, `DPDPA-XBD`, `DPDPA-CHL`, `DPDPA-DAT`).
+   - Browse the **46 DPDPA Controls** across all 13 statutory domains (`GOV`, `CNS`, `DAT`, `RCD`, `BRCH`, `XBR`, `CHD`, `SDF`, `SEC`, `RTN`, `DPF`, `AUD`, `DPIA`).
    - Click any control to view statutory citations, verification guidance, and evidence requirements.
 
 3. **Remediation Plans & Human Approval Gate (ADR-1, BR-2)**:
@@ -682,7 +682,7 @@ Follow these manual steps to interactively verify the entire application in your
 
 1. Open **[http://127.0.0.1:55323](http://127.0.0.1:55323)** in your browser.
 2. In the **Table Editor**:
-   - `controls`: View 47 immutable controls.
+   - `controls`: View 46 immutable controls.
    - `gap_scan_responses`: View recent public submissions and scoring snapshots.
    - `audit_ledger`: View sealed compliance records and cryptographic hashes.
 3. In the **SQL Editor**:
