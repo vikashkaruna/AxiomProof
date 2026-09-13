@@ -12,6 +12,7 @@ import {
   StatusBadge,
   SeverityChip,
   Button,
+  AgentIcon,
   ProofSeal,
   type StatusKind,
 } from '@axiom/ui';
@@ -103,14 +104,26 @@ export default async function PlanDetailPage({ params }: PageProps) {
     <div className="flex flex-col gap-6">
       <PageHeader
         title={typedPlan.title}
-        description={typedPlan.description ?? 'No description provided.'}
+        description={
+          <span className="flex flex-wrap items-center gap-2">
+            <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-700">
+              Agent ·
+              <span className="inline-flex items-center gap-1">
+                <AgentIcon agent="sudhaar" size={16} />
+                <span>Sudhaar</span>
+              </span>
+            </span>
+            <span className="text-slate-400">·</span>
+            <span>{typedPlan.description ?? 'Deterministic, rollbackable remediation plan.'}</span>
+          </span>
+        }
         actions={
-          <>
+          <div className="flex items-center gap-2">
             <KillSwitchButton planId={typedPlan.id} tenantId={typedPlan.tenant_id} />
-            <Button variant="outline" size="sm" asChild={false}>
-              <Link href="/plans">Back to plans</Link>
+            <Button variant="outline" size="sm" asChild>
+              <Link href="/plans">← Back to plans</Link>
             </Button>
-          </>
+          </div>
         }
         meta={
           <>

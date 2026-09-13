@@ -15,7 +15,7 @@ const severityConfig: Record<
 };
 
 export interface SeverityChipProps extends HTMLAttributes<HTMLSpanElement> {
-  severity: Severity;
+  severity: Severity | string;
   showSymbol?: boolean;
 }
 
@@ -25,7 +25,12 @@ export function SeverityChip({
   className,
   ...props
 }: SeverityChipProps) {
-  const c = severityConfig[severity];
+  const normalized = (severity || '').toLowerCase().trim() as Severity;
+  const c = severityConfig[normalized] ?? {
+    label: severity ? severity.charAt(0).toUpperCase() + severity.slice(1) : 'Medium',
+    variant: 'neutral' as const,
+    symbol: '●',
+  };
   return (
     <Badge variant={c.variant} className={cn('font-medium', className)} {...props}>
       {showSymbol && <span aria-hidden="true">{c.symbol}</span>}
