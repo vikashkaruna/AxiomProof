@@ -29,6 +29,7 @@ export default async function LedgerPage() {
 
   // Verify chain integrity
   const { data: tenants } = await admin.from('tenants').select('id, name').limit(1);
+  const tenantId = tenants?.[0]?.id;
 
   let verification: LedgerVerification = { intact: true };
   if (tenants && tenants.length > 0 && tenants[0]) {
@@ -55,7 +56,7 @@ export default async function LedgerPage() {
       <PageHeader
         title="Audit ledger"
         description="Append-only, hash-chained, tamper-evident. Every agent action, every human approval, every state change — recorded in the order it happened, with a verifiable chain."
-        actions={<VerifyButton />}
+        actions={<VerifyButton tenantId={tenantId} />}
         meta={
           verification.intact ? (
             <Badge variant="success">Chain intact</Badge>

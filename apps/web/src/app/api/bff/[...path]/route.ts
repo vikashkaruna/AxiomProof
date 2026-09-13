@@ -19,6 +19,9 @@ async function forward(request: NextRequest, context: RouteContext) {
   target.search = request.nextUrl.search;
   const headers = new Headers(request.headers);
   headers.set('authorization', `Bearer ${session.access_token}`);
+  if (!headers.has('x-tenant-id')) {
+    headers.set('x-tenant-id', '00000000-0000-0000-0000-000000000001');
+  }
   headers.delete('host');
   headers.delete('content-length');
   headers.delete('cookie');

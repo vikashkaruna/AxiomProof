@@ -14,7 +14,17 @@ const env = loadEnv();
  * so RLS still applies.
  */
 export const tenantResolver = createMiddleware<{ Variables: Variables }>(async (c, next) => {
-  const tenantId = c.req.header('x-tenant-id');
+  const isDevOrTest =
+    env.ENVIRONMENT === 'development' ||
+    env.ENVIRONMENT === 'local' ||
+    process.env.NODE_ENV !== 'production' ||
+    process.env.AXIOM_E2E_BYPASS_AUTH === 'true';
+
+  let tenantId = c.req.header('x-tenant-id');
+  if (!tenantId && isDevOrTest) {
+    tenantId = '00000000-0000-0000-0000-000000000001';
+  }
+
   if (!tenantId) {
     return c.json(
       { error: { code: 'tenant_required', message: 'X-Tenant-Id header is required' } },
@@ -23,12 +33,6 @@ export const tenantResolver = createMiddleware<{ Variables: Variables }>(async (
   }
   const user = c.get('user');
   const token = c.get('token');
-
-  const isDevOrTest =
-    env.ENVIRONMENT === 'development' ||
-    env.ENVIRONMENT === 'local' ||
-    process.env.NODE_ENV !== 'production' ||
-    process.env.AXIOM_E2E_BYPASS_AUTH === 'true';
 
   if (isDevOrTest && (token === 'test-access-token' || token === 'dev-token')) {
     c.set('tenantId', tenantId);

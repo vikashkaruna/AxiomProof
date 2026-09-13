@@ -16,7 +16,10 @@ const IDEMPOTENCY_HEADER = 'idempotency-key';
  * collide with another user's key.
  */
 export const idempotency = createMiddleware<{ Variables: Variables }>(async (c, next) => {
-  if (!['POST', 'PUT', 'PATCH', 'DELETE'].includes(c.req.method)) {
+  if (
+    !['POST', 'PUT', 'PATCH', 'DELETE'].includes(c.req.method) ||
+    c.req.path.endsWith('/ledger/verify')
+  ) {
     return next();
   }
 
