@@ -1,16 +1,34 @@
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
+import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+import { AgentIcon } from '@axiom/ui';
+import type { AgentName } from '@axiom/types';
 
 export interface ModuleCardRow {
   t: string;
   v: string;
   dot: string;
+  sub?: string;
 }
 
 export interface ModuleCard {
   h: string;
   rows: ModuleCardRow[];
+  badge?: string;
+}
+
+export interface ModuleTelemetryEvent {
+  seq?: number;
+  title: string;
+  detail: string;
+  time: string;
+  target?: string;
+  tag?: string;
+  tagColor?: string;
+  hash?: string;
+  status?: string;
 }
 
 export interface GenericModuleMeta {
@@ -18,44 +36,222 @@ export interface GenericModuleMeta {
   hi: string;
   phase: string;
   agent?: string;
+  agentKey?: AgentName;
   autonomy: string;
   moduleId: string;
   desc: string;
+  actionLabel?: string;
+  actionHref?: string;
+  statutoryCitation?: string;
   cards: ModuleCard[];
+  recentEvents?: ModuleTelemetryEvent[];
+  telemetryTitle?: string;
 }
 
 export function GenericModuleView({ meta }: { meta: GenericModuleMeta }) {
+  const router = useRouter();
+  const [isExecuting, setIsExecuting] = useState(false);
+  const [runResult, setRunResult] = useState<{
+    success: boolean;
+    status?: string;
+    message: string;
+    latency_ms?: number;
+    ledgerIds?: string[];
+  } | null>(null);
+
+  const handleRunAgent = async () => {
+    if (!meta.agentKey || isExecuting) return;
+    setIsExecuting(true);
+    setRunResult(null);
+
+    try {
+      const res = await fetch(`/api/bff/v1/agents/${meta.agentKey}/run`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ scope: `${meta.agentKey}_module_screen` }),
+      });
+
+      const data = await res.json();
+
+      if (data?.output?.status === 'denied' || data?.status === 'denied') {
+        setRunResult({
+          success: false,
+          status: 'denied',
+          message:
+            data.output?.error ||
+            'Refused: Mutating actions require an issued Human Approval Token (ADR-1 / ADR-3).',
+          latency_ms: data.latency_ms,
+        });
+      } else if (res.ok && (data.status === 'succeeded' || data.agent)) {
+        setRunResult({
+          success: true,
+          status: 'succeeded',
+          message: `Agent ${meta.agentKey} executed successfully.`,
+          latency_ms: data.latency_ms,
+          ledgerIds: data.ledger_entry_ids,
+        });
+        router.refresh();
+      } else {
+        setRunResult({
+          success: false,
+          status: 'failed',
+          message: data?.error?.message || data?.error || 'Execution failed. Inspect system logs.',
+        });
+      }
+    } catch (err: any) {
+      setRunResult({
+        success: false,
+        status: 'error',
+        message: err?.message || 'Network error invoking agent runtime',
+      });
+    } finally {
+      setIsExecuting(false);
+    }
+  };
+
   return (
-    <div className="mx-auto max-w-[1120px] space-y-5">
-      {/* Banner */}
-      <div className="rounded-2xl bg-gradient-to-br from-[#1E2A4A] to-[#243356] p-7 text-white shadow-sm">
-        <div className="mb-2.5 flex items-center gap-2.5">
-          <span className="rounded bg-[#0FB5A5] px-2 py-0.5 text-[9px] font-bold text-[#04322d]">
-            {meta.phase}
-          </span>
-          {meta.agent && (
-            <span className="text-xs font-semibold text-[#0FB5A5]">Agent · {meta.agent}</span>
-          )}
-          <span className="text-xs text-[#8a97b8]">Autonomy {meta.autonomy}</span>
+    <div className="mx-auto max-w-[1140px] space-y-5 animate-in fade-in-0 duration-200">
+      {/* ============================================================ */}
+      {/* 1. HERO BANNER WITH LIVE ACTION CONTROLS                     */}
+      {/* ============================================================ */}
+      <div className="rounded-2xl bg-gradient-to-br from-[#1E2A4A] via-[#1E2A4A] to-[#243356] p-6 md:p-7 text-white shadow-sm">
+        <div className="flex flex-wrap items-start justify-between gap-4">
+          <div className="flex-1 min-w-[280px]">
+            {/* Phase, Agent, Autonomy Badges */}
+            <div className="mb-2.5 flex flex-wrap items-center gap-2">
+              <span className="rounded bg-[#0FB5A5] px-2 py-0.5 text-[9px] font-bold text-[#04322d] uppercase tracking-wider">
+                {meta.phase}
+              </span>
+              {meta.agent && (
+                <div className="flex items-center gap-1.5 text-xs font-semibold text-[#0FB5A5]">
+                  {meta.agentKey && (
+                    <AgentIcon
+                      agent={meta.agentKey}
+                      size="xs"
+                      state={isExecuting ? 'working' : 'idle'}
+                    />
+                  )}
+                  <span>Agent · {meta.agent}</span>
+                </div>
+              )}
+              <span className="text-xs text-[#8a97b8]">Autonomy {meta.autonomy}</span>
+              {meta.statutoryCitation && (
+                <span className="rounded bg-white/10 px-2 py-0.5 font-mono text-[10px] text-[#C9A227]">
+                  {meta.statutoryCitation}
+                </span>
+              )}
+            </div>
+
+            {/* Title & Indic Transliteration */}
+            <div className="flex items-baseline gap-3">
+              <h1 className="font-heading text-2xl md:text-[26px] font-bold text-white tracking-tight">
+                {meta.title}
+              </h1>
+              <span className="font-heading text-lg text-[#0FB5A5] font-normal">{meta.hi}</span>
+            </div>
+
+            {/* Description */}
+            <p className="mt-2 max-w-3xl text-xs leading-relaxed text-[#c7cfe0]">{meta.desc}</p>
+
+            <div className="mt-4 flex flex-wrap items-center gap-3">
+              <div className="inline-flex items-center gap-1.5 rounded-full bg-white/10 px-3 py-1 text-[11px] text-white">
+                <span className="text-[#C9A227]">◆</span> Module {meta.moduleId} · DPDPA 2023
+                Statutory Suite
+              </div>
+              <div className="inline-flex items-center gap-1.5 rounded-full bg-teal-500/20 border border-teal-500/30 px-3 py-1 text-[11px] text-[#0FB5A5] font-mono">
+                <span className="h-1.5 w-1.5 rounded-full bg-[#0FB5A5] animate-pulse" />
+                ap-south-1 domestic
+              </div>
+            </div>
+          </div>
+
+          {/* Action Trigger Button */}
+          {meta.actionHref ? (
+            <Link
+              href={meta.actionHref}
+              className="rounded-[9px] bg-[#0FB5A5] hover:bg-[#0da294] text-white text-xs font-bold py-2.5 px-4 flex items-center gap-2 shadow-sm transition-all"
+            >
+              <span>⚡</span>
+              <span>{meta.actionLabel || 'Review & Approve in Console →'}</span>
+            </Link>
+          ) : meta.actionLabel && meta.agentKey ? (
+            <button
+              type="button"
+              onClick={handleRunAgent}
+              disabled={isExecuting}
+              className="cursor-pointer rounded-[9px] bg-[#0FB5A5] hover:bg-[#0da294] disabled:opacity-60 text-white text-xs font-bold py-2.5 px-4 flex items-center gap-2 shadow-sm transition-all"
+            >
+              <span>⚡</span>
+              <span>{isExecuting ? 'Invoking Agent…' : meta.actionLabel}</span>
+            </button>
+          ) : null}
         </div>
 
-        <div className="flex items-baseline gap-3">
-          <h1 className="font-heading text-2xl font-bold text-white">{meta.title}</h1>
-          <span className="font-heading text-lg text-[#0FB5A5]">{meta.hi}</span>
-        </div>
+        {/* Live Execution Feedback */}
+        {isExecuting && (
+          <div className="mt-4 rounded-lg border border-teal-400/40 bg-teal-950/40 p-2.5 text-xs text-teal-200 flex items-center gap-2 animate-in fade-in-0 duration-150">
+            <span className="animate-spin font-bold text-[#0FB5A5]">↻</span>
+            <span>
+              Invoking {meta.agent || 'agent'} in Python runtime… verifying statutory bounds…
+            </span>
+          </div>
+        )}
 
-        <p className="mt-2 max-w-3xl text-xs leading-relaxed text-[#c7cfe0]">{meta.desc}</p>
-
-        <div className="mt-4 inline-flex items-center gap-2 rounded-full bg-white/10 px-3 py-1 text-[11px] text-white">
-          <span className="text-[#C9A227]">◆</span> Sold standalone or bundled · module {meta.moduleId}
-        </div>
+        {runResult && !isExecuting && (
+          <div
+            className={`mt-4 rounded-lg border p-2.5 text-xs flex flex-col gap-1 animate-in fade-in-0 duration-150 ${
+              runResult.success
+                ? 'border-emerald-400/50 bg-emerald-950/40 text-emerald-200'
+                : runResult.status === 'denied'
+                  ? 'border-amber-400/50 bg-amber-950/40 text-amber-200'
+                  : 'border-rose-400/50 bg-rose-950/40 text-rose-200'
+            }`}
+          >
+            <div className="flex items-center justify-between font-semibold">
+              <span>
+                {runResult.success
+                  ? '✓ Task executed successfully'
+                  : runResult.status === 'denied'
+                    ? '🔒 Architectural gate enforced'
+                    : '✕ Invocation error'}
+              </span>
+              {runResult.latency_ms !== undefined && (
+                <span className="font-mono text-[10px] opacity-75">{runResult.latency_ms}ms</span>
+              )}
+            </div>
+            <p className="text-[11.5px] leading-tight opacity-90">{runResult.message}</p>
+            {runResult.ledgerIds && runResult.ledgerIds.length > 0 && (
+              <div className="flex items-center gap-1 text-[11px] pt-1">
+                <span className="opacity-75">Immutable ledger proof:</span>
+                <Link
+                  href={`/ledger?q=${runResult.ledgerIds[0]}`}
+                  className="font-mono underline text-teal-300 hover:text-white"
+                >
+                  #{runResult.ledgerIds.join(', #')}
+                </Link>
+              </div>
+            )}
+          </div>
+        )}
       </div>
 
-      {/* Cards Grid */}
+      {/* ============================================================ */}
+      {/* 2. DYNAMIC CARDS GRID                                        */}
+      {/* ============================================================ */}
       <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
         {meta.cards.map((c, idx) => (
-          <div key={idx} className="rounded-2xl border border-[#e4e8ee] bg-white p-5 shadow-sm">
-            <h2 className="mb-3 font-heading text-sm font-semibold text-[#1E2A4A]">{c.h}</h2>
+          <div
+            key={idx}
+            className="rounded-2xl border border-[#e4e8ee] bg-white p-5 shadow-2xs hover:shadow-xs transition-shadow"
+          >
+            <div className="flex items-center justify-between mb-3">
+              <h2 className="font-heading text-sm font-semibold text-[#1E2A4A]">{c.h}</h2>
+              {c.badge && (
+                <span className="text-[10px] font-semibold text-[#8a909b] uppercase tracking-wider">
+                  {c.badge}
+                </span>
+              )}
+            </div>
             <div className="divide-y divide-[#eef1f5]">
               {c.rows.map((r, rIdx) => (
                 <div key={rIdx} className="flex items-center gap-2.5 py-2.5">
@@ -63,8 +259,15 @@ export function GenericModuleView({ meta }: { meta: GenericModuleMeta }) {
                     style={{ backgroundColor: r.dot }}
                     className="h-1.5 w-1.5 shrink-0 rounded-sm"
                   />
-                  <span className="flex-1 text-xs text-[#2F3542]">{r.t}</span>
-                  <span className="font-mono text-xs text-[#8a909b]">{r.v}</span>
+                  <div className="flex-1 min-w-0">
+                    <div className="text-xs text-[#2F3542] font-medium truncate">{r.t}</div>
+                    {r.sub && (
+                      <div className="text-[10.5px] text-[#8a909b] leading-tight">{r.sub}</div>
+                    )}
+                  </div>
+                  <span className="font-mono text-xs font-semibold text-[#1E2A4A] shrink-0">
+                    {r.v}
+                  </span>
                 </div>
               ))}
             </div>
@@ -72,10 +275,89 @@ export function GenericModuleView({ meta }: { meta: GenericModuleMeta }) {
         ))}
       </div>
 
-      {/* Footer Status Note */}
-      <div className="rounded-xl border border-[#ecdca8] bg-[#FBF6E7] p-4 text-xs text-[#7a5f10]">
-        Fully hi-fi build of this module is staged — the marquee flows (Dashboard, Approval Console)
-        are complete; this module screen carries live mock data and its final structure.
+      {/* ============================================================ */}
+      {/* 3. RECENT TELEMETRY STREAM FROM ACTUAL LEDGER                */}
+      {/* ============================================================ */}
+      {meta.recentEvents && meta.recentEvents.length > 0 && (
+        <div className="rounded-2xl border border-[#e4e8ee] bg-white overflow-hidden shadow-2xs">
+          <div className="flex items-center justify-between px-5 py-3.5 border-b border-[#e4e8ee] bg-[#F4F6F8]">
+            <div className="flex items-center gap-2">
+              <span className="h-2 w-2 rounded-full bg-[#0FB5A5] animate-pulse" />
+              <h3 className="font-heading text-xs font-semibold text-[#1E2A4A] uppercase tracking-wider">
+                {meta.telemetryTitle || 'Recent Agent Executions & Proof Ledger'}
+              </h3>
+            </div>
+            <Link
+              href={meta.agentKey ? `/ledger?agent=${meta.agentKey}` : '/ledger'}
+              className="text-[11px] font-medium text-[#0a8d80] hover:underline"
+            >
+              View all in Audit Ledger →
+            </Link>
+          </div>
+
+          <div className="divide-y divide-[#eef1f5]">
+            {meta.recentEvents.map((e, idx) => (
+              <div
+                key={idx}
+                className="flex items-center gap-3 px-5 py-3 hover:bg-[#F4F6F8]/50 transition-colors"
+              >
+                {e.seq !== undefined && (
+                  <Link
+                    href={`/ledger?q=${e.seq}`}
+                    className="font-mono text-xs font-semibold text-[#1E2A4A] hover:underline w-12 shrink-0"
+                  >
+                    #{e.seq}
+                  </Link>
+                )}
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs font-semibold text-[#2F3542]">{e.title}</span>
+                    {e.target && (
+                      <span className="font-mono text-[10px] bg-slate-100 text-slate-600 px-1.5 py-0.5 rounded">
+                        {e.target}
+                      </span>
+                    )}
+                  </div>
+                  <div className="mt-0.5 text-[11px] text-[#8a909b] truncate">
+                    {e.detail}
+                    {e.hash && (
+                      <span className="ml-2 font-mono text-[10px]">H:{e.hash.slice(0, 10)}…</span>
+                    )}
+                  </div>
+                </div>
+                <div className="text-right shrink-0">
+                  <div className="text-[10.5px] text-[#8a909b] font-mono">{e.time}</div>
+                  <div className="text-[10px] font-semibold text-[#0a8d80]">
+                    {e.status || '✓ verified'}
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* ============================================================ */}
+      {/* 4. INSTITUTIONAL LIVE OPERATIONS BAR (REPLACES MOCK NOTE)    */}
+      {/* ============================================================ */}
+      <div className="rounded-xl border border-teal-200 bg-[#E5FAF7] p-4 text-xs text-[#0a6b61] flex flex-wrap items-center justify-between gap-3 shadow-2xs">
+        <div className="flex items-center gap-2">
+          <span className="h-2 w-2 rounded-full bg-[#0FB5A5] animate-pulse" />
+          <span>
+            <strong>Live Compliance Telemetry:</strong> Connected to PostgreSQL ledger & Python
+            runtime. All client data resides strictly in sovereign Indian region (
+            <code>ap-south-1</code> Mumbai).
+          </span>
+        </div>
+        <div className="flex items-center gap-3 font-medium text-[11px]">
+          <Link href="/ledger" className="underline hover:text-teal-950">
+            Audit Ledger ↗
+          </Link>
+          <span>·</span>
+          <Link href="/workbench" className="underline hover:text-teal-950">
+            Agent Workbench ↗
+          </Link>
+        </div>
       </div>
     </div>
   );

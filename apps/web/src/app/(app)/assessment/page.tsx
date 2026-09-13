@@ -16,18 +16,114 @@ export interface ControlScore {
 }
 
 export const CANONICAL_CONTROLS: ControlScore[] = [
-  { id: 'NOT-01', name: 'Itemised notice at collection in 22 scheduled languages', domain: 'Notice & consent', cite: '§5 · Rule 3', ev: 'e-8839', status: 'pass', score: 100 },
-  { id: 'NOT-04', name: 'Withdrawal as easy as giving consent', domain: 'Notice & consent', cite: '§6(4)', ev: 'e-8802', status: 'pass', score: 100 },
-  { id: 'RTS-01', name: 'Right to access information', domain: 'Rights of principals', cite: '§11', ev: 'e-8781', status: 'pass', score: 100 },
-  { id: 'RTS-04', name: 'Right to erasure on withdrawal', domain: 'Rights of principals', cite: '§12', ev: '—', status: 'fail', score: 20 },
-  { id: 'RTS-06', name: 'Grievance redressal mechanism', domain: 'Rights of principals', cite: '§13', ev: '—', status: 'partial', score: 60 },
-  { id: 'RET-03', name: 'Erasure after retention period', domain: 'Retention & erasure', cite: '§8(7) · Rule 8', ev: 'e-8841', status: 'fail', score: 15 },
-  { id: 'RET-05', name: 'Storage limitation on logs', domain: 'Retention & erasure', cite: '§8(7)', ev: '—', status: 'fail', score: 30 },
-  { id: 'PUR-02', name: 'Purpose limitation in analytics', domain: 'Purpose limitation', cite: '§6', ev: 'e-8788', status: 'partial', score: 55 },
-  { id: 'SEC-06', name: 'Least-privilege access to PII', domain: 'Security safeguards', cite: '§8(4)', ev: 'e-8843', status: 'partial', score: 70 },
-  { id: 'SEC-09', name: 'Encryption at rest & in transit', domain: 'Security safeguards', cite: '§8(5)', ev: 'e-8790', status: 'pass', score: 100 },
-  { id: 'XBR-01', name: 'Cross-border transfer register', domain: 'Cross-border transfer', cite: '§16', ev: '—', status: 'partial', score: 50 },
-  { id: 'BRC-02', name: '72-hour breach notification readiness', domain: 'Breach', cite: 'Rule 7', ev: 'e-8790', status: 'pass', score: 100 },
+  {
+    id: 'NOT-01',
+    name: 'Itemised notice at collection in 22 scheduled languages',
+    domain: 'Notice & consent',
+    cite: '§5 · Rule 3',
+    ev: 'e-8839',
+    status: 'pass',
+    score: 100,
+  },
+  {
+    id: 'NOT-04',
+    name: 'Withdrawal as easy as giving consent',
+    domain: 'Notice & consent',
+    cite: '§6(4)',
+    ev: 'e-8802',
+    status: 'pass',
+    score: 100,
+  },
+  {
+    id: 'RTS-01',
+    name: 'Right to access information',
+    domain: 'Rights of principals',
+    cite: '§11',
+    ev: 'e-8781',
+    status: 'pass',
+    score: 100,
+  },
+  {
+    id: 'RTS-04',
+    name: 'Right to erasure on withdrawal',
+    domain: 'Rights of principals',
+    cite: '§12',
+    ev: '—',
+    status: 'fail',
+    score: 20,
+  },
+  {
+    id: 'RTS-06',
+    name: 'Grievance redressal mechanism',
+    domain: 'Rights of principals',
+    cite: '§13',
+    ev: '—',
+    status: 'partial',
+    score: 60,
+  },
+  {
+    id: 'RET-03',
+    name: 'Erasure after retention period',
+    domain: 'Retention & erasure',
+    cite: '§8(7) · Rule 8',
+    ev: 'e-8841',
+    status: 'fail',
+    score: 15,
+  },
+  {
+    id: 'RET-05',
+    name: 'Storage limitation on logs',
+    domain: 'Retention & erasure',
+    cite: '§8(7)',
+    ev: '—',
+    status: 'fail',
+    score: 30,
+  },
+  {
+    id: 'PUR-02',
+    name: 'Purpose limitation in analytics',
+    domain: 'Purpose limitation',
+    cite: '§6',
+    ev: 'e-8788',
+    status: 'partial',
+    score: 55,
+  },
+  {
+    id: 'SEC-06',
+    name: 'Least-privilege access to PII',
+    domain: 'Security safeguards',
+    cite: '§8(4)',
+    ev: 'e-8843',
+    status: 'partial',
+    score: 70,
+  },
+  {
+    id: 'SEC-09',
+    name: 'Encryption at rest & in transit',
+    domain: 'Security safeguards',
+    cite: '§8(5)',
+    ev: 'e-8790',
+    status: 'pass',
+    score: 100,
+  },
+  {
+    id: 'XBR-01',
+    name: 'Cross-border transfer register',
+    domain: 'Cross-border transfer',
+    cite: '§16',
+    ev: '—',
+    status: 'partial',
+    score: 50,
+  },
+  {
+    id: 'BRC-02',
+    name: '72-hour breach notification readiness',
+    domain: 'Breach',
+    cite: 'Rule 7',
+    ev: 'e-8790',
+    status: 'pass',
+    score: 100,
+  },
 ];
 
 export interface PipelineStage {
@@ -39,11 +135,41 @@ export interface PipelineStage {
 }
 
 export const PIPELINE_STAGES: PipelineStage[] = [
-  { agent: 'Drishti', agentKey: 'drishti', label: 'Discovery', hi: 'खोज', detail: 'sweeping estate for personal data' },
-  { agent: 'Vibhaag', agentKey: 'vibhaag', label: 'Classification', hi: 'वर्गीकरण', detail: 'categorising fields by DPDPA type' },
-  { agent: 'Parikshan', agentKey: 'parikshan', label: 'Assessment', hi: 'मूल्यांकन', detail: 'scoring against control library v25.11.2' },
-  { agent: 'Saakshi', agentKey: 'saakshi', label: 'Evidence', hi: 'साक्ष्य', detail: 'sealing supporting artifacts (WORM)' },
-  { agent: 'Prativedan', agentKey: 'prativedan', label: 'Report', hi: 'रिपोर्ट', detail: 'generating findings + exposure' },
+  {
+    agent: 'Drishti',
+    agentKey: 'drishti',
+    label: 'Discovery',
+    hi: 'खोज',
+    detail: 'sweeping estate for personal data',
+  },
+  {
+    agent: 'Vibhaag',
+    agentKey: 'vibhaag',
+    label: 'Classification',
+    hi: 'वर्गीकरण',
+    detail: 'categorising fields by DPDPA type',
+  },
+  {
+    agent: 'Parikshan',
+    agentKey: 'parikshan',
+    label: 'Assessment',
+    hi: 'मूल्यांकन',
+    detail: 'scoring against control library v25.11.2',
+  },
+  {
+    agent: 'Saakshi',
+    agentKey: 'saakshi',
+    label: 'Evidence',
+    hi: 'साक्ष्य',
+    detail: 'sealing supporting artifacts (WORM)',
+  },
+  {
+    agent: 'Prativedan',
+    agentKey: 'prativedan',
+    label: 'Report',
+    hi: 'रिपोर्ट',
+    detail: 'generating findings + exposure',
+  },
 ];
 
 export default function AssessmentPage() {
@@ -153,11 +279,7 @@ export default function AssessmentPage() {
           {PIPELINE_STAGES.map((p, i) => {
             const isCompleted = assessStage > i || (hasCompleted && assessStage === -1);
             const isActive = assessStage === i;
-            const dotBg = isCompleted
-              ? '#0FB5A5'
-              : isActive
-              ? '#C9A227'
-              : 'rgba(255,255,255,.12)';
+            const dotBg = isCompleted ? '#0FB5A5' : isActive ? '#C9A227' : 'rgba(255,255,255,.12)';
             const dotColor = isCompleted || isActive ? '#04322d' : '#ffffff';
             const mark = isCompleted ? '✓' : String(i + 1);
 
@@ -241,7 +363,11 @@ export default function AssessmentPage() {
           </div>
           <div className="mb-3 flex h-3 gap-1.5 overflow-hidden rounded-[20px]">
             <div style={{ flex: passCount }} className="bg-[#0FB5A5]" title={`${passCount} Pass`} />
-            <div style={{ flex: partialCount }} className="bg-[#E0A82E]" title={`${partialCount} Partial`} />
+            <div
+              style={{ flex: partialCount }}
+              className="bg-[#E0A82E]"
+              title={`${partialCount} Partial`}
+            />
             <div style={{ flex: failCount }} className="bg-[#D9534F]" title={`${failCount} Fail`} />
           </div>
           <div className="flex gap-[18px] text-[12px] text-[#2F3542]">
@@ -249,7 +375,8 @@ export default function AssessmentPage() {
               <b className="font-heading text-[16px] text-[#0a8d80] font-bold">{passCount}</b> pass
             </span>
             <span>
-              <b className="font-heading text-[16px] text-[#8a6d10] font-bold">{partialCount}</b> partial
+              <b className="font-heading text-[16px] text-[#8a6d10] font-bold">{partialCount}</b>{' '}
+              partial
             </span>
             <span>
               <b className="font-heading text-[16px] text-[#D9534F] font-bold">{failCount}</b> fail
@@ -302,23 +429,11 @@ export default function AssessmentPage() {
         <div className="divide-y divide-[#eef1f5]">
           {controls.map((c) => {
             const stColor =
-              c.status === 'pass'
-                ? '#0a8d80'
-                : c.status === 'partial'
-                ? '#8a6d10'
-                : '#D9534F';
+              c.status === 'pass' ? '#0a8d80' : c.status === 'partial' ? '#8a6d10' : '#D9534F';
             const stBg =
-              c.status === 'pass'
-                ? '#e6f7f5'
-                : c.status === 'partial'
-                ? '#fbf3df'
-                : '#fbeceb';
+              c.status === 'pass' ? '#e6f7f5' : c.status === 'partial' ? '#fbf3df' : '#fbeceb';
             const stLabel =
-              c.status === 'pass'
-                ? 'PASS'
-                : c.status === 'partial'
-                ? 'PARTIAL'
-                : 'FAIL';
+              c.status === 'pass' ? 'PASS' : c.status === 'partial' ? 'PARTIAL' : 'FAIL';
 
             return (
               <div

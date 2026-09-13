@@ -59,7 +59,9 @@ export function LedgerRefresh({ runningCount }: LedgerRefreshProps) {
           title="Click for manual refresh"
           className="flex items-center gap-1.5 px-2.5 py-1.5 font-medium text-slate-700 hover:text-slate-950 transition-colors border-r border-slate-200 disabled:opacity-60 cursor-pointer"
         >
-          <span className={`inline-block transition-transform ${isPending ? 'animate-spin text-teal-600' : ''}`}>
+          <span
+            className={`inline-block transition-transform ${isPending ? 'animate-spin text-teal-600' : ''}`}
+          >
             ↻
           </span>
           <span>{isPending ? 'Refreshing…' : 'Refresh'}</span>
@@ -90,8 +92,16 @@ export function LedgerRefresh({ runningCount }: LedgerRefreshProps) {
       </div>
 
       {/* Subtle Timestamp */}
-      <span className="hidden sm:inline-block text-[11px] text-slate-400" title={`Last updated at ${lastRefreshed.toISOString()}`}>
-        Updated {lastRefreshed.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
+      <span
+        className="hidden sm:inline-block text-[11px] text-slate-400"
+        title={`Last updated at ${lastRefreshed.toISOString()}`}
+      >
+        Updated{' '}
+        {lastRefreshed.toLocaleTimeString([], {
+          hour: '2-digit',
+          minute: '2-digit',
+          second: '2-digit',
+        })}
       </span>
     </div>
   );

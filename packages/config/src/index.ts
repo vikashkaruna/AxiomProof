@@ -9,9 +9,7 @@ import { z } from 'zod';
 const EnvSchema = z
   .object({
     NODE_ENV: z.enum(['development', 'staging', 'production', 'test']).default('development'),
-    ENVIRONMENT: z
-      .enum(['development', 'staging', 'preprod', 'production', 'local'])
-      .optional(),
+    ENVIRONMENT: z.enum(['development', 'staging', 'preprod', 'production', 'local']).optional(),
     LOG_LEVEL: z.enum(['debug', 'info', 'warn', 'error']).default('info'),
 
     // Supabase

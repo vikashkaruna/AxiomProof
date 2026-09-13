@@ -171,7 +171,10 @@ export function AppShell({ children, user, tenants, logoutAction }: AppShellProp
 
   for (const group of APP_NAV_GROUPS) {
     for (const item of group.items) {
-      if (pathname === item.route || (item.route !== '/dashboard' && pathname.startsWith(item.route))) {
+      if (
+        pathname === item.route ||
+        (item.route !== '/dashboard' && pathname.startsWith(item.route))
+      ) {
         activeBreadcrumb = group.label;
         activeTitle = item.en;
         break;
@@ -228,9 +231,7 @@ export function AppShell({ children, user, tenants, logoutAction }: AppShellProp
                     {item.star && <span className="text-[#C9A227] text-xs">★</span>}
                     <span
                       className={`text-[8.5px] font-semibold tracking-wider px-1.5 py-0.5 rounded ${
-                        isActive
-                          ? 'bg-white/20 text-white'
-                          : 'bg-white/5 text-[#8a97b8]'
+                        isActive ? 'bg-white/20 text-white' : 'bg-white/5 text-[#8a97b8]'
                       }`}
                     >
                       {item.phase}

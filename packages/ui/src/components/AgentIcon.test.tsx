@@ -32,7 +32,7 @@ describe('AgentIcon Component', () => {
     expect(thinkingHtml).toContain('drishti (thinking)');
 
     const workingHtml = renderToString(
-      <AgentIcon agent="saakshi" state="working" size="lg" showBadge />
+      <AgentIcon agent="saakshi" state="working" size="lg" showBadge />,
     );
     expect(workingHtml).toContain('saakshi (working)');
   });

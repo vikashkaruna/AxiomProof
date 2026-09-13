@@ -31,7 +31,10 @@ export default async function LoginPage({
 
   return (
     <div className="flex min-h-screen flex-col items-center justify-center bg-mist-100 p-4">
-      <Link href="/" className="mb-8 flex items-center justify-center hover:opacity-90 transition-opacity">
+      <Link
+        href="/"
+        className="mb-8 flex items-center justify-center hover:opacity-90 transition-opacity"
+      >
         <AxiomLogo size="lg" theme="light" showSubtitle={true} />
       </Link>
 

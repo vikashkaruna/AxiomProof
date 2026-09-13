@@ -51,7 +51,9 @@ test.describe('Public gap-scan funnel', () => {
     await page.locator('#contact-name').fill('Aarav Mehta');
     await page.locator('#contact-email').fill('aarav@fintechbharat.in');
     await page.locator('#contact-company').fill('Fintech Bharat Pvt Ltd');
-    await page.locator('#contact-message').fill('We require a comprehensive readiness assessment for DPDPA 2023 compliance.');
+    await page
+      .locator('#contact-message')
+      .fill('We require a comprehensive readiness assessment for DPDPA 2023 compliance.');
 
     await page.getByRole('button', { name: /Send message/i }).click();
 
@@ -59,4 +61,3 @@ test.describe('Public gap-scan funnel', () => {
     await expect(page.getByText(/aarav@fintechbharat.in/i)).toBeVisible();
   });
 });
-

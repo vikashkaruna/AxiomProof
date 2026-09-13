@@ -294,7 +294,15 @@ function AgentSvgContent({ agent, state, accent }: SvgContentProps) {
             fill={`${accent}15`}
           />
           {/* Internal crystalline facet dividing lines */}
-          <line x1="16" y1="3" x2="16" y2="29" stroke={accent} strokeWidth="1.25" strokeDasharray={isWorking ? '3 1' : 'none'} />
+          <line
+            x1="16"
+            y1="3"
+            x2="16"
+            y2="29"
+            stroke={accent}
+            strokeWidth="1.25"
+            strokeDasharray={isWorking ? '3 1' : 'none'}
+          />
           <line x1="4" y1="16" x2="28" y2="16" stroke={accent} strokeWidth="1.25" />
           <polygon
             points="16,9 23,16 16,23 9,16"
@@ -423,8 +431,24 @@ function AgentSvgContent({ agent, state, accent }: SvgContentProps) {
                   : undefined,
             }}
           >
-            <line x1="14.5" y1="9.5" x2="8" y2="25" stroke={accent} strokeWidth="2" strokeLinecap="round" />
-            <line x1="17.5" y1="9.5" x2="24" y2="25" stroke={accent} strokeWidth="2" strokeLinecap="round" />
+            <line
+              x1="14.5"
+              y1="9.5"
+              x2="8"
+              y2="25"
+              stroke={accent}
+              strokeWidth="2"
+              strokeLinecap="round"
+            />
+            <line
+              x1="17.5"
+              y1="9.5"
+              x2="24"
+              y2="25"
+              stroke={accent}
+              strokeWidth="2"
+              strokeLinecap="round"
+            />
             <path d="M10 19H22" stroke={accent} strokeWidth="1.5" />
           </g>
           {/* Dual branch nodes (Action & Rollback) */}
@@ -449,7 +473,14 @@ function AgentSvgContent({ agent, state, accent }: SvgContentProps) {
                   : undefined,
             }}
           >
-            <circle cx="16" cy="16" r="11" stroke={accent} strokeWidth="1.5" strokeDasharray="4 2.5" />
+            <circle
+              cx="16"
+              cy="16"
+              r="11"
+              stroke={accent}
+              strokeWidth="1.5"
+              strokeDasharray="4 2.5"
+            />
             <circle cx="16" cy="16" r="8" stroke={accent} strokeWidth="1.25" fill={`${accent}15`} />
           </g>
           {/* Counter gear ticks */}
@@ -459,7 +490,15 @@ function AgentSvgContent({ agent, state, accent }: SvgContentProps) {
               animation: isWorking ? 'karya-gear-ccw 2s linear infinite' : undefined,
             }}
           >
-            <circle cx="16" cy="16" r="13" stroke={accent} strokeWidth="1" strokeDasharray="1 7" opacity="0.6" />
+            <circle
+              cx="16"
+              cy="16"
+              r="13"
+              stroke={accent}
+              strokeWidth="1"
+              strokeDasharray="1 7"
+              opacity="0.6"
+            />
           </g>
           {/* Central high-voltage execution lightning bolt */}
           <path
@@ -551,7 +590,15 @@ function AgentSvgContent({ agent, state, accent }: SvgContentProps) {
                   : undefined,
             }}
           >
-            <line x1="16" y1="16" x2="27" y2="7" stroke={accent} strokeWidth="2" strokeLinecap="round" />
+            <line
+              x1="16"
+              y1="16"
+              x2="27"
+              y2="7"
+              stroke={accent}
+              strokeWidth="2"
+              strokeLinecap="round"
+            />
             <path d="M16 16L27 7A13 13 0 0 0 16 3V16Z" fill={`${accent}35`} />
           </g>
           {/* Regulatory beacon blips */}
@@ -582,9 +629,33 @@ function AgentSvgContent({ agent, state, accent }: SvgContentProps) {
             fill={`${accent}15`}
           />
           {/* Text lines */}
-          <line x1="11" y1="10" x2="19" y2="10" stroke={accent} strokeWidth="1.5" strokeLinecap="round" />
-          <line x1="11" y1="14" x2="19" y2="14" stroke={accent} strokeWidth="1.5" strokeLinecap="round" />
-          <line x1="11" y1="18" x2="16" y2="18" stroke={accent} strokeWidth="1.5" strokeLinecap="round" />
+          <line
+            x1="11"
+            y1="10"
+            x2="19"
+            y2="10"
+            stroke={accent}
+            strokeWidth="1.5"
+            strokeLinecap="round"
+          />
+          <line
+            x1="11"
+            y1="14"
+            x2="19"
+            y2="14"
+            stroke={accent}
+            strokeWidth="1.5"
+            strokeLinecap="round"
+          />
+          <line
+            x1="11"
+            y1="18"
+            x2="16"
+            y2="18"
+            stroke={accent}
+            strokeWidth="1.5"
+            strokeLinecap="round"
+          />
           {/* Certified ribbon seal on report corner */}
           <circle cx="20" cy="22" r="3.5" fill={accent} />
           <path d="M19 25L20 29L21 25" stroke={accent} strokeWidth="1.5" strokeLinejoin="round" />
@@ -604,7 +675,15 @@ function AgentSvgContent({ agent, state, accent }: SvgContentProps) {
             strokeLinecap="round"
           />
           {/* Spire tip */}
-          <line x1="16" y1="13" x2="16" y2="8" stroke={accent} strokeWidth="2" strokeLinecap="round" />
+          <line
+            x1="16"
+            y1="13"
+            x2="16"
+            y2="8"
+            stroke={accent}
+            strokeWidth="2"
+            strokeLinecap="round"
+          />
           <circle cx="16" cy="8" r="2.5" fill={accent} />
 
           {/* Sonar radiating waves */}
@@ -641,8 +720,6 @@ function AgentSvgContent({ agent, state, accent }: SvgContentProps) {
       );
 
     default:
-      return (
-        <circle cx="16" cy="16" r="10" stroke={accent} strokeWidth="2" fill={`${accent}20`} />
-      );
+      return <circle cx="16" cy="16" r="10" stroke={accent} strokeWidth="2" fill={`${accent}20`} />;
   }
 }

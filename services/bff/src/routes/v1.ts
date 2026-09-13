@@ -617,7 +617,12 @@ export function v1Routes(deps: Deps) {
   app.post('/kill-switch/release', async (c) => {
     if (c.get('role') !== 'founder' && c.get('role') !== 'owner') {
       return c.json(
-        { error: { code: 'role_forbidden', message: 'Only founders/owners can release the kill switch' } },
+        {
+          error: {
+            code: 'role_forbidden',
+            message: 'Only founders/owners can release the kill switch',
+          },
+        },
         403,
       );
     }
@@ -761,10 +766,7 @@ export function v1Routes(deps: Deps) {
       'sanket',
     ];
     if (!validAgents.includes(name)) {
-      return c.json(
-        { error: { code: 'agent_not_found', message: `Unknown agent: ${name}` } },
-        404,
-      );
+      return c.json({ error: { code: 'agent_not_found', message: `Unknown agent: ${name}` } }, 404);
     }
 
     const tenantId = c.get('tenantId');
@@ -773,10 +775,7 @@ export function v1Routes(deps: Deps) {
     const runtimeToken =
       process.env.AGENT_RUNTIME_INTERNAL_TOKEN || 'dev-agent-runtime-token-axiom';
 
-    const correlationId =
-      c.req.header('x-correlation-id') ||
-      body.correlation_id ||
-      randomUUID();
+    const correlationId = c.req.header('x-correlation-id') || body.correlation_id || randomUUID();
 
     const input = {
       tenant_id: tenantId,

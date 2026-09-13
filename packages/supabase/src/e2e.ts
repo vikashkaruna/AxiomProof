@@ -132,14 +132,20 @@ function createQuery(table: string): QueryBuilder {
   query.single = async () => ({
     data:
       mutatedData && typeof mutatedData === 'object'
-        ? { id: '00000000-0000-0000-0000-000000000001', ...(mutatedData as Record<string, unknown>) }
+        ? {
+            id: '00000000-0000-0000-0000-000000000001',
+            ...(mutatedData as Record<string, unknown>),
+          }
         : singleData,
     error: null,
   });
   query.maybeSingle = async () => ({
     data:
       mutatedData && typeof mutatedData === 'object'
-        ? { id: '00000000-0000-0000-0000-000000000001', ...(mutatedData as Record<string, unknown>) }
+        ? {
+            id: '00000000-0000-0000-0000-000000000001',
+            ...(mutatedData as Record<string, unknown>),
+          }
         : singleData,
     error: null,
   });

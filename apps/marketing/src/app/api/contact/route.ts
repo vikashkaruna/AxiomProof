@@ -56,7 +56,9 @@ export async function POST(request: Request) {
       {
         error: {
           code: 'service_unavailable',
-          message: 'Email service is temporarily unconfigured. Please email us directly at ' + BRAND.contactEmail,
+          message:
+            'Email service is temporarily unconfigured. Please email us directly at ' +
+            BRAND.contactEmail,
         },
       },
       { status: 503 },

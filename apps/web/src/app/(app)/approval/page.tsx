@@ -239,13 +239,7 @@ const ACTIONS_DATA: ActionItem[] = [
 ];
 
 type ActionStatus =
-  | 'pending'
-  | 'approved'
-  | 'executing'
-  | 'executed'
-  | 'verified'
-  | 'rejected'
-  | 'deferred';
+  'pending' | 'approved' | 'executing' | 'executed' | 'verified' | 'rejected' | 'deferred';
 
 export default function ApprovalConsolePage() {
   const [selected, setSelected] = useState<Record<string, boolean>>({ 'ACT-01': true });
@@ -324,17 +318,41 @@ export default function ApprovalConsolePage() {
   const statusBadge = (st: ActionStatus) => {
     switch (st) {
       case 'approved':
-        return <span className="bg-[#E5FAF7] text-[#0a8d80] px-1.5 py-0.5 rounded text-[8.5px] font-bold">APPROVED</span>;
+        return (
+          <span className="bg-[#E5FAF7] text-[#0a8d80] px-1.5 py-0.5 rounded text-[8.5px] font-bold">
+            APPROVED
+          </span>
+        );
       case 'executing':
-        return <span className="bg-[#FBF3DF] text-[#8a6d10] px-1.5 py-0.5 rounded text-[8.5px] font-bold animate-pulse">EXECUTING…</span>;
+        return (
+          <span className="bg-[#FBF3DF] text-[#8a6d10] px-1.5 py-0.5 rounded text-[8.5px] font-bold animate-pulse">
+            EXECUTING…
+          </span>
+        );
       case 'executed':
-        return <span className="bg-[#1E2A4A] text-white px-1.5 py-0.5 rounded text-[8.5px] font-bold">EXECUTED</span>;
+        return (
+          <span className="bg-[#1E2A4A] text-white px-1.5 py-0.5 rounded text-[8.5px] font-bold">
+            EXECUTED
+          </span>
+        );
       case 'verified':
-        return <span className="bg-[#0FB5A5] text-white px-1.5 py-0.5 rounded text-[8.5px] font-bold">✓ VERIFIED</span>;
+        return (
+          <span className="bg-[#0FB5A5] text-white px-1.5 py-0.5 rounded text-[8.5px] font-bold">
+            ✓ VERIFIED
+          </span>
+        );
       case 'rejected':
-        return <span className="bg-[#FCEEEC] text-[#D9534F] px-1.5 py-0.5 rounded text-[8.5px] font-bold">REJECTED</span>;
+        return (
+          <span className="bg-[#FCEEEC] text-[#D9534F] px-1.5 py-0.5 rounded text-[8.5px] font-bold">
+            REJECTED
+          </span>
+        );
       case 'deferred':
-        return <span className="bg-[#F4F6F8] text-[#5b6270] px-1.5 py-0.5 rounded text-[8.5px] font-bold">DEFERRED</span>;
+        return (
+          <span className="bg-[#F4F6F8] text-[#5b6270] px-1.5 py-0.5 rounded text-[8.5px] font-bold">
+            DEFERRED
+          </span>
+        );
       default:
         return null;
     }
@@ -358,8 +376,8 @@ export default function ApprovalConsolePage() {
             </span>
           </div>
           <div className="text-xs text-[#8a909b]">
-            Planned by <b className="text-[#2F3542]">Sudhaar</b> · Closes 4 RET controls ·
-            rollback plan generated for every action · Sudhaar holds no write access
+            Planned by <b className="text-[#2F3542]">Sudhaar</b> · Closes 4 RET controls · rollback
+            plan generated for every action · Sudhaar holds no write access
           </div>
         </div>
 
@@ -372,7 +390,9 @@ export default function ApprovalConsolePage() {
           </div>
           <div className="text-center">
             <div className="font-heading text-2xl font-bold text-[#2F3542]">1,855</div>
-            <div className="text-[10px] uppercase tracking-wider text-[#8a909b]">records in scope</div>
+            <div className="text-[10px] uppercase tracking-wider text-[#8a909b]">
+              records in scope
+            </div>
           </div>
           <div className="text-center">
             <div className="font-heading text-2xl font-bold text-[#E0A82E]">Production</div>
@@ -422,9 +442,7 @@ export default function ApprovalConsolePage() {
                       }
                     }}
                     className={`mt-0.5 flex h-4 w-4 shrink-0 items-center justify-center rounded border text-[10px] font-bold text-white transition-colors ${
-                      isSel
-                        ? 'border-[#0FB5A5] bg-[#0FB5A5]'
-                        : 'border-[#c4ccd8] bg-white'
+                      isSel ? 'border-[#0FB5A5] bg-[#0FB5A5]' : 'border-[#c4ccd8] bg-white'
                     } ${locked ? 'cursor-not-allowed opacity-60' : 'cursor-pointer'}`}
                   >
                     {isSel && '✓'}
@@ -483,9 +501,7 @@ export default function ApprovalConsolePage() {
                 <div className="text-[10px] font-semibold uppercase tracking-wider text-[#8a909b]">
                   Why — gap it closes
                 </div>
-                <div className="text-xs leading-relaxed text-[#2F3542]">
-                  {selectedAction.why}
-                </div>
+                <div className="text-xs leading-relaxed text-[#2F3542]">{selectedAction.why}</div>
                 <div className="font-mono text-[10.5px] text-[#0a8d80]">
                   {selectedAction.citation}
                 </div>
@@ -539,9 +555,7 @@ export default function ApprovalConsolePage() {
                   How to undo — generated rollback plan
                 </span>
               </div>
-              <p className="text-xs leading-relaxed text-[#2F3542]">
-                {selectedAction.rollback}
-              </p>
+              <p className="text-xs leading-relaxed text-[#2F3542]">{selectedAction.rollback}</p>
               <div className="mt-2 font-mono text-[10.5px] text-[#0a8d80]">
                 rollback validated executable · dry-run-able · {selectedAction.rollbackRef}
               </div>

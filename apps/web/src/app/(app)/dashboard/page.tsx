@@ -15,14 +15,7 @@ export default async function DashboardPage() {
   let liveRuns: Array<{ agent: string; status: string; started_at: string }> = [];
 
   try {
-    const [
-      ledgerRes,
-      evidenceRes,
-      dsarRes,
-      plansRes,
-      engagementsRes,
-      runsRes,
-    ] = await Promise.all([
+    const [ledgerRes, evidenceRes, dsarRes, plansRes, engagementsRes, runsRes] = await Promise.all([
       admin.from('audit_ledger').select('*', { count: 'exact', head: true }),
       admin.from('evidence').select('*', { count: 'exact', head: true }),
       admin.from('dsars').select('*', { count: 'exact', head: true }),
@@ -57,7 +50,10 @@ export default async function DashboardPage() {
   // Target enforcement date: 13 May 2027
   const enforcementDate = new Date('2027-05-13T00:00:00Z');
   const now = new Date();
-  const diffDays = Math.max(0, Math.ceil((enforcementDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24)));
+  const diffDays = Math.max(
+    0,
+    Math.ceil((enforcementDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24)),
+  );
 
   const kpis = [
     {
@@ -81,7 +77,8 @@ export default async function DashboardPage() {
     {
       label: 'Evidence sealed',
       value: evidenceCount !== null && evidenceCount > 0 ? evidenceCount.toLocaleString() : '1,284',
-      sub: evidenceCount !== null && evidenceCount > 0 ? 'WORM · live from DB' : 'WORM · hash-chained',
+      sub:
+        evidenceCount !== null && evidenceCount > 0 ? 'WORM · live from DB' : 'WORM · hash-chained',
       color: '#C9A227',
       tag: 'P2',
       tagStyle: 'bg-[#FBF6E7] text-[#8a6d10]',
@@ -108,7 +105,10 @@ export default async function DashboardPage() {
     {
       label: 'Ledger entries',
       value: ledgerCount !== null && ledgerCount > 0 ? ledgerCount.toLocaleString() : '48,102',
-      sub: ledgerCount !== null && ledgerCount > 0 ? '✓ live from audit ledger' : '✓ integrity verified',
+      sub:
+        ledgerCount !== null && ledgerCount > 0
+          ? '✓ live from audit ledger'
+          : '✓ integrity verified',
       color: '#1E2A4A',
       tag: 'P2',
       tagStyle: 'bg-[#F4F6F8] text-[#5b6270]',
@@ -165,7 +165,9 @@ export default async function DashboardPage() {
           const timeAgo = r.started_at ? new Date(r.started_at).toLocaleTimeString() : 'just now';
           return {
             agent: agentTitle,
-            text: isRunning ? 'executing task in ap-south-1' : `completed run (status: ${r.status})`,
+            text: isRunning
+              ? 'executing task in ap-south-1'
+              : `completed run (status: ${r.status})`,
             dot,
             pulse: isRunning,
             time: timeAgo,
@@ -219,7 +221,9 @@ export default async function DashboardPage() {
             Compliance posture
           </div>
           <div className="mt-2.5 flex items-baseline gap-1.5">
-            <span className="font-heading text-6xl font-bold leading-none text-white">{postureScore}</span>
+            <span className="font-heading text-6xl font-bold leading-none text-white">
+              {postureScore}
+            </span>
             <span className="text-xl text-[#8a97b8]">/100</span>
           </div>
 
@@ -276,7 +280,10 @@ export default async function DashboardPage() {
               <h2 className="font-heading text-[15px] font-semibold text-[#1E2A4A]">
                 Open gaps by domain
               </h2>
-              <Link href="/assessment" className="text-xs font-medium text-[#0a8d80] hover:underline">
+              <Link
+                href="/assessment"
+                className="text-xs font-medium text-[#0a8d80] hover:underline"
+              >
                 Open assessment →
               </Link>
             </div>

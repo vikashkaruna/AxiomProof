@@ -189,7 +189,11 @@ export default async function WorkbenchPage() {
                     <span className="font-heading text-xs font-semibold capitalize text-slate-900">
                       {a.name}
                     </span>
-                    <AgentPill agent={a.name} showPersona={true} className="mt-0.5 border-0 bg-transparent p-0 text-[10px]" />
+                    <AgentPill
+                      agent={a.name}
+                      showPersona={true}
+                      className="mt-0.5 border-0 bg-transparent p-0 text-[10px]"
+                    />
                   </div>
                 </div>
                 <p className="text-xs text-slate-600 leading-snug">{a.one}</p>

@@ -94,7 +94,10 @@ export function AgentsInteractiveRoster({ agents }: AgentsInteractiveRosterProps
           const currentState = individualStates[a.name] || globalState;
 
           return (
-            <Card key={a.name} className="overflow-hidden border-slate-200 transition-all hover:border-slate-300">
+            <Card
+              key={a.name}
+              className="overflow-hidden border-slate-200 transition-all hover:border-slate-300"
+            >
               <div className="flex flex-col gap-4 p-6 sm:flex-row sm:items-start">
                 {/* Visual Icon Avatar with dynamic halo */}
                 <div className="relative flex shrink-0 items-center justify-center">

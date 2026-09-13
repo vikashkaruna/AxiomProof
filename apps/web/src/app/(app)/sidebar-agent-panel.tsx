@@ -28,8 +28,10 @@ export const ALL_AGENTS: AgentActionMeta[] = [
     indic: 'दृष्टि · Data Discovery',
     autonomy: 'L1 Autonomous',
     phase: 'Phase 1 · DPDPA §16',
-    description: 'Scans systems, databases, and buckets for personal data, classifying data flows and validating Indian data residency.',
-    statutoryBoundary: 'Strict domestic residency (ap-south-1). Automatically flags and alerts on non-Indian regions.',
+    description:
+      'Scans systems, databases, and buckets for personal data, classifying data flows and validating Indian data residency.',
+    statutoryBoundary:
+      'Strict domestic residency (ap-south-1). Automatically flags and alerts on non-Indian regions.',
     modulePath: '/discovery',
     moduleLabel: 'Data Discovery',
     actionLabel: 'Run Discovery Scan',
@@ -40,8 +42,10 @@ export const ALL_AGENTS: AgentActionMeta[] = [
     indic: 'विभाग · Classification',
     autonomy: 'L1 Autonomous',
     phase: 'Phase 1 · DPDPA §4-10',
-    description: 'Categorizes personal data fields across 9 statutory categories (Aadhaar, PAN, health, children) and assesses sensitivity.',
-    statutoryBoundary: 'Applies Indian DPDPA classification patterns and prepares data mapping for RoPA documentation.',
+    description:
+      'Categorizes personal data fields across 9 statutory categories (Aadhaar, PAN, health, children) and assesses sensitivity.',
+    statutoryBoundary:
+      'Applies Indian DPDPA classification patterns and prepares data mapping for RoPA documentation.',
     modulePath: '/classification',
     moduleLabel: 'Data Classification',
     actionLabel: 'Run Classification',
@@ -52,8 +56,10 @@ export const ALL_AGENTS: AgentActionMeta[] = [
     indic: 'परीक्षण · Assessment',
     autonomy: 'L1 Autonomous',
     phase: 'Phase 0 · 46 Controls',
-    description: 'Evaluates posture against all 46 versioned statutory DPDPA controls and calculates exposure penalties up to ₹250 cr.',
-    statutoryBoundary: 'Deterministic scoring against published controls with statutory citations and gap rationales.',
+    description:
+      'Evaluates posture against all 46 versioned statutory DPDPA controls and calculates exposure penalties up to ₹250 cr.',
+    statutoryBoundary:
+      'Deterministic scoring against published controls with statutory citations and gap rationales.',
     modulePath: '/assessment',
     moduleLabel: 'Control Assessment',
     actionLabel: 'Run 46-Control Assessment',
@@ -64,8 +70,10 @@ export const ALL_AGENTS: AgentActionMeta[] = [
     indic: 'साक्षी · Evidence',
     autonomy: 'L1 Autonomous',
     phase: 'Phase 2 · WORM Vault',
-    description: 'Seals evidence artifacts and audit snapshots into immutable WORM storage with cryptographic SHA-256 hashes.',
-    statutoryBoundary: 'S3 Object Lock in Compliance mode. Multi-year retention prevents premature deletion or tamper.',
+    description:
+      'Seals evidence artifacts and audit snapshots into immutable WORM storage with cryptographic SHA-256 hashes.',
+    statutoryBoundary:
+      'S3 Object Lock in Compliance mode. Multi-year retention prevents premature deletion or tamper.',
     modulePath: '/evidence',
     moduleLabel: 'Evidence Explorer',
     actionLabel: 'Seal Attestation Proof',
@@ -76,8 +84,10 @@ export const ALL_AGENTS: AgentActionMeta[] = [
     indic: 'सुधार · Remediation',
     autonomy: 'L1 Autonomous',
     phase: 'Phase 3 · Blueprints',
-    description: 'Synthesizes remediation blueprints with step-by-step actions, blast radius caps, and reversible rollbacks.',
-    statutoryBoundary: 'Separation of duties (ADR-3): Sudhaar is strictly read-only (can_mutate = False). Holds zero write credentials.',
+    description:
+      'Synthesizes remediation blueprints with step-by-step actions, blast radius caps, and reversible rollbacks.',
+    statutoryBoundary:
+      'Separation of duties (ADR-3): Sudhaar is strictly read-only (can_mutate = False). Holds zero write credentials.',
     modulePath: '/plans',
     moduleLabel: 'Remediation Plans',
     actionLabel: 'Generate Remediation Plan',
@@ -88,8 +98,10 @@ export const ALL_AGENTS: AgentActionMeta[] = [
     indic: 'कार्य · Execution',
     autonomy: 'L2 Approval-Gated',
     phase: 'Phase 3 · Mutations',
-    description: 'Mutating execution engine. Executes only actions covered by a verified, signed, scope-bound human approval token.',
-    statutoryBoundary: 'ADR-1 & ADR-2: Refuses execution without validated dry-run, rollback, and signed human approval token.',
+    description:
+      'Mutating execution engine. Executes only actions covered by a verified, signed, scope-bound human approval token.',
+    statutoryBoundary:
+      'ADR-1 & ADR-2: Refuses execution without validated dry-run, rollback, and signed human approval token.',
     modulePath: '/approval',
     moduleLabel: 'Approval Console',
     actionLabel: 'Review & Approve in Console',
@@ -101,8 +113,10 @@ export const ALL_AGENTS: AgentActionMeta[] = [
     indic: 'लेखा · Audit',
     autonomy: 'L1 Autonomous',
     phase: 'Phase 2 · Ledger',
-    description: 'Verifies the append-only, tamper-evident audit ledger and reconstructs unbroken SHA-256 cryptographic hash chains.',
-    statutoryBoundary: 'Ledger writes are restricted to append_ledger() SECURITY DEFINER Postgres function.',
+    description:
+      'Verifies the append-only, tamper-evident audit ledger and reconstructs unbroken SHA-256 cryptographic hash chains.',
+    statutoryBoundary:
+      'Ledger writes are restricted to append_ledger() SECURITY DEFINER Postgres function.',
     modulePath: '/ledger',
     moduleLabel: 'Audit Ledger',
     actionLabel: 'Verify Ledger Chain',
@@ -113,8 +127,10 @@ export const ALL_AGENTS: AgentActionMeta[] = [
     indic: 'नज़र · Surveillance',
     autonomy: 'L1 Autonomous',
     phase: 'Phase 2 · RegWatch',
-    description: 'Surveillance of MeitY gazette notifications, DPB adjudications, and statutory compliance drift.',
-    statutoryBoundary: 'Tracks enforcement countdowns (13 May 2027) and statutory rule updates for operational alignment.',
+    description:
+      'Surveillance of MeitY gazette notifications, DPB adjudications, and statutory compliance drift.',
+    statutoryBoundary:
+      'Tracks enforcement countdowns (13 May 2027) and statutory rule updates for operational alignment.',
     modulePath: '/regwatch',
     moduleLabel: 'Regulatory Watch',
     actionLabel: 'Scan Regulatory Feeds',
@@ -125,8 +141,10 @@ export const ALL_AGENTS: AgentActionMeta[] = [
     indic: 'प्रतिवेदन · Reports',
     autonomy: 'L1 Autonomous',
     phase: 'Phase 2 · Board Packs',
-    description: 'Compiles executive Board compliance packs, RoPA summaries, and auditor-ready submission dossiers.',
-    statutoryBoundary: 'Zero raw PII egress. All sensitive personal data is redacted prior to report rendering.',
+    description:
+      'Compiles executive Board compliance packs, RoPA summaries, and auditor-ready submission dossiers.',
+    statutoryBoundary:
+      'Zero raw PII egress. All sensitive personal data is redacted prior to report rendering.',
     modulePath: '/reports',
     moduleLabel: 'Compliance Reports',
     actionLabel: 'Compile Board Report',
@@ -137,8 +155,10 @@ export const ALL_AGENTS: AgentActionMeta[] = [
     indic: 'संकेत · Signal',
     autonomy: 'L1 Autonomous',
     phase: 'Phase 1 · Threat Signals',
-    description: 'Monitors breach telemetry, CERT-In vulnerability disclosures, and commercial privacy procurement intent.',
-    statutoryBoundary: 'Continuous signal telemetry surveillance without exposing tenant personal data.',
+    description:
+      'Monitors breach telemetry, CERT-In vulnerability disclosures, and commercial privacy procurement intent.',
+    statutoryBoundary:
+      'Continuous signal telemetry surveillance without exposing tenant personal data.',
     modulePath: '/breaches',
     moduleLabel: 'Breach & Signals',
     actionLabel: 'Scan Market & Breach Signals',
@@ -180,16 +200,12 @@ export function SidebarAgentPanel({
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Escape') {
         setSelectedAgent(null);
+        setLastRunResult(null);
       }
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [selectedAgent]);
-
-  // Reset execution result on agent switch
-  useEffect(() => {
-    setLastRunResult(null);
-  }, [selectedAgent?.name]);
 
   // Poll for live active agent runs every 4 seconds
   useEffect(() => {
@@ -323,11 +339,7 @@ export function SidebarAgentPanel({
               : 'border-slate-200 bg-slate-100 text-slate-600 hover:bg-slate-200'
           }`}
         >
-          {demoMode === 'live'
-            ? 'Preview'
-            : demoMode === 'thinking'
-              ? 'Thinking ⟳'
-              : 'Working ⟳'}
+          {demoMode === 'live' ? 'Preview' : demoMode === 'thinking' ? 'Thinking ⟳' : 'Working ⟳'}
         </button>
       </div>
 
@@ -342,7 +354,10 @@ export function SidebarAgentPanel({
             <button
               key={agent.name}
               type="button"
-              onClick={() => setSelectedAgent(isSelected ? null : agent)}
+              onClick={() => {
+                setSelectedAgent(isSelected ? null : agent);
+                setLastRunResult(null);
+              }}
               title={`${agent.name} (${agent.persona}) · Status: ${state}`}
               className={`group relative flex flex-col items-center justify-center rounded-lg p-1 transition-all cursor-pointer ${
                 isSelected
@@ -360,12 +375,7 @@ export function SidebarAgentPanel({
               <span
                 className="mt-1 truncate text-[9px] font-medium capitalize max-w-full"
                 style={{
-                  color:
-                    state === 'working'
-                      ? accent
-                      : isSelected
-                        ? '#0F172A'
-                        : '#64748B',
+                  color: state === 'working' ? accent : isSelected ? '#0F172A' : '#64748B',
                 }}
               >
                 {agent.name}
@@ -380,9 +390,7 @@ export function SidebarAgentPanel({
         <div className="mt-2.5 flex items-center gap-1.5 rounded-lg border border-slate-200 bg-slate-100/90 px-2 py-1 text-[9px] text-slate-700 font-mono">
           <span
             className={`h-1.5 w-1.5 shrink-0 rounded-full ${
-              activeCount > 0 || demoMode !== 'live'
-                ? 'bg-teal-500 animate-pulse'
-                : 'bg-[#C9A227]'
+              activeCount > 0 || demoMode !== 'live' ? 'bg-teal-500 animate-pulse' : 'bg-[#C9A227]'
             }`}
           />
           <span className="truncate font-mono tracking-tight text-slate-600">
@@ -407,7 +415,10 @@ export function SidebarAgentPanel({
             </div>
             <button
               type="button"
-              onClick={() => setSelectedAgent(null)}
+              onClick={() => {
+                setSelectedAgent(null);
+                setLastRunResult(null);
+              }}
               className="text-[11px] text-slate-400 hover:text-slate-700 transition-colors cursor-pointer"
             >
               ✕
@@ -420,7 +431,8 @@ export function SidebarAgentPanel({
 
           <div className="mt-2 flex items-center justify-between border-t border-slate-100 pt-1.5 text-[10px]">
             <span className="text-slate-500">
-              Autonomy: <strong className="text-indigo-600 font-semibold">{selectedAgent.autonomy}</strong>
+              Autonomy:{' '}
+              <strong className="text-indigo-600 font-semibold">{selectedAgent.autonomy}</strong>
             </span>
             <span className="font-medium capitalize text-slate-700">
               State:{' '}
@@ -463,7 +475,9 @@ export function SidebarAgentPanel({
                       : '✕ Error'}
                 </span>
                 {lastRunResult.latency_ms !== undefined && (
-                  <span className="font-mono text-[9px] opacity-75">{lastRunResult.latency_ms}ms</span>
+                  <span className="font-mono text-[9px] opacity-75">
+                    {lastRunResult.latency_ms}ms
+                  </span>
                 )}
               </div>
               <p className="leading-tight opacity-90 text-[9.5px]">{lastRunResult.message}</p>
@@ -530,4 +544,3 @@ export function SidebarAgentPanel({
     </div>
   );
 }
-

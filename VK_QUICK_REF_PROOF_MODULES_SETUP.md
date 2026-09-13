@@ -31,20 +31,18 @@ Authoritative references:
 
 Each of the 10 named agents is designed with bespoke, hardware-accelerated SVG iconography and multi-speed CSS keyframe animations that visually represent their exact DPDPA compliance function and autonomy boundary:
 
-| Agent | DPDPA Statutory Function | Brand Accent | Functional SVG Icon Concept | Cognitive Dynamics (`thinking` state) | Execution Dynamics (`working` state) | Autonomy Ceiling & Gate |
-| :--- | :--- | :--- | :--- | :--- | :--- | :--- |
-| **Drishti** | Personal data scanning, system inventory, cross-border data flow detection | `#0FB5A5` (Teal) | Cybernetic aperture with reticle crosshairs & central scanner pupil | Iris aperture slowly pulses and dilates; concentric scan rings breathe | Continuous 360° rotating radar sweep line across reticle + sweeping laser line | L1 → L2 (Read-only discovery connectors) |
-| **Vibhaag** | Statutory categorization (Govt ID, financial, health, child data, contact) & tagging | `#7C3AED` (Violet) | Geometric segmented prism separating raw streams into color-coded category facets | Subtle harmonic shifting of facet opacities & ambient violet glow | 180° alternating crystal rotation + data particle sorting through facets | L1 (Autonomous classification) |
-| **Parikshan** | Gap assessment across all 46 controls in DPDPA v0.1.0, risk weights & posture scoring | `#1E2A4A` (Indigo) | Inspection shield crest with calibrated gauge scale & verification needle | Circular gauge meter breathes in steady evaluation rhythm | Oscillating precision caliper arms measuring statutory thresholds + verified checkmark pulse | L1 (Read-only library assessment) |
-| **Saakshi** | Cryptographic evidence sealing into AWS S3 Object Lock Compliance vault | `#C9A227` (Gold — reserved for proof) | Eight-point starburst wax seal stamp surrounding a vault lock & crypto keyhole | Golden shimmer runs along seal facet edges; lock body steady | Radiant solar flare & seal stamp compression with expanding golden shockwaves | L1 (WORM-vault evidence sealer) |
-| **Sudhaar** | Blueprint remediation planning with blast radius & mandatory rollback definitions | `#0EA5E9` (Sky) | Technical drafting compass with branching action & rollback circuit paths | Compass legs subtly pivot while calculating risk coordinates | Divergent blueprint circuits sequentially illuminate along action & rollback pathways | L1 (Strictly NO mutate credentials; ADR-3) |
-| **Karya** | Mutating execution engine; closes compliance gaps and executes approved rollbacks | `#D9534F` (Ember — alert tone) | High-voltage energy core housed inside dual precision planetary gears | Core pulsates with contained thermal ember energy; gears idle | Counter-rotating dual planetary gears with electric energy arcs pulsing through core | L2 (Requires signed, scope-bound approval token; BR-2) |
-| **Lekha** | Immutable audit ledger witness; appends hash-chained records via `append_ledger()` | `#525B71` (Slate) | Merkle block chain; interlocking ledger folios connected by cryptographic link rings | Micro-hash dots shift sequentially like a rolling cryptographic cipher | Blocks slide and interlock into chain with luminous link-weld pulse | L1 (Security definer append-only witness) |
-| **Nazar** | Continuous regulatory watchdog; monitors MeitY notifications, DPB orders & gazette | `#16A34A` (Green) | Deep-space observatory dish & 360° perimeter surveillance radar | Observatory dish oscillates angle with undulating signal carrier waves | Continuous 360° sweep beam with active amber ping blips on outer perimeter | L1 (Government gazette & DPB scraper) |
-| **Prativedan** | Executive reporting; compiles Board packs, auditor dossiers & RoPA PDFs | `#9333EA` (Purple) | Formal executive dossier scroll with certified wax seal ribbon & drafting stylus | Stylus hovers above folio with rhythmic ink pulsation | Document pages compile and turn sequentially while certified ribbon seal stamps each section | L1 (Auditor pack compiler) |
-| **Sanket** | Market & breach signal monitoring; early warning telemetry & buying signals | `#EA580C` (Orange) | Broadcast transmission tower with concentric spherical radio wave emitters | Spire glows with intermittent carrier frequency pulses | Concentric spherical sonar waves rapidly expand and radiate outward in continuous waves | L1 (Internal market & incident signal monitor) |
-
-
+| Agent          | DPDPA Statutory Function                                                              | Brand Accent                          | Functional SVG Icon Concept                                                          | Cognitive Dynamics (`thinking` state)                                  | Execution Dynamics (`working` state)                                                         | Autonomy Ceiling & Gate                                |
+| :------------- | :------------------------------------------------------------------------------------ | :------------------------------------ | :----------------------------------------------------------------------------------- | :--------------------------------------------------------------------- | :------------------------------------------------------------------------------------------- | :----------------------------------------------------- |
+| **Drishti**    | Personal data scanning, system inventory, cross-border data flow detection            | `#0FB5A5` (Teal)                      | Cybernetic aperture with reticle crosshairs & central scanner pupil                  | Iris aperture slowly pulses and dilates; concentric scan rings breathe | Continuous 360° rotating radar sweep line across reticle + sweeping laser line               | L1 → L2 (Read-only discovery connectors)               |
+| **Vibhaag**    | Statutory categorization (Govt ID, financial, health, child data, contact) & tagging  | `#7C3AED` (Violet)                    | Geometric segmented prism separating raw streams into color-coded category facets    | Subtle harmonic shifting of facet opacities & ambient violet glow      | 180° alternating crystal rotation + data particle sorting through facets                     | L1 (Autonomous classification)                         |
+| **Parikshan**  | Gap assessment across all 46 controls in DPDPA v0.1.0, risk weights & posture scoring | `#1E2A4A` (Indigo)                    | Inspection shield crest with calibrated gauge scale & verification needle            | Circular gauge meter breathes in steady evaluation rhythm              | Oscillating precision caliper arms measuring statutory thresholds + verified checkmark pulse | L1 (Read-only library assessment)                      |
+| **Saakshi**    | Cryptographic evidence sealing into AWS S3 Object Lock Compliance vault               | `#C9A227` (Gold — reserved for proof) | Eight-point starburst wax seal stamp surrounding a vault lock & crypto keyhole       | Golden shimmer runs along seal facet edges; lock body steady           | Radiant solar flare & seal stamp compression with expanding golden shockwaves                | L1 (WORM-vault evidence sealer)                        |
+| **Sudhaar**    | Blueprint remediation planning with blast radius & mandatory rollback definitions     | `#0EA5E9` (Sky)                       | Technical drafting compass with branching action & rollback circuit paths            | Compass legs subtly pivot while calculating risk coordinates           | Divergent blueprint circuits sequentially illuminate along action & rollback pathways        | L1 (Strictly NO mutate credentials; ADR-3)             |
+| **Karya**      | Mutating execution engine; closes compliance gaps and executes approved rollbacks     | `#D9534F` (Ember — alert tone)        | High-voltage energy core housed inside dual precision planetary gears                | Core pulsates with contained thermal ember energy; gears idle          | Counter-rotating dual planetary gears with electric energy arcs pulsing through core         | L2 (Requires signed, scope-bound approval token; BR-2) |
+| **Lekha**      | Immutable audit ledger witness; appends hash-chained records via `append_ledger()`    | `#525B71` (Slate)                     | Merkle block chain; interlocking ledger folios connected by cryptographic link rings | Micro-hash dots shift sequentially like a rolling cryptographic cipher | Blocks slide and interlock into chain with luminous link-weld pulse                          | L1 (Security definer append-only witness)              |
+| **Nazar**      | Continuous regulatory watchdog; monitors MeitY notifications, DPB orders & gazette    | `#16A34A` (Green)                     | Deep-space observatory dish & 360° perimeter surveillance radar                      | Observatory dish oscillates angle with undulating signal carrier waves | Continuous 360° sweep beam with active amber ping blips on outer perimeter                   | L1 (Government gazette & DPB scraper)                  |
+| **Prativedan** | Executive reporting; compiles Board packs, auditor dossiers & RoPA PDFs               | `#9333EA` (Purple)                    | Formal executive dossier scroll with certified wax seal ribbon & drafting stylus     | Stylus hovers above folio with rhythmic ink pulsation                  | Document pages compile and turn sequentially while certified ribbon seal stamps each section | L1 (Auditor pack compiler)                             |
+| **Sanket**     | Market & breach signal monitoring; early warning telemetry & buying signals           | `#EA580C` (Orange)                    | Broadcast transmission tower with concentric spherical radio wave emitters           | Spire glows with intermittent carrier frequency pulses                 | Concentric spherical sonar waves rapidly expand and radiate outward in continuous waves      | L1 (Internal market & incident signal monitor)         |
 
 ## 2. Local prerequisites
 
@@ -547,24 +545,24 @@ This section provides the complete operational reference for validating Axiom Pr
 
 ### 14.1 Environment Architecture & Boundary Matrix
 
-| Construct | Local Bare-Metal (Host) | Local Full-Stack (Docker) | Staging / Pre-Production | Production (EKS / AWS) |
-| :--- | :--- | :--- | :--- | :--- |
-| **`ENVIRONMENT`** | `local` | `local` or `development` | `staging` / `preprod` | `production` |
-| **`NODE_ENV`** | `development` | `production` (Next.js standalone) | `production` | `production` |
-| **Topology** | Host processes (`pnpm dev`, `uv`) | Docker network (`axiom-network`) | AWS Private VPC (`ap-south-1`) | AWS EKS Cluster (`ap-south-1`) |
-| **Marketing Site** | `http://localhost:3000` | `http://localhost:3000` | `https://staging.axiomminds.ai` | `https://axiomminds.ai` |
-| **Web Workbench** | `http://localhost:3001` | `http://localhost:3001` | `https://app-staging.axiomminds.ai` | `https://app.axiomminds.ai` |
-| **BFF API Gateway** | `http://localhost:4000` | `http://localhost:4000` | `https://api-staging.axiomminds.ai` | `https://api.axiomminds.ai` |
-| **Agent Runtime** | `http://localhost:8000` | `http://localhost:8000` | Internal VPC / Cluster IP | Internal VPC / Cluster IP |
-| **Model Gateway** | `http://localhost:8001` | `http://localhost:8001` | Internal VPC (Self-hosted/Bedrock) | Internal VPC (Self-hosted/Bedrock) |
-| **Temporal UI** | `http://localhost:8233` | `http://localhost:8233` | Temporal Cloud / Internal UI | Temporal Cloud / Internal UI |
-| **Supabase DB** | `127.0.0.1:55322` | `127.0.0.1:55322` | Managed RDS / Supabase Cloud | Managed RDS / Supabase Cloud |
-| **Supabase Studio**| `http://127.0.0.1:55323` | `http://127.0.0.1:55323` | Private Admin Portal / Bastion | Private Admin Portal / Bastion |
-| **Email Delivery** | Stdout / Mailpit (`:55324`) | Stdout mock or live Resend key | Resend API (Verified Domain) | Resend API (Strict SPF/DKIM/DMARC)|
-| **Evidence Vault** | Local FS or MinIO bucket | Local S3-compatible mock | S3 Object Lock (Governance) | S3 Object Lock (Compliance mode) |
-| **Auth Bypass** | Optional (`AXIOM_E2E_BYPASS_AUTH`)| Optional for testing | Strictly `false` | Strictly `false` (Mandatory MFA) |
-| **Planning Agent** | `can_mutate = False` | `can_mutate = False` | `can_mutate = False` | `can_mutate = False` (ADR-3) |
-| **Audit Ledger** | Append-only function | Append-only function | `append_ledger()` SECURITY DEFINER| `append_ledger()` SECURITY DEFINER |
+| Construct           | Local Bare-Metal (Host)            | Local Full-Stack (Docker)         | Staging / Pre-Production            | Production (EKS / AWS)             |
+| :------------------ | :--------------------------------- | :-------------------------------- | :---------------------------------- | :--------------------------------- |
+| **`ENVIRONMENT`**   | `local`                            | `local` or `development`          | `staging` / `preprod`               | `production`                       |
+| **`NODE_ENV`**      | `development`                      | `production` (Next.js standalone) | `production`                        | `production`                       |
+| **Topology**        | Host processes (`pnpm dev`, `uv`)  | Docker network (`axiom-network`)  | AWS Private VPC (`ap-south-1`)      | AWS EKS Cluster (`ap-south-1`)     |
+| **Marketing Site**  | `http://localhost:3000`            | `http://localhost:3000`           | `https://staging.axiomminds.ai`     | `https://axiomminds.ai`            |
+| **Web Workbench**   | `http://localhost:3001`            | `http://localhost:3001`           | `https://app-staging.axiomminds.ai` | `https://app.axiomminds.ai`        |
+| **BFF API Gateway** | `http://localhost:4000`            | `http://localhost:4000`           | `https://api-staging.axiomminds.ai` | `https://api.axiomminds.ai`        |
+| **Agent Runtime**   | `http://localhost:8000`            | `http://localhost:8000`           | Internal VPC / Cluster IP           | Internal VPC / Cluster IP          |
+| **Model Gateway**   | `http://localhost:8001`            | `http://localhost:8001`           | Internal VPC (Self-hosted/Bedrock)  | Internal VPC (Self-hosted/Bedrock) |
+| **Temporal UI**     | `http://localhost:8233`            | `http://localhost:8233`           | Temporal Cloud / Internal UI        | Temporal Cloud / Internal UI       |
+| **Supabase DB**     | `127.0.0.1:55322`                  | `127.0.0.1:55322`                 | Managed RDS / Supabase Cloud        | Managed RDS / Supabase Cloud       |
+| **Supabase Studio** | `http://127.0.0.1:55323`           | `http://127.0.0.1:55323`          | Private Admin Portal / Bastion      | Private Admin Portal / Bastion     |
+| **Email Delivery**  | Stdout / Mailpit (`:55324`)        | Stdout mock or live Resend key    | Resend API (Verified Domain)        | Resend API (Strict SPF/DKIM/DMARC) |
+| **Evidence Vault**  | Local FS or MinIO bucket           | Local S3-compatible mock          | S3 Object Lock (Governance)         | S3 Object Lock (Compliance mode)   |
+| **Auth Bypass**     | Optional (`AXIOM_E2E_BYPASS_AUTH`) | Optional for testing              | Strictly `false`                    | Strictly `false` (Mandatory MFA)   |
+| **Planning Agent**  | `can_mutate = False`               | `can_mutate = False`              | `can_mutate = False`                | `can_mutate = False` (ADR-3)       |
+| **Audit Ledger**    | Append-only function               | Append-only function              | `append_ledger()` SECURITY DEFINER  | `append_ledger()` SECURITY DEFINER |
 
 ---
 
@@ -577,6 +575,7 @@ Execute the all-in-one pre-flight verification script before any push or deploym
 ```
 
 This automated runner executes 5 sequential stages:
+
 1. **TypeScript Workspace Tests (`pnpm test`)**: Validates types, schema contracts, control definitions, ledger canonicalization, component UI rendering (including bespoke `AgentIcon` unit tests), and evidence packages across all 10 monorepo packages.
 2. **Python Agent Runtime Pytest (`services/agent-runtime`)**: Executes 32 unit and integration tests verifying all 10 named agents, Sudhaar's non-mutating lock, Karya's execution gate, and the PII redactor. Fully compliant with Python 3.12+ / 3.14 (`datetime.now(timezone.utc)`), completing with **0 warnings** and 100% pass rate.
 3. **Python Model Gateway Pytest (`services/model-gateway`)**: Executes 14 tests verifying regex and NER redaction for Indian identifiers (Aadhaar, PAN, phone numbers, passport, voter ID), model routing, and token budget governance with **0 warnings**.
@@ -618,7 +617,7 @@ Follow these manual steps to interactively verify the entire application in your
 
 1. **Complete the 5-Minute Gap-Scan**:
    - Open **[http://localhost:3000/#gap-scan](http://localhost:3000/#gap-scan)** in your browser.
-   - **Step 1 (Profile)**: Select *Fintech & Financial Services*, choose *51–200 employees*, and click **Start assessment**.
+   - **Step 1 (Profile)**: Select _Fintech & Financial Services_, choose _51–200 employees_, and click **Start assessment**.
    - **Step 2 (Diagnostic)**: Answer the 12 Yes/No questions regarding consent notices, DPO appointment, retention schedules, and grievance redressal.
    - **Step 3 (Contact Info)**: Enter name, email, and company (e.g. `Aarav Sharma`, `aarav@example.com`, `Aarav Pay`).
    - **Step 4 (Review & Submit)**: Click **Generate my report**.
@@ -638,7 +637,7 @@ Follow these manual steps to interactively verify the entire application in your
    - Click **Send message**.
    - **Verification**:
      - Button displays a spinner with **Sending...**.
-     - Form transitions to the confirmation state: *"Message sent successfully. Your message has been sent directly to Axiom Minds Private Limited's founder."*
+     - Form transitions to the confirmation state: _"Message sent successfully. Your message has been sent directly to Axiom Minds Private Limited's founder."_
      - In terminal, inspect stdout: `docker logs --tail 15 axiom-marketing` to see the formatted delivery log.
 
 3. **Inspect the Agent Roster & Animated Dynamics**:
@@ -683,7 +682,7 @@ Follow these manual steps to interactively verify the entire application in your
    - Open **[http://localhost:3001/ledger](http://localhost:3001/ledger)**.
    - **Active Agent Executions Banner**: If an agent is in flight, an institutional banner appears showing the animated `working` icon, execution timer, action type, and target system reference.
    - Inspect compliance events: sequence numbers (`#1`, `#2`, `#3`, etc.), canonical action types, timestamps, and gold **ProofSeal** SHA-256 hashes.
-   - Click **"Verify chain integrity"** (`POST /api/bff/v1/ledger/verify`) to confirm: *"Chain verified: every entry hash and prev_hash matches. Audit trail is intact."*
+   - Click **"Verify chain integrity"** (`POST /api/bff/v1/ledger/verify`) to confirm: _"Chain verified: every entry hash and prev_hash matches. Audit trail is intact."_
 
 5. **Evidence Vault**:
    - Open **[http://localhost:3001/evidence](http://localhost:3001/evidence)**.
@@ -711,9 +710,9 @@ Follow these manual steps to interactively verify the entire application in your
 3. In the **SQL Editor**:
    - Run custom queries against the local schema:
      ```sql
-     SELECT id, sector, employee_band, posture_score, created_at 
-     FROM gap_scan_responses 
-     ORDER BY created_at DESC 
+     SELECT id, sector, employee_band, posture_score, created_at
+     FROM gap_scan_responses
+     ORDER BY created_at DESC
      LIMIT 5;
      ```
 
@@ -722,6 +721,7 @@ Follow these manual steps to interactively verify the entire application in your
 ### 14.4 Backend Guardrails & API Verification (Terminal / Curl)
 
 #### 4.1 Indian PII Redaction & Data Residency (Model Gateway)
+
 Verifies that client personal data stays in `ap-south-1` and raw Indian identifiers are stripped before reaching external LLMs:
 
 ```bash
@@ -739,7 +739,8 @@ curl -s -X POST http://localhost:8001/v1/chat/completions \
   }' | jq .
 ```
 
-*Expected Output*:
+_Expected Output_:
+
 ```json
 {
   "id": "chatcmpl-c6961ce66ccb",
@@ -771,6 +772,7 @@ curl -s -X POST http://localhost:8001/v1/chat/completions \
 ```
 
 To extract only the assistant message string, quote the jq path with single quotes so `zsh` does not interpret `[0]` as a glob pattern:
+
 ```bash
 curl -s -X POST http://localhost:8001/v1/chat/completions \
   -H "Content-Type: application/json" \
@@ -787,6 +789,7 @@ curl -s -X POST http://localhost:8001/v1/chat/completions \
 ```
 
 You can also query the gateway's direct completion endpoint:
+
 ```bash
 curl -s -X POST http://localhost:8001/v1/complete \
   -H "Content-Type: application/json" \
@@ -804,13 +807,16 @@ curl -s -X POST http://localhost:8001/v1/complete \
 Axiom Proof audits target systems using autonomous compliance agents that record all findings and decisions to the append-only ledger.
 
 ##### A. Target Discovery Audit (Drishti)
+
 Drishti discovers data repositories (PostgreSQL, MySQL, S3 buckets, APIs), identifies personal data categories (Aadhaar, PAN, phone, email), evaluates Indian data residency (`ap-south-1` Mumbai default), and flags statutory escalations under Section 16 & Rule 16.
 
 > **DPDPA Data Residency & Cross-Border Enforcement**:
+>
 > - All target systems and logs default to India (`ap-south-1` / Mumbai).
 > - If an operator designates a foreign destination (e.g., `us-east-1` USA, `eu-central-1` Frankfurt) even with `"cross_border": false`, Drishti **allows** the destination, but automatically flags `cross_border: true`, triggers an escalation (`escalate: true`, `escalation_reason: "cross_border_transfer_detected"`), and emits a statutory warning (`[DPDPA-XBD-01]`) requiring transfer safeguards and RoPA documentation under Section 16.
 
 Trigger Drishti via the BFF API:
+
 ```bash
 curl -s -X POST http://localhost:4000/v1/agents/drishti/run \
   -H "Content-Type: application/json" \
@@ -839,7 +845,8 @@ curl -s -X POST http://localhost:4000/v1/agents/drishti/run \
   }' | jq .
 ```
 
-*Or invoke directly via the Agent Runtime (`:8000`):*
+_Or invoke directly via the Agent Runtime (`:8000`):_
+
 ```bash
 curl -s -X POST http://localhost:8000/agents/drishti/invoke \
   -H "Content-Type: application/json" \
@@ -863,7 +870,9 @@ curl -s -X POST http://localhost:8000/agents/drishti/invoke \
 ```
 
 ##### B. Statutory Control Assessment Audit (Parikshan)
+
 Parikshan audits the target against the 46 versioned DPDPA controls, computing the client's Posture Score (0-100%) and estimated statutory penalty exposure:
+
 ```bash
 curl -s -X POST http://localhost:4000/v1/agents/parikshan/run \
   -H "Content-Type: application/json" \
@@ -888,19 +897,23 @@ curl -s -X POST http://localhost:4000/v1/agents/parikshan/run \
 Every agent execution automatically appends cryptographic records to the hash chain.
 
 ##### Option 1: Web UI
+
 Navigate to `http://localhost:3001/ledger` in your browser.
+
 - Verify that every sequence (`#1`, `#2`, `#3`, `#4`, etc.) is displayed.
 - Inspect the actor badge (`drishti`, `parikshan`), action type (`discovery.started`, `assessment.started`), execution outcome (`success`), timestamp, and the tamper-evident **ProofSeal** hash.
 - Click **"Verify chain integrity"** to mathematically validate the hash chain.
 
 ##### Option 2: Direct PostgreSQL Inspection
+
 Query the `audit_ledger` table using the schema's canonical column names:
-* `sequence_no` (not `sequence_number`)
-* `action_type` (not `event_type`)
-* `actor_id` (not `agent_name`)
-* `entry_hash` (not `hash`)
-* `prev_entry_hash` (not `previous_hash`)
-* `detail` (not `summary`)
+
+- `sequence_no` (not `sequence_number`)
+- `action_type` (not `event_type`)
+- `actor_id` (not `agent_name`)
+- `entry_hash` (not `hash`)
+- `prev_entry_hash` (not `previous_hash`)
+- `detail` (not `summary`)
 
 ```bash
 docker exec -it supabase_db_axiom-proof psql -U postgres -d postgres -c \
@@ -908,7 +921,9 @@ docker exec -it supabase_db_axiom-proof psql -U postgres -d postgres -c \
 ```
 
 ##### Option 3: API Verification via cURL
+
 Trigger the cryptographic SHA-256 chain verification through the Web Proxy or directly via the BFF API:
+
 ```bash
 # Via Web Next.js BFF proxy
 curl -s -X POST http://localhost:3001/api/bff/v1/ledger/verify | jq .
@@ -918,7 +933,9 @@ curl -s -X POST http://localhost:4000/v1/ledger/verify \
   -H "Authorization: Bearer dev-token" \
   -H "X-Tenant-Id: 00000000-0000-0000-0000-000000000001" | jq .
 ```
-*Expected Output*:
+
+_Expected Output_:
+
 ```json
 {
   "intact": true
@@ -928,6 +945,7 @@ curl -s -X POST http://localhost:4000/v1/ledger/verify \
 ---
 
 #### 4.4 Mathematical Proof of Non-Tampering
+
 Run the built-in cryptographic audit verification function in PostgreSQL:
 
 ```bash
@@ -935,17 +953,20 @@ docker exec -it supabase_db_axiom-proof psql -U postgres -d postgres -c \
   "SELECT * FROM verify_ledger('00000000-0000-0000-0000-000000000001'::uuid, 1);"
 ```
 
-*Expected Output*:
+_Expected Output_:
+
 ```text
- sequence_no | reason 
+ sequence_no | reason
 -------------+--------
 (0 rows)
 ```
+
 > **Note on `(0 rows)`**: This is the expected proof of success. The `verify_ledger(...)` function returns discrepancies (broken chain rows). When zero rows are returned, it mathematically proves that 100% of the SHA-256 hashes and sequence links are unbroken and the ledger is cryptographically intact.
 
 ---
 
 #### 4.5 Tamper Detection & Immutability Verification
+
 Demonstrate that any manual tampering with an existing ledger row is immediately caught by the cryptographic verification algorithm:
 
 ```bash
@@ -958,9 +979,10 @@ docker exec -i supabase_db_axiom-proof psql -U postgres -d postgres -c \
   "SELECT * FROM verify_ledger('00000000-0000-0000-0000-000000000001'::uuid, 1);"
 ```
 
-*Verification Output (Tamper Detected)*:
+_Verification Output (Tamper Detected)_:
+
 ```text
- sequence_no |             reason              
+ sequence_no |             reason
 -------------+---------------------------------
            1 | entry_hash mismatch (tamper)
 (1 row)
@@ -980,6 +1002,7 @@ docker exec -i supabase_db_axiom-proof psql -U postgres -d postgres -c \
 ---
 
 #### 4.6 Emergency Kill-Switch Drill
+
 Trigger an emergency halt across all running agents for a tenant:
 
 ```bash
@@ -990,7 +1013,8 @@ curl -s -X POST http://localhost:4000/v1/kill-switch \
   -d '{"reason": "Manual compliance test drill"}' | jq .
 ```
 
-*Expected Output*:
+_Expected Output_:
+
 ```json
 {
   "engaged": true,
@@ -1000,17 +1024,20 @@ curl -s -X POST http://localhost:4000/v1/kill-switch \
 ```
 
 To release the kill switch:
+
 ```bash
 curl -s -X POST http://localhost:4000/v1/kill-switch/release | jq .
 ```
 
-*Expected Output*:
+_Expected Output_:
+
 ```json
 {
   "engaged": false
 }
 ```
-*(In local development / non-production, the BFF automatically authorizes localhost requests with owner role privileges; in production, only authenticated founders/owners with MFA can release the kill switch).*
+
+_(In local development / non-production, the BFF automatically authorizes localhost requests with owner role privileges; in production, only authenticated founders/owners with MFA can release the kill switch)._
 
 ---
 
@@ -1047,9 +1074,9 @@ The Axiom Proof brand mark and complete application architecture are fully synch
 
 - **Component**: `<AxiomMark />` and `<AxiomLogo />` in `packages/ui/src/components/`
 - **Concept (Design System §01 Brand)**:
-  - *Chain Link*: Circular ring representing the hash-chained ledger and complete traceability (ADR-5).
-  - *Checkmark Needle*: Vector proof checkmark resting inside the chain link, representing cryptographic proof and immutable attestation.
-  - *Color Gradients*: Canonical Signal Teal (`#0FB5A5` → `#0a8d80`), Deep Indigo (`#1E2A4A`), or Proof Gold (`#C9A227`).
+  - _Chain Link_: Circular ring representing the hash-chained ledger and complete traceability (ADR-5).
+  - _Checkmark Needle_: Vector proof checkmark resting inside the chain link, representing cryptographic proof and immutable attestation.
+  - _Color Gradients_: Canonical Signal Teal (`#0FB5A5` → `#0a8d80`), Deep Indigo (`#1E2A4A`), or Proof Gold (`#C9A227`).
 - **Integration**:
   - Marketing Header & Footer (`apps/marketing/src/components/SiteHeader.tsx`, `SiteFooter.tsx`)
   - Web App Header, Sidebar & Login (`apps/web/src/app/(app)/app-shell.tsx`, `login/page.tsx`, `page.tsx`)
@@ -1057,6 +1084,7 @@ The Axiom Proof brand mark and complete application architecture are fully synch
 #### 2. Synchronized Axiom Proof Web App Architecture (`apps/web`)
 
 The web application (`http://localhost:3001`) implements the authoritative styling and layout from `Axiom Proof App.dc.html`:
+
 - **Deep Indigo Sidebar (`bg-[#1E2A4A]`)**:
   - Full `navDef` phase-grouped navigation:
     1. **Overview**: Dashboard (`/dashboard`, P0)
@@ -1094,14 +1122,14 @@ The web application (`http://localhost:3001`) implements the authoritative styli
    - Sticky bottom approval action bar with single-click execution simulation and token issuance guarantee.
 3. **Assessment Pipeline (`/assessment`)**:
    - **Hero Pipeline Card**: Deep Indigo (`bg-[#1E2A4A]`) card with `▶ Run new assessment` trigger (`Parikshan scores against control library v25.11.2 · agents propose, you approve`).
-   - **5-Stage Pipeline Stepper**: Exact design sequence (*1. Drishti · Discovery · खोज*, *2. Vibhaag · Classification · वर्गीकरण*, *3. Parikshan · Assessment · मूल्यांकन*, *4. Saakshi · Evidence · साक्ष्य*, *5. Prativedan · Report · रिपोर्ट*).
+   - **5-Stage Pipeline Stepper**: Exact design sequence (_1. Drishti · Discovery · खोज_, _2. Vibhaag · Classification · वर्गीकरण_, _3. Parikshan · Assessment · मूल्यांकन_, _4. Saakshi · Evidence · साक्ष्य_, _5. Prativedan · Report · रिपोर्ट_).
      - Circular stage nodes (`34px`, `font-heading font-bold text-[13px]`) displaying stage numbers `1`–`5`, transitioning to Gold pulse (`#C9A227`) when active, and Signal Teal (`#0FB5A5`) checkmark (`✓`) when completed.
      - Horizontal progress track connecting the 5 nodes in real-time as stages complete.
      - Live execution message: `● {agent} — {detail}` during runs and `● assessment complete · report generated · every step written to the ledger` with cryptographic ledger proof link (`#id`).
    - **Summary + Exposure 3-Card Grid**:
-     - *Control Posture*: Segmented status bar displaying 32 pass (`#0FB5A5`), 5 partial (`#E0A82E`), 6 fail (`#D9534F`) across open controls.
-     - *SDF Self-Assessment*: Displays statutory status (`Not designated`) and volume/sensitivity threshold rationale.
-     - *Penalty Exposure Estimate*: Highlighted card (`bg-[#fbeceb]`) with calculated statutory exposure range (`₹18–46 cr`, weighted across open gaps).
+     - _Control Posture_: Segmented status bar displaying 32 pass (`#0FB5A5`), 5 partial (`#E0A82E`), 6 fail (`#D9534F`) across open controls.
+     - _SDF Self-Assessment_: Displays statutory status (`Not designated`) and volume/sensitivity threshold rationale.
+     - _Penalty Exposure Estimate_: Highlighted card (`bg-[#fbeceb]`) with calculated statutory exposure range (`₹18–46 cr`, weighted across open gaps).
    - **Statutory Control Table**:
      - 12 canonical DPDPA controls from `Axiom Proof App.dc.html` (`NOT-01`, `NOT-04`, `RTS-01`, `RTS-04`, `RTS-06`, `RET-03`, `RET-05`, `PUR-02`, `SEC-06`, `SEC-09`, `XBR-01`, `BRC-02`).
      - Progress score meters, statutory citations (§5, §6(4), §11, §12, §13, §8(7), §8(4), §8(5), §16, Rule 7), sealed gold evidence tags (`✦ e-8839`), and status badges (`PASS`, `PARTIAL`, `FAIL`).
@@ -1119,6 +1147,7 @@ The web application (`http://localhost:3001`) implements the authoritative styli
 The Audit Ledger screen (`/ledger`, `apps/web/src/app/(app)/ledger/`) features server-side querying, cryptographic verification, contextual filtering, and auto-refresh mechanisms.
 
 #### 1. Unified Auto-Refresh Control (`<LedgerRefresh />`)
+
 - **Single Component Pill**: Combines manual refresh, auto-refresh toggle, and interval selector into a single cohesive control (`[ ↻ Refresh | ● Auto: Off ▾ ]`) to eliminate multiple disjoint UI elements.
 - **Default State**: Strictly **`Auto: Off`** (`intervalSeconds = 0`), respecting non-intrusive default behavior.
 - **Interval Options**: `Auto: Off` (0s), `Every 5s`, `Every 10s`, `Every 30s`, `Every 60s`.
@@ -1129,10 +1158,11 @@ The Audit Ledger screen (`/ledger`, `apps/web/src/app/(app)/ledger/`) features s
   - Agent stream awareness: Indicates live background activity (`Live streaming (X active)`) when agents are running.
 
 #### 2. Contextual Filter Suite (`<LedgerFilters />`)
+
 - **Unified Query Input (`q`)**: Accepts integer sequence numbers (e.g., `#1`), full or prefix UUID correlation IDs, target references, or action substrings.
-- **Actor / Agent Filter (`agent`)**: Select between all 10 named agents (*Drishti, Vibhaag, Parikshan, Saakshi, Sudhaar, Karya, Lekha, Nazar, Prativedan, Sanket*), *Human Approver*, or *System Engine*.
-- **Action Category Filter (`action`)**: Filter by semantic lifecycle category (*Discovery, Classification, Assessment, Evidence, Plan, Approval, Execution, Verification, DSAR, Breach*).
-- **Result Filter (`result`)**: Filter by execution outcome (*Success, Failure, Pending / Running, Rolled back, Skipped*).
+- **Actor / Agent Filter (`agent`)**: Select between all 10 named agents (_Drishti, Vibhaag, Parikshan, Saakshi, Sudhaar, Karya, Lekha, Nazar, Prativedan, Sanket_), _Human Approver_, or _System Engine_.
+- **Action Category Filter (`action`)**: Filter by semantic lifecycle category (_Discovery, Classification, Assessment, Evidence, Plan, Approval, Execution, Verification, DSAR, Breach_).
+- **Result Filter (`result`)**: Filter by execution outcome (_Success, Failure, Pending / Running, Rolled back, Skipped_).
 - **Interactive Filter Chips & Counter**:
   - Dynamic result counter: `Showing X of Y total entries`.
   - Removable tag chips for each active filter with instant 1-click removal (`✕`).
@@ -1140,6 +1170,7 @@ The Audit Ledger screen (`/ledger`, `apps/web/src/app/(app)/ledger/`) features s
   - Informative empty state with reset button when no rows match the filter criteria.
 
 #### 3. Server-Side Execution (`page.tsx`)
+
 - Queries PostgreSQL via Supabase Admin Client using server-side pagination and filtering.
 - Preserves cryptographic ledger integrity proof (`verify_ledger` RPC) and unbroken SHA-256 hash chains.
 
@@ -1150,24 +1181,55 @@ The Audit Ledger screen (`/ledger`, `apps/web/src/app/(app)/ledger/`) features s
 To address the constraint where the sidebar agent panel previously only rendered passive descriptions in an inline box that could get cut off at the bottom of the viewport, the bottom-left agent panel (`sidebar-agent-panel.tsx`) was completely overhauled with an elevated dock and an interactive flyout action card adhering to UI/UX best practices:
 
 #### 1. Elevated Dock Container in Dark Sidebar
+
 - **Higher Contrast Background (`#243458` on `#1E2A4A`)**: Replaced the murky transparent background with an elevated card surface featuring `border border-white/20`, subtle drop shadows, and high-contrast text (`text-slate-100`, `text-slate-200`).
 - **Tactile Agent Tiles**: Each of the 10 agents sits in a dedicated button tile (`bg-white/[0.08] hover:bg-white/[0.18] border border-white/10 hover:border-white/25`) with animated mini icons and bright, legible labels.
 - **Selection Indicator**: Clicking an agent sets active ring styling (`ring-2 ring-[#0FB5A5] border-teal-400 bg-teal-500/30 text-white`).
 
 #### 2. High-Contrast Floating Action Card (`fixed left-[274px] bottom-3 z-50`)
+
 - **Viewport Anchor (Never Cut Off)**: Positions the card outside the fixed-height sidebar canvas directly beside the agent dock. Never clipped by sidebar scrolling or bottom viewport bounds.
 - **Light Contrast Surface (`bg-white text-slate-900 border border-slate-200 shadow-2xl`)**: Provides clean, crisp typography, high contrast, and unmistakable visual hierarchy.
 - **Bilingual Identity & Autonomy**: Displays bespoke animated agent icon, English persona, Indic Hindi transliteration (e.g. `दृष्टि · Data Discovery`), autonomy level, and real-time state badge (`Working`, `Deliberating`, or `Standing by`).
 - **Statutory Boundary Callouts**: Contextual architectural guardrails (e.g. `Sudhaar: ADR-3 read-only planning`, `Karya: ADR-1 approval token gate`, `Drishti: ap-south-1 residency`, `Saakshi: S3 Object Lock Compliance mode`).
 
 #### 3. Direct Agent Actions & Execution Engine
+
 - **Primary Quick Action Button**: Single-click trigger (`⚡ Run Discovery Scan`, `⚡ Run 46-Control Assessment`, `⚡ Verify Ledger Chain`, `⚡ Seal Attestation Proof`, etc.) communicating directly with `/api/bff/v1/agents/${agent}/run`.
 - **Live Execution Feedback**: Displays progress spinner, latency in milliseconds, and generated immutable ledger sequence numbers with direct clickable links (`#33, #34` → `/ledger?q=33`).
 - **Architectural Gate Enforcer (Karya)**: For mutating actions, Karya refuses unapproved execution per ADR-1/ADR-3, explains that a human approval token is required, and renders a direct CTA `Review & Approve Actions in Console →` (`/approval`).
 - **Direct Module Route**: Direct link to each agent's primary domain screen (`Open Data Discovery Screen →`, `Open Assessment Screen →`, `Open Remediation Screen →`).
 - **Deep Links**: Direct shortcuts to `Agent Workbench ↗` (`/workbench?agent=${agent.name}`) and `Audit Ledger Proof ↗` (`/ledger?agent=${agent.name}`).
 
+---
 
+### 14.9 Dynamic Secondary Modules Architecture (Based on Live Actuals)
 
+All secondary modules (`/discovery`, `/classification`, `/datamap`, `/execution`, `/monitoring`, `/regwatch`, `/reports`, `/connectors`, `/policies`, `/partner`) have been completely upgraded from static placeholders and staged disclaimers to **fully dynamic views** driven by live PostgreSQL/Supabase database tables, real-time `audit_ledger` event streams, and live agent execution triggers.
 
+#### 1. Core Architecture Enhancements (`generic-module-view.tsx`)
 
+- **Elimination of Mock Staging Notes**: Replaced the yellow mock staging banner (`"Fully hi-fi build of this module is staged..."`) with the institutional **Live Operations Bar**, confirming active Indian domestic residency (`ap-south-1 Mumbai`), database-level RLS isolation, and immutable audit ledger integrity.
+- **Autonomous Agent Execution (`⚡ Run Agent`)**: Secondary modules associated with autonomous agents feature an interactive trigger button invoking `/api/bff/v1/agents/${agentKey}/run` via the Next.js BFF proxy. Renders execution spinners, latency in milliseconds, and clickable sequence number tags (`#id` → `/ledger?q=id`).
+- **Live Audit Ledger Telemetry Streams**: Every secondary module queries `audit_ledger` via `createSupabaseAdmin()` for its respective agent's events (or module targets) and renders an active event timeline showing action, target reference, correlation ID, timestamp, and verification hash.
+
+#### 2. Secondary Modules Dynamic Implementation Matrix
+
+| Route                 | Primary Agent / Domain             | Statutory Citation               | Dynamic Data Sources                                                                                 | Action Trigger / Deep Link                            |
+| :-------------------- | :--------------------------------- | :------------------------------- | :--------------------------------------------------------------------------------------------------- | :---------------------------------------------------- |
+| **`/discovery`**      | **Drishti** (`drishti`, L1)        | DPDPA §16 & Rule 16              | `audit_ledger` (Drishti runs), target scans (Postgres 12.4M rows, S3 +340 objects, Google Workspace) | `⚡ Run Discovery Scan`                               |
+| **`/classification`** | **Vibhaag** (`vibhaag`, L1)        | DPDPA §3, §9 & Schedule          | `audit_ledger` (Vibhaag runs), 9 statutory categories (Govt IDs, Financial, Children, Biometrics)    | `⚡ Run Classification Scan`                          |
+| **`/datamap`**        | **Saakshi & RoPA** (`saakshi`, L1) | DPDPA §6 & §7 (RoPA)             | `evidence` (RoPA records), `audit_ledger`, data flows, lawful bases, domestic residency              | `⚡ Re-generate RoPA Map`                             |
+| **`/execution`**      | **Karya** (`karya`, L2)            | ADR-1 Token Gate & BR-2          | `remediation_plans`, `remediation_actions`, rollback tokens (`RB-118a`), blast radius caps           | `Review & Approve Actions in Console →` (`/approval`) |
+| **`/monitoring`**     | **Prahari & Samanvaya** (L1)       | Rule 16 Continuous Surveillance  | `audit_ledger` (drift checks), scheduled scan intervals, active drift detection alarms               | `⚡ Run Drift & Surveillance Check`                   |
+| **`/regwatch`**       | **Nazar** (`nazar`, L3)            | DPDPA Gazette Notifications      | Live calculation of days remaining until **13 May 2027** deadline, MeitY feeds, `audit_ledger`       | `⚡ Scan Gazette Feeds`                               |
+| **`/reports`**        | **Prativedan** (`prativedan`, L3)  | DPDPA §8(4) Board Oversight      | `engagements` (posture score), `evidence` (S3 sealed objects count), `audit_ledger`                  | `⚡ Compile Board Compliance Pack`                    |
+| **`/connectors`**     | **Connectors** (L2 Isolation)      | DPDPA §8(5) & ADR-3              | `audit_ledger`, PostgreSQL, AWS S3 WORM vault, Temporal, zero unapproved write scopes                | `Discover Data via Connectors →` (`/discovery`)       |
+| **`/policies`**       | **Policy Engine** (L3)             | ADR-1 to ADR-5 Guardrails        | `remediation_actions` (rollback validated count), `audit_ledger` (total ledger proofs)               | `Review Approval Gate Console →` (`/approval`)        |
+| **`/partner`**        | **Advisory Portal** (L3)           | DPDPA §8(2) Processor Governance | `tenants` (registered organizations count), `audit_ledger` (cross-tenant operations)                 | `Generate Multi-Client Auditor Pack →` (`/reports`)   |
+
+#### 3. Verification & Compliance Standard
+
+- **Type Safety**: Built under strict TypeScript mode with zero errors (`pnpm --filter @axiom/web typecheck`).
+- **Residency Guarantee**: All queries and agent execution run strictly within the Indian sovereign boundary (`ap-south-1 Mumbai`).
+- **Cryptographic Traceability**: Every agent action automatically appends to the immutable PostgreSQL ledger via `append_ledger()` with unbroken SHA-256 chain links.

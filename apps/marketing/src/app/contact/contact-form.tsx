@@ -73,8 +73,9 @@ export function ContactForm() {
           Message sent successfully
         </h2>
         <p className="mt-2 max-w-md text-sm text-slate-600">
-          Thank you, <span className="font-medium text-slate-800">{name}</span>. Your message has been sent directly to {BRAND.company}'s founder. We will review your inquiry and get back to you at{' '}
-          <span className="font-medium text-slate-800">{email}</span> within 24 hours.
+          Thank you, <span className="font-medium text-slate-800">{name}</span>. Your message has
+          been sent directly to {BRAND.company}'s founder. We will review your inquiry and get back
+          to you at <span className="font-medium text-slate-800">{email}</span> within 24 hours.
         </p>
 
         <div className="mt-6 flex flex-wrap items-center justify-center gap-3">
@@ -125,9 +126,7 @@ export function ContactForm() {
           placeholder="Vikash Karuna"
           disabled={submitting}
         />
-        {fieldErrors.name && (
-          <p className="text-xs text-ember-600">{fieldErrors.name[0]}</p>
-        )}
+        {fieldErrors.name && <p className="text-xs text-ember-600">{fieldErrors.name[0]}</p>}
       </div>
 
       <div className="flex flex-col gap-1.5">
@@ -144,9 +143,7 @@ export function ContactForm() {
           placeholder="you@company.com"
           disabled={submitting}
         />
-        {fieldErrors.email && (
-          <p className="text-xs text-ember-600">{fieldErrors.email[0]}</p>
-        )}
+        {fieldErrors.email && <p className="text-xs text-ember-600">{fieldErrors.email[0]}</p>}
       </div>
 
       <div className="flex flex-col gap-1.5">
@@ -175,9 +172,7 @@ export function ContactForm() {
           placeholder="We have ~400 employees, process children data, and need a readiness assessment before May 2027."
           disabled={submitting}
         />
-        {fieldErrors.message && (
-          <p className="text-xs text-ember-600">{fieldErrors.message[0]}</p>
-        )}
+        {fieldErrors.message && <p className="text-xs text-ember-600">{fieldErrors.message[0]}</p>}
       </div>
 
       <div className="pt-2">

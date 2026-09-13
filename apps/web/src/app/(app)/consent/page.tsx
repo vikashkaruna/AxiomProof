@@ -145,7 +145,9 @@ export default function ConsentPage() {
           <div className="p-5 space-y-4">
             <div>
               <h2 className="font-heading text-base font-bold text-[#1E2A4A]">
-                {isEn ? 'Notice for Processing of Personal Data' : 'व्यक्तिगत डेटा प्रसंस्करण हेतु सूचना'}
+                {isEn
+                  ? 'Notice for Processing of Personal Data'
+                  : 'व्यक्तिगत डेटा प्रसंस्करण हेतु सूचना'}
               </h2>
               <p className="mt-1 text-xs text-[#8a909b] leading-relaxed">
                 {isEn
@@ -158,17 +160,15 @@ export default function ConsentPage() {
               {purposes.map((p) => (
                 <div key={p.id} className="flex items-center justify-between py-3 gap-3">
                   <div className="min-w-0 flex-1">
-                    <div className="text-xs font-medium text-[#2F3542]">
-                      {isEn ? p.en : p.hi}
-                    </div>
+                    <div className="text-xs font-medium text-[#2F3542]">{isEn ? p.en : p.hi}</div>
                     <div className="text-[10px] text-[#8a909b]">
                       {p.req
                         ? isEn
                           ? 'Statutory requirement · non-revocable'
                           : 'वैधानिक आवश्यकता · अनिवार्य'
                         : isEn
-                        ? 'Optional · revocable anytime'
-                        : 'वैकल्पिक · कभी भी वापस लेने योग्य'}
+                          ? 'Optional · revocable anytime'
+                          : 'वैकल्पिक · कभी भी वापस लेने योग्य'}
                     </div>
                   </div>
 

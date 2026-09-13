@@ -33,9 +33,7 @@ export function VerifyButton({ tenantId }: VerifyButtonProps) {
       if (body.intact === true) {
         alert('Chain verified: every entry hash and prev_hash matches. Audit trail is intact.');
       } else if (body.firstBreak) {
-        alert(
-          `Chain break at sequence ${body.firstBreak.sequenceNo}: ${body.firstBreak.reason}`,
-        );
+        alert(`Chain break at sequence ${body.firstBreak.sequenceNo}: ${body.firstBreak.reason}`);
       } else {
         alert('Verification status: ' + JSON.stringify(body));
       }

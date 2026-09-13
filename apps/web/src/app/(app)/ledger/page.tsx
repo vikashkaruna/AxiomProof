@@ -90,7 +90,10 @@ export default async function LedgerPage({
   }
 
   if (resolvedSearchParams.action) {
-    ledgerQuery = ledgerQuery.ilike('action_type', `%${resolvedSearchParams.action.toLowerCase()}%`);
+    ledgerQuery = ledgerQuery.ilike(
+      'action_type',
+      `%${resolvedSearchParams.action.toLowerCase()}%`,
+    );
   }
 
   if (resolvedSearchParams.q) {
@@ -100,7 +103,9 @@ export default async function LedgerPage({
     } else if (/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(q)) {
       ledgerQuery = ledgerQuery.eq('correlation_id', q);
     } else {
-      ledgerQuery = ledgerQuery.or(`target_ref.ilike.%${q}%,action_type.ilike.%${q}%,actor_id.ilike.%${q}%`);
+      ledgerQuery = ledgerQuery.or(
+        `target_ref.ilike.%${q}%,action_type.ilike.%${q}%,actor_id.ilike.%${q}%`,
+      );
     }
   }
 
@@ -207,7 +212,8 @@ export default async function LedgerPage({
                   <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-teal-400 opacity-75" />
                   <span className="relative inline-flex rounded-full h-2 w-2 bg-teal-500" />
                 </span>
-                {runningAgents.length} {runningAgents.length === 1 ? 'agent running' : 'agents running'}
+                {runningAgents.length}{' '}
+                {runningAgents.length === 1 ? 'agent running' : 'agents running'}
               </Badge>
             ) : (
               <Badge variant="neutral">Agents idle</Badge>
@@ -238,7 +244,8 @@ export default async function LedgerPage({
               </span>
             </div>
             <p className="text-xs text-slate-600">
-              Agents currently performing compliance actions against target systems. Realtime state updates stream to the tamper-evident ledger upon task finalization.
+              Agents currently performing compliance actions against target systems. Realtime state
+              updates stream to the tamper-evident ledger upon task finalization.
             </p>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mt-1">
               {runningAgents.map((a) => (
@@ -253,7 +260,10 @@ export default async function LedgerPage({
                         {a.actionType}
                       </code>
                     </div>
-                    <Badge variant="info" className="flex items-center gap-1 animate-pulse text-[10px]">
+                    <Badge
+                      variant="info"
+                      className="flex items-center gap-1 animate-pulse text-[10px]"
+                    >
                       <span className="h-1.5 w-1.5 rounded-full bg-teal-500" />
                       Running
                     </Badge>
@@ -268,9 +278,7 @@ export default async function LedgerPage({
                         Target: <code className="font-mono text-[10px]">{a.targetRef}</code>
                       </span>
                     )}
-                    <span className="font-mono text-[10px]">
-                      {truncateHash(a.correlationId)}
-                    </span>
+                    <span className="font-mono text-[10px]">{truncateHash(a.correlationId)}</span>
                   </div>
                 </div>
               ))}
@@ -283,9 +291,14 @@ export default async function LedgerPage({
       {entries.length === 0 ? (
         <Card>
           <CardContent className="p-8 text-center text-slate-500">
-            {resolvedSearchParams.agent || resolvedSearchParams.action || resolvedSearchParams.result || resolvedSearchParams.q ? (
+            {resolvedSearchParams.agent ||
+            resolvedSearchParams.action ||
+            resolvedSearchParams.result ||
+            resolvedSearchParams.q ? (
               <div className="flex flex-col items-center gap-2">
-                <p className="font-medium text-slate-700">No ledger entries match the selected filters</p>
+                <p className="font-medium text-slate-700">
+                  No ledger entries match the selected filters
+                </p>
                 <p className="text-xs text-slate-400">Try adjusting your filters or search terms</p>
                 <a
                   href="/ledger"
@@ -302,70 +315,74 @@ export default async function LedgerPage({
       ) : (
         <div className="grid grid-cols-1 gap-3">
           {entries.map((e) => {
-          const completed = e.correlation_id ? completedByCorrelation.get(e.correlation_id) : null;
-          return (
-            <Card key={e.id}>
-              <CardContent className="p-3">
-                <div className="flex items-start justify-between gap-3">
-                  <div className="flex flex-col gap-1.5">
-                    <div className="flex items-center gap-2 flex-wrap">
-                      <span className="font-mono text-xs text-slate-500">#{e.sequence_no}</span>
-                      <Badge variant="indigo">{e.actor_type}</Badge>
-                      {e.actor_type === 'agent' && (
-                        <AgentPill agent={e.actor_id} showPersona={false} />
-                      )}
-                      {e.actor_type === 'human' && (
-                        <span className="text-sm font-medium text-slate-700">{e.actor_id}</span>
-                      )}
-                      <code className="rounded bg-mist-100 px-1.5 py-0.5 font-mono text-xs text-indigo-700">
-                        {e.action_type}
-                      </code>
+            const completed = e.correlation_id
+              ? completedByCorrelation.get(e.correlation_id)
+              : null;
+            return (
+              <Card key={e.id}>
+                <CardContent className="p-3">
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="flex flex-col gap-1.5">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <span className="font-mono text-xs text-slate-500">#{e.sequence_no}</span>
+                        <Badge variant="indigo">{e.actor_type}</Badge>
+                        {e.actor_type === 'agent' && (
+                          <AgentPill agent={e.actor_id} showPersona={false} />
+                        )}
+                        {e.actor_type === 'human' && (
+                          <span className="text-sm font-medium text-slate-700">{e.actor_id}</span>
+                        )}
+                        <code className="rounded bg-mist-100 px-1.5 py-0.5 font-mono text-xs text-indigo-700">
+                          {e.action_type}
+                        </code>
 
-                      {/* Explicit & Appropriate Status Representation */}
-                      {e.result === 'success' && <Badge variant="success">success</Badge>}
-                      {e.result === 'failure' && <Badge variant="danger">failure</Badge>}
-                      {e.result === 'rolled_back' && <Badge variant="warning">rolled_back</Badge>}
-                      {e.result === 'skipped' && <Badge variant="neutral">skipped</Badge>}
-                      {e.result === 'pending' && (
-                        completed ? (
-                          <span className="inline-flex items-center gap-1.5">
-                            <Badge variant="neutral">started</Badge>
-                            <span className="text-[11px] text-slate-500 font-mono">
-                              completed in #{completed.sequence_no} ({completed.result})
+                        {/* Explicit & Appropriate Status Representation */}
+                        {e.result === 'success' && <Badge variant="success">success</Badge>}
+                        {e.result === 'failure' && <Badge variant="danger">failure</Badge>}
+                        {e.result === 'rolled_back' && <Badge variant="warning">rolled_back</Badge>}
+                        {e.result === 'skipped' && <Badge variant="neutral">skipped</Badge>}
+                        {e.result === 'pending' &&
+                          (completed ? (
+                            <span className="inline-flex items-center gap-1.5">
+                              <Badge variant="neutral">started</Badge>
+                              <span className="text-[11px] text-slate-500 font-mono">
+                                completed in #{completed.sequence_no} ({completed.result})
+                              </span>
                             </span>
-                          </span>
-                        ) : (
-                          <Badge variant="info" className="flex items-center gap-1.5 animate-pulse">
-                            <span className="h-1.5 w-1.5 rounded-full bg-teal-500 animate-ping" />
-                            running
-                          </Badge>
-                        )
+                          ) : (
+                            <Badge
+                              variant="info"
+                              className="flex items-center gap-1.5 animate-pulse"
+                            >
+                              <span className="h-1.5 w-1.5 rounded-full bg-teal-500 animate-ping" />
+                              running
+                            </Badge>
+                          ))}
+                      </div>
+                      {e.target_ref && (
+                        <p className="text-xs text-slate-500">
+                          Target: <code className="font-mono">{e.target_ref}</code>
+                        </p>
+                      )}
+                      {e.detail && Object.keys(e.detail).length > 0 && (
+                        <details className="rounded-md bg-mist-50 px-2 py-1 text-xs">
+                          <summary className="cursor-pointer text-slate-500">detail</summary>
+                          <pre className="mt-1 overflow-x-auto font-mono text-[10px] text-slate-700">
+                            {JSON.stringify(e.detail, null, 2)}
+                          </pre>
+                        </details>
                       )}
                     </div>
-                    {e.target_ref && (
-                      <p className="text-xs text-slate-500">
-                        Target: <code className="font-mono">{e.target_ref}</code>
-                      </p>
-                    )}
-                    {e.detail && Object.keys(e.detail).length > 0 && (
-                      <details className="rounded-md bg-mist-50 px-2 py-1 text-xs">
-                        <summary className="cursor-pointer text-slate-500">detail</summary>
-                        <pre className="mt-1 overflow-x-auto font-mono text-[10px] text-slate-700">
-                          {JSON.stringify(e.detail, null, 2)}
-                        </pre>
-                      </details>
-                    )}
+                    <div className="flex flex-col items-end gap-1 text-right">
+                      <ProofSeal hash={e.entry_hash} compact />
+                      <p className="text-xs text-slate-500">{formatDateTime(e.occurred_at)}</p>
+                    </div>
                   </div>
-                  <div className="flex flex-col items-end gap-1 text-right">
-                    <ProofSeal hash={e.entry_hash} compact />
-                    <p className="text-xs text-slate-500">{formatDateTime(e.occurred_at)}</p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          );
-        })}
-      </div>
+                </CardContent>
+              </Card>
+            );
+          })}
+        </div>
       )}
     </div>
   );
