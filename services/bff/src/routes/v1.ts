@@ -726,6 +726,24 @@ export function v1Routes(deps: Deps) {
   });
 
   // ─── Agent Invocation & Audit Pipeline ───────────────────────────
+
+  // GET /v1/agents/runs/active — list currently running agents
+  app.get('/agents/runs/active', async (c) => {
+    const tenantId = c.get('tenantId');
+    const admin = createSupabaseAdmin();
+    const { data, error } = await admin
+      .from('agent_runs')
+      .select('*')
+      .eq('tenant_id', tenantId)
+      .in('status', ['running', 'queued'])
+      .order('started_at', { ascending: false });
+
+    if (error) {
+      return c.json({ error: { code: 'query_failed', message: error.message } }, 500);
+    }
+    return c.json({ active_runs: data ?? [] });
+  });
+
   app.post('/agents/:name/run', async (c) => {
     const name = c.req.param('name').toLowerCase();
     const validAgents = [
@@ -756,13 +774,48 @@ export function v1Routes(deps: Deps) {
     const correlationId =
       c.req.header('x-correlation-id') ||
       body.correlation_id ||
-      crypto.randomUUID();
+      randomUUID();
 
     const input = {
       tenant_id: tenantId,
       engagement_id: body.engagement_id || '00000000-0000-0000-0000-000000000001',
       ...body,
     };
+
+    const admin = createSupabaseAdmin();
+    let runId: string | null = null;
+
+    try {
+      const { data: runRow } = await admin
+        .from('agent_runs')
+        .insert({
+          tenant_id: tenantId,
+          agent: name,
+          correlation_id: correlationId,
+          status: 'running',
+          started_at: new Date().toISOString(),
+          metadata: { input: body },
+        })
+        .select('id')
+        .maybeSingle();
+
+      if (runRow?.id) {
+        runId = runRow.id;
+      }
+    } catch (e: any) {
+      logger.warn({ error: e.message }, 'could not record initial agent_run row');
+    }
+
+    deps.realtime.broadcast({
+      type: 'agent.progress',
+      agent: name,
+      correlationId,
+      runId,
+      step: `${name}.started`,
+      progress: 0.1,
+      message: `Agent ${name} started execution`,
+      occurredAt: new Date().toISOString(),
+    });
 
     try {
       const res = await fetch(`${runtimeUrl}/agents/${name}/invoke`, {
@@ -777,9 +830,47 @@ export function v1Routes(deps: Deps) {
         }),
       });
 
-      const data = await res.json();
+      const data = (await res.json()) as Record<string, any>;
+
+      if (runId) {
+        await admin
+          .from('agent_runs')
+          .update({
+            status: data.status === 'succeeded' ? 'succeeded' : 'failed',
+            completed_at: new Date().toISOString(),
+            latency_ms: data.latency_ms,
+            input_tokens: data.input_tokens,
+            output_tokens: data.output_tokens,
+            total_tokens: (data.input_tokens || 0) + (data.output_tokens || 0),
+            cost_usd: data.cost_usd,
+            error: data.error,
+          })
+          .eq('id', runId);
+      }
+
+      deps.realtime.broadcast({
+        type: 'agent.progress',
+        agent: name,
+        correlationId,
+        runId,
+        step: `${name}.completed`,
+        progress: 1.0,
+        message: `Agent ${name} ${data.status || 'finished'}`,
+        occurredAt: new Date().toISOString(),
+      });
+
       return c.json(data, res.status as any);
     } catch (err: any) {
+      if (runId) {
+        await admin
+          .from('agent_runs')
+          .update({
+            status: 'failed',
+            completed_at: new Date().toISOString(),
+            error: err.message,
+          })
+          .eq('id', runId);
+      }
       logger.error({ agent: name, error: err.message }, 'failed to call agent runtime');
       return c.json(
         {
