@@ -713,14 +713,54 @@ curl -s -X POST http://localhost:8001/v1/chat/completions \
       }
     ],
     "tenant_id": "00000000-0000-0000-0000-000000000001"
-  }' | jq -r '.choices[0].message.content'
+  }' | jq .
 ```
 
-*(Note: Ensure `.choices[0].message.content` is wrapped in single quotes to prevent zsh from interpreting `[0]` as a file glob pattern).*
-
 *Expected Output*:
-```text
-Model Gateway received prompt with PII redacted: Verify consent for Aadhaar [REDACTED:AADHAAR], PAN [REDACTED:PAN], and mobile [REDACTED:PHONE_IN].
+```json
+{
+  "id": "chatcmpl-c6961ce66ccb",
+  "object": "chat.completion",
+  "created": 1789271758,
+  "model": "anthropic.claude-3-5-sonnet-20240620-v1:0",
+  "choices": [
+    {
+      "index": 0,
+      "message": {
+        "role": "assistant",
+        "content": "Model Gateway received prompt with PII redacted: Verify consent for Aadhaar [REDACTED:AADHAAR], PAN [REDACTED:PAN], and mobile [REDACTED:PHONE_IN]."
+      },
+      "finish_reason": "stop"
+    }
+  ],
+  "usage": {
+    "prompt_tokens": 21,
+    "completion_tokens": 36,
+    "total_tokens": 57
+  },
+  "pii_redacted": true,
+  "redactions": {
+    "PAN": 1,
+    "AADHAAR": 1,
+    "PHONE_IN": 1
+  }
+}
+```
+
+To extract only the assistant message string, quote the jq path with single quotes so `zsh` does not interpret `[0]` as a glob pattern:
+```bash
+curl -s -X POST http://localhost:8001/v1/chat/completions \
+  -H "Content-Type: application/json" \
+  -d '{
+    "model": "stub-dpdpa-specialist",
+    "messages": [
+      {
+        "role": "user",
+        "content": "Verify consent for Aadhaar 3456 7890 1234, PAN ABCDE1234F, and mobile +91 98765 43210."
+      }
+    ],
+    "tenant_id": "00000000-0000-0000-0000-000000000001"
+  }' | jq -r '.choices[0].message.content'
 ```
 
 You can also query the gateway's direct completion endpoint:
