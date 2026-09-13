@@ -5,6 +5,7 @@ import { BRAND } from '@axiom/config';
 import { AgentPill } from '@axiom/ui';
 import type { User } from '@supabase/supabase-js';
 import { logoutAction } from '../(auth)/login/actions';
+import { SidebarAgentPanel } from './sidebar-agent-panel';
 
 export const dynamic = 'force-dynamic';
 
@@ -88,16 +89,7 @@ function Sidebar({
         ))}
       </nav>
 
-      <div className="border-t border-slate-200 p-3">
-        <p className="text-[10px] uppercase tracking-wider text-slate-500">Agents</p>
-        <div className="mt-2 flex flex-wrap gap-1">
-          {(['drishti', 'vibhaag', 'parikshan', 'saakshi', 'sudhaar', 'lekha'] as const).map(
-            (a) => (
-              <AgentPill key={a} agent={a} showPersona={false} />
-            ),
-          )}
-        </div>
-      </div>
+      <SidebarAgentPanel />
     </aside>
   );
 }

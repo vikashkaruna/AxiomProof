@@ -201,7 +201,7 @@ export default async function LedgerPage() {
                 >
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
-                      <AgentPill agent={a.agent} showPersona={true} />
+                      <AgentPill agent={a.agent} state="working" showPersona={true} />
                       <code className="rounded bg-mist-100 px-1.5 py-0.5 font-mono text-[11px] text-indigo-700">
                         {a.actionType}
                       </code>

@@ -12,6 +12,7 @@ import {
   CardContent,
   Badge,
   AgentPill,
+  AgentIcon,
   StatusBadge,
 } from '@axiom/ui';
 import { redirect } from 'next/navigation';
@@ -180,10 +181,18 @@ export default async function WorkbenchPage() {
             ].map((a) => (
               <div
                 key={a.name}
-                className="flex flex-col gap-1.5 rounded-lg border border-slate-200 bg-mist-50 p-3"
+                className="flex flex-col gap-2 rounded-lg border border-slate-200 bg-white p-3.5 transition-all hover:border-slate-300 hover:shadow-xs"
               >
-                <AgentPill agent={a.name} showPersona={false} />
-                <p className="text-xs text-slate-600">{a.one}</p>
+                <div className="flex items-center gap-2.5">
+                  <AgentIcon agent={a.name} size="sm" />
+                  <div className="flex flex-col">
+                    <span className="font-heading text-xs font-semibold capitalize text-slate-900">
+                      {a.name}
+                    </span>
+                    <AgentPill agent={a.name} showPersona={true} className="mt-0.5 border-0 bg-transparent p-0 text-[10px]" />
+                  </div>
+                </div>
+                <p className="text-xs text-slate-600 leading-snug">{a.one}</p>
               </div>
             ))}
           </div>

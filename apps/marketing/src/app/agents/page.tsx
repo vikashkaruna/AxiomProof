@@ -103,6 +103,8 @@ const AGENTS: Array<{
   },
 ] as const;
 
+import { AgentsInteractiveRoster } from './agents-interactive-roster';
+
 export default function AgentsPage() {
   return (
     <main className="mx-auto max-w-5xl px-4 py-16 sm:px-6">
@@ -116,39 +118,10 @@ export default function AgentsPage() {
         model assignments.
       </p>
 
-      <div className="mt-10 grid grid-cols-1 gap-4">
-        {AGENTS.map((a) => (
-          <Card key={a.name}>
-            <CardHeader>
-              <div className="flex items-center gap-2">
-                <AgentPill agent={a.name} />
-                <Badge variant="indigo">{a.autonomy}</Badge>
-              </div>
-              <CardDescription className="text-base text-slate-700">{a.one}</CardDescription>
-            </CardHeader>
-            <CardContent className="flex flex-col gap-3">
-              <p className="text-sm text-slate-600">{a.long}</p>
-              {a.scopes.length > 0 && (
-                <div>
-                  <p className="text-xs font-medium uppercase tracking-wider text-slate-500">
-                    Tool scopes
-                  </p>
-                  <div className="mt-1 flex flex-wrap gap-1.5">
-                    {a.scopes.map((s) => (
-                      <code
-                        key={s}
-                        className="rounded bg-mist-100 px-1.5 py-0.5 font-mono text-xs text-indigo-700"
-                      >
-                        {s}
-                      </code>
-                    ))}
-                  </div>
-                </div>
-              )}
-            </CardContent>
-          </Card>
-        ))}
+      <div className="mt-10">
+        <AgentsInteractiveRoster agents={AGENTS} />
       </div>
     </main>
   );
 }
+
