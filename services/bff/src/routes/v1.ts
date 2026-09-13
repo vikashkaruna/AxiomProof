@@ -725,5 +725,73 @@ export function v1Routes(deps: Deps) {
     return c.json(data, 201);
   });
 
+  // ─── Agent Invocation & Audit Pipeline ───────────────────────────
+  app.post('/agents/:name/run', async (c) => {
+    const name = c.req.param('name').toLowerCase();
+    const validAgents = [
+      'drishti',
+      'vibhaag',
+      'parikshan',
+      'saakshi',
+      'sudhaar',
+      'karya',
+      'lekha',
+      'nazar',
+      'prativedan',
+      'sanket',
+    ];
+    if (!validAgents.includes(name)) {
+      return c.json(
+        { error: { code: 'agent_not_found', message: `Unknown agent: ${name}` } },
+        404,
+      );
+    }
+
+    const tenantId = c.get('tenantId');
+    const body = ((await c.req.json().catch(() => ({}))) || {}) as Record<string, any>;
+    const runtimeUrl = process.env.AGENT_RUNTIME_URL || 'http://agent-runtime:8000';
+    const runtimeToken =
+      process.env.AGENT_RUNTIME_INTERNAL_TOKEN || 'dev-agent-runtime-token-axiom';
+
+    const correlationId =
+      c.req.header('x-correlation-id') ||
+      body.correlation_id ||
+      crypto.randomUUID();
+
+    const input = {
+      tenant_id: tenantId,
+      engagement_id: body.engagement_id || '00000000-0000-0000-0000-000000000001',
+      ...body,
+    };
+
+    try {
+      const res = await fetch(`${runtimeUrl}/agents/${name}/invoke`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-Internal-Token': runtimeToken,
+        },
+        body: JSON.stringify({
+          correlation_id: correlationId,
+          input,
+        }),
+      });
+
+      const data = await res.json();
+      return c.json(data, res.status as any);
+    } catch (err: any) {
+      logger.error({ agent: name, error: err.message }, 'failed to call agent runtime');
+      return c.json(
+        {
+          error: {
+            code: 'agent_invocation_failed',
+            message: `Could not invoke agent ${name}: ${err.message}`,
+          },
+        },
+        502,
+      );
+    }
+  });
+
   return app;
 }

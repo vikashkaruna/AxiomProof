@@ -38,6 +38,28 @@ const E2E_USER_PROFILE = {
   is_axiom_internal: true,
 };
 
+const E2E_TENANT = {
+  id: '00000000-0000-0000-0000-000000000001',
+  name: 'Demo Client (Acme Fintech Pvt Ltd)',
+  slug: 'demo-client',
+  tier: 'growth',
+  is_sdf: false,
+};
+
+const E2E_LEDGER_ENTRY = {
+  id: '1',
+  sequence_no: 1,
+  actor_type: 'agent',
+  actor_id: 'drishti',
+  action_type: 'discovery.started',
+  result: 'success',
+  target_ref: '00000000-0000-0000-0000-000000000001',
+  detail: { summary: 'Initial system discovery completed' },
+  entry_hash: '6fae688e4b150dbbaa49eaf57359a53879fd6be0893a74a8f7700461cc9a206b',
+  prev_entry_hash: null,
+  occurred_at: '2026-09-11T19:13:30.546Z',
+};
+
 type QueryResult = {
   data: unknown[];
   error: null;
@@ -62,13 +84,25 @@ type QueryBuilder = {
 function createQuery(table: string): QueryBuilder {
   let mutatedData: unknown = null;
   const resultData =
-    table === 'users' ? [E2E_USER_PROFILE] : table === 'remediation_plans' ? [E2E_PLAN] : [];
+    table === 'users'
+      ? [E2E_USER_PROFILE]
+      : table === 'remediation_plans'
+        ? [E2E_PLAN]
+        : table === 'tenants'
+          ? [E2E_TENANT]
+          : table === 'audit_ledger'
+            ? [E2E_LEDGER_ENTRY]
+            : [];
   const singleData =
     table === 'users'
       ? E2E_USER_PROFILE
       : table === 'remediation_plans'
         ? E2E_PLAN
-        : { id: '00000000-0000-0000-0000-000000000001' };
+        : table === 'tenants'
+          ? E2E_TENANT
+          : table === 'audit_ledger'
+            ? E2E_LEDGER_ENTRY
+            : { id: '00000000-0000-0000-0000-000000000001' };
 
   const result: QueryResult = {
     data: resultData,
@@ -130,7 +164,18 @@ export function createE2ESupabaseClient(): SupabaseClient {
   return {
     auth: {
       getUser: async () => ({ data: { user: E2E_USER }, error: null }),
+      getSession: async () => ({
+        data: {
+          session: {
+            access_token: 'test-access-token',
+            refresh_token: 'test-refresh-token',
+            user: E2E_USER,
+          },
+        },
+        error: null,
+      }),
     },
     from: (table: string) => createQuery(table),
+    rpc: async (_fn: string, _args?: unknown) => ({ data: [], error: null }),
   } as unknown as SupabaseClient;
 }

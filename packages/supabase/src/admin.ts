@@ -13,10 +13,18 @@ let cached: SupabaseClient | null = null;
  * rely on RLS to enforce tenancy.
  */
 export function createSupabaseAdmin(): SupabaseClient {
-  if (isE2EBypassEnabled()) return createE2ESupabaseClient();
+  const env = loadEnv();
+
+  // Only use the in-memory mock client if E2E bypass is explicitly enabled AND
+  // we are in a standalone mock test environment without real Supabase service credentials
+  if (
+    isE2EBypassEnabled() &&
+    (!env.SUPABASE_SERVICE_KEY || env.SUPABASE_SERVICE_KEY === 'test-service-key-for-e2e')
+  ) {
+    return createE2ESupabaseClient();
+  }
 
   if (cached) return cached;
-  const env = loadEnv();
   cached = createClient(env.SUPABASE_URL, env.SUPABASE_SERVICE_KEY, {
     auth: {
       autoRefreshToken: false,

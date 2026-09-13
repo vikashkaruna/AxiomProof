@@ -17,6 +17,27 @@ export const authMiddleware = createMiddleware<{ Variables: Variables }>(async (
   }
   const token = auth.slice(7);
 
+  // Allow dev/test tokens in non-production for local testing / E2E
+  const isDevOrTest =
+    env.ENVIRONMENT === 'development' ||
+    env.ENVIRONMENT === 'local' ||
+    process.env.NODE_ENV !== 'production' ||
+    process.env.AXIOM_E2E_BYPASS_AUTH === 'true';
+
+  if (isDevOrTest && (token === 'test-access-token' || token === 'dev-token')) {
+    c.set('user', {
+      id: '00000000-0000-0000-0000-000000000001',
+      email: 'founder@axiomminds.ai',
+      user_metadata: { full_name: 'Founder' },
+      app_metadata: { provider: 'email' },
+      aud: 'authenticated',
+      role: 'authenticated',
+      created_at: '2026-01-01T00:00:00.000Z',
+    } as any);
+    c.set('token', token);
+    return next();
+  }
+
   // Validate via Supabase Auth
   const supabase = createClient(env.SUPABASE_URL, env.SUPABASE_ANON_KEY, {
     auth: { persistSession: false },

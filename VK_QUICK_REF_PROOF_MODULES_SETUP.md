@@ -723,55 +723,135 @@ curl -s -X POST http://localhost:8001/v1/chat/completions \
 
 ---
 
-#### 4.2 Agent Invocation & Append-Only Audit Ledger
-Trigger Drishti (Discovery Agent) via the BFF API:
+#### 4.2 Running Audits Against Target Systems (Discovery & Assessment)
 
+Axiom Proof audits target systems using autonomous compliance agents that record all findings and decisions to the append-only ledger.
+
+##### A. Target Discovery Audit (Drishti)
+Drishti discovers data repositories (PostgreSQL, MySQL, S3 buckets, APIs), identifies personal data categories (Aadhaar, PAN, phone, email), and flags statutory escalations (e.g. cross-border transfer under Section 16).
+
+Trigger Drishti via the BFF API:
 ```bash
 curl -s -X POST http://localhost:4000/v1/agents/drishti/run \
   -H "Content-Type: application/json" \
+  -H "Authorization: Bearer dev-token" \
   -H "X-Tenant-ID: 00000000-0000-0000-0000-000000000001" \
-  -d '{"scope": "full_discovery"}' | jq .
+  -d '{
+    "systems": [
+      {
+        "name": "Production Customer DB",
+        "type": "postgres",
+        "description": "Core database holding user credentials and KYC docs",
+        "hosts_personal_data": true,
+        "data_categories": ["aadhaar", "pan", "phone", "email"],
+        "cross_border": false
+      },
+      {
+        "name": "US Analytics S3 Bucket",
+        "type": "s3",
+        "description": "Log telemetry archive in us-east-1",
+        "hosts_personal_data": true,
+        "data_categories": ["ip_address", "telemetry"],
+        "cross_border": true
+      }
+    ]
+  }' | jq .
 ```
 
-Verify the ledger entry and SHA-256 chain in PostgreSQL:
-
+*Or invoke directly via the Agent Runtime (`:8000`):*
 ```bash
-docker exec -it supabase_db_axiom-proof psql -U postgres -d postgres -c \
-  "SELECT sequence_number, event_type, agent_name, hash, previous_hash FROM audit_ledger WHERE tenant_id = '00000000-0000-0000-0000-000000000001' ORDER BY sequence_number DESC LIMIT 3;"
+curl -s -X POST http://localhost:8000/agents/drishti/invoke \
+  -H "Content-Type: application/json" \
+  -H "x-internal-token: dev-agent-runtime-token-axiom" \
+  -d '{
+    "input": {
+      "tenant_id": "00000000-0000-0000-0000-000000000001",
+      "engagement_id": "00000000-0000-0000-0000-000000000001",
+      "systems": [
+        {
+          "name": "Production Customer DB",
+          "type": "postgres",
+          "description": "Core database holding user credentials and KYC docs",
+          "hosts_personal_data": true,
+          "data_categories": ["aadhaar", "pan", "phone", "email"],
+          "cross_border": false
+        }
+      ]
+    }
+  }' | jq .
+```
+
+##### B. Statutory Control Assessment Audit (Parikshan)
+Parikshan audits the target against the 46 versioned DPDPA controls, computing the client's Posture Score (0-100%) and estimated statutory penalty exposure:
+```bash
+curl -s -X POST http://localhost:4000/v1/agents/parikshan/run \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer dev-token" \
+  -H "X-Tenant-ID: 00000000-0000-0000-0000-000000000001" \
+  -d '{
+    "library_version": "0.1.0",
+    "processes_children": true,
+    "processes_health": false,
+    "answers": {
+      "DPDPA-NOT-01": {"multilingual_notice": "no"},
+      "DPDPA-CON-01": {"itemised_consent": "yes"},
+      "DPDPA-XBD-01": {"cross_border_blacklisted": "no"}
+    }
+  }' | jq .
 ```
 
 ---
 
-#### 4.3 Mathematical Proof of Non-Tampering
-Run the built-in cryptographic audit verification function:
+#### 4.3 Verifying the Append-Only Audit Ledger
+
+Every agent execution automatically appends cryptographic records to the hash chain.
+
+##### Option 1: Web UI
+Navigate to `http://localhost:3001/ledger` in your browser.
+- Verify that every sequence (`#1`, `#2`, `#3`, `#4`, etc.) is displayed.
+- Inspect the actor badge (`drishti`, `parikshan`), action type (`discovery.started`, `assessment.started`), execution outcome (`success`), timestamp, and the tamper-evident **ProofSeal** hash.
+- Click **"Verify chain integrity"** to mathematically validate the hash chain.
+
+##### Option 2: Direct PostgreSQL Inspection
+Query the `audit_ledger` table using the schema's exact column names:
+```bash
+docker exec -it supabase_db_axiom-proof psql -U postgres -d postgres -c \
+  "SELECT sequence_no, actor_type, actor_id, action_type, result, entry_hash, prev_entry_hash, occurred_at FROM audit_ledger WHERE tenant_id = '00000000-0000-0000-0000-000000000001' ORDER BY sequence_no DESC LIMIT 5;"
+```
+
+---
+
+#### 4.4 Mathematical Proof of Non-Tampering
+Run the built-in cryptographic audit verification function in PostgreSQL:
 
 ```bash
 docker exec -it supabase_db_axiom-proof psql -U postgres -d postgres -c \
-  "SELECT * FROM verify_ledger('00000000-0000-0000-0000-000000000001');"
+  "SELECT * FROM verify_ledger('00000000-0000-0000-0000-000000000001'::uuid, 1);"
 ```
 
 *Expected Output*:
 ```text
- sequence_number | computed_hash | stored_hash | reason 
------------------+---------------+-------------+--------
+ sequence_no | reason 
+-------------+--------
 (0 rows)
 ```
-*(Zero rows returned confirms the cryptographic hash chain is mathematically unbroken).*
+*(Zero rows returned mathematically proves every entry's `entry_hash` and `prev_entry_hash` are unbroken).*
 
 ---
 
-#### 4.4 Immutability Rejection Test (Attempted Tampering)
+#### 4.5 Immutability Rejection Test (Attempted Tampering)
 Attempt an unauthorized update on an existing ledger entry:
 
 ```bash
 docker exec -it supabase_db_axiom-proof psql -U postgres -d postgres -c \
-  "UPDATE audit_ledger SET summary = 'unauthorized modification' WHERE sequence_number = 1;"
+  "UPDATE audit_ledger SET detail = '{\"tampered\": true}' WHERE sequence_no = 1;"
 ```
 
 *Expected Output*:
 ```text
-ERROR:  Audit ledger entries are immutable and cannot be updated
+ERROR:  permission denied for table audit_ledger
 ```
+*(Or rejected by append-only rule: the DB role and triggers strictly forbid UPDATE and DELETE operations).*
 
 ---
 
