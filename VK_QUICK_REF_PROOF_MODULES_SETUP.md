@@ -1093,11 +1093,18 @@ The web application (`http://localhost:3001`) implements the authoritative styli
    - Detailed action inspection: legal gap citation, risk justification, blast radius cards, dry-run diff viewer with SHA-256 hash, and generated rollback plan (`RB-118a`).
    - Sticky bottom approval action bar with single-click execution simulation and token issuance guarantee.
 3. **Assessment Pipeline (`/assessment`)**:
-   - 5-stage interactive pipeline runner (Drishti → Vibhaag → Parikshan → Sudhaar → Saakshi).
-   - Control posture distribution bar.
-   - SDF self-assessment status card.
-   - Penalty exposure range estimator (₹18–46 cr).
-   - Statutory control table.
+   - **Hero Pipeline Card**: Deep Indigo (`bg-[#1E2A4A]`) card with `▶ Run new assessment` trigger (`Parikshan scores against control library v25.11.2 · agents propose, you approve`).
+   - **5-Stage Pipeline Stepper**: Exact design sequence (*1. Drishti · Discovery · खोज*, *2. Vibhaag · Classification · वर्गीकरण*, *3. Parikshan · Assessment · मूल्यांकन*, *4. Saakshi · Evidence · साक्ष्य*, *5. Prativedan · Report · रिपोर्ट*).
+     - Circular stage nodes (`34px`, `font-heading font-bold text-[13px]`) displaying stage numbers `1`–`5`, transitioning to Gold pulse (`#C9A227`) when active, and Signal Teal (`#0FB5A5`) checkmark (`✓`) when completed.
+     - Horizontal progress track connecting the 5 nodes in real-time as stages complete.
+     - Live execution message: `● {agent} — {detail}` during runs and `● assessment complete · report generated · every step written to the ledger` with cryptographic ledger proof link (`#id`).
+   - **Summary + Exposure 3-Card Grid**:
+     - *Control Posture*: Segmented status bar displaying 32 pass (`#0FB5A5`), 5 partial (`#E0A82E`), 6 fail (`#D9534F`) across open controls.
+     - *SDF Self-Assessment*: Displays statutory status (`Not designated`) and volume/sensitivity threshold rationale.
+     - *Penalty Exposure Estimate*: Highlighted card (`bg-[#fbeceb]`) with calculated statutory exposure range (`₹18–46 cr`, weighted across open gaps).
+   - **Statutory Control Table**:
+     - 12 canonical DPDPA controls from `Axiom Proof App.dc.html` (`NOT-01`, `NOT-04`, `RTS-01`, `RTS-04`, `RTS-06`, `RET-03`, `RET-05`, `PUR-02`, `SEC-06`, `SEC-09`, `XBR-01`, `BRC-02`).
+     - Progress score meters, statutory citations (§5, §6(4), §11, §12, §13, §8(7), §8(4), §8(5), §16, Rule 7), sealed gold evidence tags (`✦ e-8839`), and status badges (`PASS`, `PARTIAL`, `FAIL`).
 4. **Consent Manager (`/consent`)**:
    - Active consent metrics and 7-year WORM ledger retention.
    - Immutable consent event stream.
