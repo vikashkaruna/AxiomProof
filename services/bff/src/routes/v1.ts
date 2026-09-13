@@ -556,8 +556,7 @@ export function v1Routes(deps: Deps) {
   });
 
   // ─── Kill switch ─────────────────────────────────────────────────
-
-  app.post('/kill-switch/engage', async (c) => {
+  const handleKillSwitchEngage = async (c: any) => {
     if (c.get('role') !== 'founder' && c.get('role') !== 'admin' && c.get('role') !== 'owner') {
       return c.json(
         {
@@ -610,12 +609,15 @@ export function v1Routes(deps: Deps) {
       detail: { reason, scope },
     });
     return c.json({ engaged: true, scope, reason });
-  });
+  };
+
+  app.post('/kill-switch/engage', handleKillSwitchEngage);
+  app.post('/kill-switch', handleKillSwitchEngage);
 
   app.post('/kill-switch/release', async (c) => {
-    if (c.get('role') !== 'founder') {
+    if (c.get('role') !== 'founder' && c.get('role') !== 'owner') {
       return c.json(
-        { error: { code: 'role_forbidden', message: 'Only founders can release the kill switch' } },
+        { error: { code: 'role_forbidden', message: 'Only founders/owners can release the kill switch' } },
         403,
       );
     }

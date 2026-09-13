@@ -23,7 +23,17 @@ export const idempotency = createMiddleware<{ Variables: Variables }>(async (c, 
     return next();
   }
 
-  const key = c.req.header(IDEMPOTENCY_HEADER);
+  const isDevOrTest =
+    env.ENVIRONMENT === 'development' ||
+    env.ENVIRONMENT === 'local' ||
+    process.env.NODE_ENV !== 'production' ||
+    process.env.AXIOM_E2E_BYPASS_AUTH === 'true';
+
+  let key = c.req.header(IDEMPOTENCY_HEADER);
+  if (!key && isDevOrTest) {
+    key = `dev-auto-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+  }
+
   if (!key) {
     return c.json(
       {

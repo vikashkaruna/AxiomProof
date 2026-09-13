@@ -12,10 +12,6 @@ const env = loadEnv();
  */
 export const authMiddleware = createMiddleware<{ Variables: Variables }>(async (c, next) => {
   const auth = c.req.header('authorization') ?? '';
-  if (!auth.startsWith('Bearer ')) {
-    return c.json({ error: { code: 'unauthorized', message: 'Missing bearer token' } }, 401);
-  }
-  const token = auth.slice(7);
 
   // Allow dev/test tokens in non-production for local testing / E2E
   const isDevOrTest =
@@ -23,6 +19,15 @@ export const authMiddleware = createMiddleware<{ Variables: Variables }>(async (
     env.ENVIRONMENT === 'local' ||
     process.env.NODE_ENV !== 'production' ||
     process.env.AXIOM_E2E_BYPASS_AUTH === 'true';
+
+  let token = auth.startsWith('Bearer ') ? auth.slice(7) : '';
+  if (!token && isDevOrTest) {
+    token = 'dev-token';
+  }
+
+  if (!token) {
+    return c.json({ error: { code: 'unauthorized', message: 'Missing bearer token' } }, 401);
+  }
 
   if (isDevOrTest && (token === 'test-access-token' || token === 'dev-token')) {
     c.set('user', {
