@@ -100,13 +100,11 @@ const EnvSchema = z
   })
   .superRefine((env, ctx) => {
     // NODE_ENV is the runtime safety boundary. When ENVIRONMENT is explicitly
-    // set to 'development' or 'local' (e.g. Docker local stack running built Next.js
-    // apps where Next sets NODE_ENV=production), bypass production credential checks.
-    if (
-      env.NODE_ENV !== 'production' ||
-      env.ENVIRONMENT === 'development' ||
-      env.ENVIRONMENT === 'local'
-    )
+    // set to 'development', 'local', 'preprod', or 'staging' (e.g. Docker local stack,
+    // preprod GCP stack where Supabase might use Cloud SQL or placeholder URLs),
+    // bypass production credential checks. Production checks only apply when
+    // both NODE_ENV is production and ENVIRONMENT is production (or unset).
+    if (env.NODE_ENV !== 'production' || (env.ENVIRONMENT && env.ENVIRONMENT !== 'production'))
       return;
 
     if (

@@ -2,6 +2,7 @@ import { Hono } from 'hono';
 import { logger } from 'hono/logger';
 import { secureHeaders } from 'hono/secure-headers';
 import { cors } from 'hono/cors';
+import { serve } from '@hono/node-server';
 import { loadEnv } from '@axiom/config';
 import { authMiddleware } from './middleware/auth.js';
 import { tenantResolver } from './middleware/tenant.js';
@@ -70,10 +71,8 @@ export default {
   fetch: app.fetch,
 };
 
-// For dev with tsx watch:
-if (import.meta.url === `file://${process.argv[1]}`) {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  (await import('@hono/node-server')).serve({ fetch: app.fetch, port }, (info) =>
+if (process.env.NODE_ENV !== 'test') {
+  serve({ fetch: app.fetch, port }, (info) =>
     log.info({ addr: info.address, port: info.port }, 'BFF listening'),
   );
 }

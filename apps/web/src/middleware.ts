@@ -9,6 +9,7 @@ import { createServerClient, type CookieOptions } from '@supabase/ssr';
 
 const PUBLIC_PATHS = new Set<string>([
   '/',
+  '/api/health',
   '/login',
   '/about',
   '/favicon.ico',

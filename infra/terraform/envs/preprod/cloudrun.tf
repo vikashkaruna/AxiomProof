@@ -71,6 +71,18 @@ resource "google_cloud_run_v2_service" "bff" {
         name  = "AWS_S3_ENDPOINT"
         value = "https://storage.googleapis.com"
       }
+      env {
+        name  = "SUPABASE_URL"
+        value = "https://preprod-supabase.axiomminds.ai"
+      }
+      env {
+        name  = "SUPABASE_ANON_KEY"
+        value = "preprod-anon-key-placeholder-length-over-forty-chars"
+      }
+      env {
+        name  = "SUPABASE_SERVICE_KEY"
+        value = "preprod-service-key-placeholder-length-over-forty-chars"
+      }
 
       # Secrets
       env {
@@ -185,12 +197,36 @@ resource "google_cloud_run_v2_service" "web" {
         value = "production"
       }
       env {
+        name  = "ENVIRONMENT"
+        value = var.environment
+      }
+      env {
         name  = "NEXT_TELEMETRY_DISABLED"
         value = "1"
       }
       env {
         name  = "BFF_PUBLIC_URL"
         value = google_cloud_run_v2_service.bff.uri
+      }
+      env {
+        name  = "NEXT_PUBLIC_BFF_URL"
+        value = google_cloud_run_v2_service.bff.uri
+      }
+      env {
+        name  = "NEXT_PUBLIC_SUPABASE_URL"
+        value = "https://preprod-supabase.axiomminds.ai"
+      }
+      env {
+        name  = "NEXT_PUBLIC_SUPABASE_ANON_KEY"
+        value = "preprod-anon-key-placeholder-length-over-forty-chars"
+      }
+      env {
+        name  = "SUPABASE_URL"
+        value = "https://preprod-supabase.axiomminds.ai"
+      }
+      env {
+        name  = "SUPABASE_SERVICE_KEY"
+        value = "preprod-service-key-placeholder-length-over-forty-chars"
       }
 
       startup_probe {
@@ -454,6 +490,10 @@ resource "google_cloud_run_v2_service" "temporal_worker" {
         }
       }
 
+      ports {
+        container_port = 8080
+      }
+
       env {
         name  = "TEMPORAL_ADDRESS"
         value = var.temporal_address
@@ -479,6 +519,16 @@ resource "google_cloud_run_v2_service" "temporal_worker" {
             version = "latest"
           }
         }
+      }
+
+      startup_probe {
+        http_get {
+          path = "/health"
+          port = 8080
+        }
+        initial_delay_seconds = 5
+        period_seconds        = 5
+        failure_threshold     = 3
       }
     }
   }
@@ -525,7 +575,7 @@ resource "google_cloud_run_v2_service" "marketing" {
 
       startup_probe {
         http_get {
-          path = "/"
+          path = "/api/health"
           port = 3000
         }
         initial_delay_seconds = 10

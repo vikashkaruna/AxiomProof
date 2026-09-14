@@ -18,7 +18,70 @@ from temporalio.worker import Worker
 from .workflows import ComplianceEngagementWorkflow, call_agent_runtime, persist_finding, wait_for_human_approval
 
 
+async def handle_health(reader: asyncio.StreamReader, writer: asyncio.StreamWriter) -> None:
+    try:
+        await reader.read(1024)
+        body = b'{"status":"ok","service":"temporal-worker"}\n'
+        response = (
+            b"HTTP/1.1 200 OK\r\n"
+            b"Content-Type: application/json\r\n"
+            b"Content-Length: " + str(len(body)).encode("ascii") + b"\r\n"
+            b"Connection: close\r\n\r\n" + body
+        )
+        writer.write(response)
+        await writer.drain()
+    except Exception:
+        pass
+    finally:
+        try:
+            writer.close()
+            await writer.wait_closed()
+        except Exception:
+            pass
+
+
+async def run_worker_loop(
+    address: str,
+    namespace: str,
+    api_key: str | None,
+    tls_config: Any,
+) -> None:
+    backoff = 2
+    while True:
+        try:
+            logging.info(f"temporal_worker.connecting address={address} namespace={namespace}")
+            client = await Client.connect(
+                address,
+                namespace=namespace,
+                api_key=api_key if api_key else None,
+                tls=tls_config,
+            )
+            logging.info(f"temporal_worker.connected address={address} namespace={namespace}")
+            worker = Worker(
+                client,
+                task_queue="axiom-compliance",
+                workflows=[ComplianceEngagementWorkflow],
+                activities=[call_agent_runtime, persist_finding, wait_for_human_approval],
+            )
+            backoff = 2
+            await worker.run()
+        except asyncio.CancelledError:
+            logging.info("temporal_worker.cancelled")
+            break
+        except Exception as e:
+            logging.warning(
+                f"temporal_worker.connection_failed: {e}. Retrying in {backoff}s..."
+            )
+            await asyncio.sleep(backoff)
+            backoff = min(backoff * 2, 60)
+
+
 async def main():
+    logging.basicConfig(level=logging.INFO)
+    port = int(os.environ.get("PORT", "8080"))
+    server = await asyncio.start_server(handle_health, "0.0.0.0", port)
+    logging.info(f"temporal_worker.health_server_listening port={port}")
+
     address = os.environ.get("TEMPORAL_ADDRESS", "ap-south-1.aws.api.temporal.io:7233")
     namespace = os.environ.get("TEMPORAL_NAMESPACE", "axiom-proof")
     api_key = os.environ.get("TEMPORAL_API_KEY")
@@ -46,23 +109,12 @@ async def main():
     if not api_key and not client_cert and not cert_path and ("temporal.io" in address or "tmprl.cloud" in address):
         logging.warning("No TEMPORAL_API_KEY or mTLS certs provided; proceeding with TLS enabled.")
 
-    client = await Client.connect(
-        address,
-        namespace=namespace,
-        api_key=api_key if api_key else None,
-        tls=tls_config,
+    worker_task = asyncio.create_task(
+        run_worker_loop(address, namespace, api_key, tls_config)
     )
 
-    worker = Worker(
-        client,
-        task_queue="axiom-compliance",
-        workflows=[ComplianceEngagementWorkflow],
-        activities=[call_agent_runtime, persist_finding, wait_for_human_approval],
-    )
-
-    logging.basicConfig(level=logging.INFO)
-    logging.info(f"temporal_worker.starting address={address} namespace={namespace}")
-    await worker.run()
+    async with server:
+        await asyncio.gather(server.serve_forever(), worker_task)
 
 
 if __name__ == "__main__":

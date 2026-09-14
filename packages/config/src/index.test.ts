@@ -40,6 +40,22 @@ describe('loadEnv', () => {
       }),
     ).toThrow(/AGENT_RUNTIME_INTERNAL_TOKEN|APPROVAL_SIGNING_KEY/);
   });
+
+  it('allows preprod and staging environments without requiring production secrets', () => {
+    resetEnvCache();
+    const envPreprod = loadEnv({
+      NODE_ENV: 'production',
+      ENVIRONMENT: 'preprod',
+    });
+    expect(envPreprod.ENVIRONMENT).toBe('preprod');
+
+    resetEnvCache();
+    const envStaging = loadEnv({
+      NODE_ENV: 'production',
+      ENVIRONMENT: 'staging',
+    });
+    expect(envStaging.ENVIRONMENT).toBe('staging');
+  });
 });
 
 describe('BRAND', () => {
