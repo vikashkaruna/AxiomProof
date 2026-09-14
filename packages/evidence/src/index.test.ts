@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { contentKey } from './index';
+import { EvidenceVault, contentKey } from './index';
 
 describe('contentKey', () => {
   it('builds a tenant-scoped key without engagement', () => {
@@ -26,5 +26,15 @@ describe('contentKey', () => {
       filename: 'privacy-notice.pdf',
     });
     expect(k).toBe(`tenants/t1/evidence/${'c'.repeat(64)}/privacy-notice.pdf`);
+  });
+});
+
+describe('EvidenceVault', () => {
+  it('instantiates cleanly targeting Google Cloud Storage S3 WORM endpoint', () => {
+    const vault = new EvidenceVault('asia-south1', 'https://storage.googleapis.com', {
+      accessKeyId: 'GOOG1234567890',
+      secretAccessKey: 'gcs-secret-key-abcdef',
+    });
+    expect(vault).toBeDefined();
   });
 });

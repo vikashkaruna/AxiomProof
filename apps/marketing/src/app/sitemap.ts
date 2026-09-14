@@ -1,6 +1,8 @@
 import type { MetadataRoute } from 'next';
 import { BRAND } from '@axiom/config';
 
+export const dynamic = 'force-static';
+
 export default function sitemap(): MetadataRoute.Sitemap {
   const base = `https://${BRAND.primaryDomain}`;
   return [

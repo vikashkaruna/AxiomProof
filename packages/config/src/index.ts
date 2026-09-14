@@ -67,6 +67,10 @@ const EnvSchema = z
       .default('60')
       .transform((v) => Number(v)),
 
+    // Redis / Upstash Cache
+    UPSTASH_REDIS_URL: z.string().url().optional(),
+    REDIS_URL: z.string().url().optional(),
+
     // Observability
     OTEL_EXPORTER_OTLP_ENDPOINT: z.string().url().optional(),
     SENTRY_DSN: z.string().url().optional(),
@@ -128,11 +132,11 @@ const EnvSchema = z
         message: 'Valid production SUPABASE_SERVICE_KEY is required',
       });
     }
-    if (env.AWS_REGION !== 'ap-south-1') {
+    if (env.AWS_REGION !== 'ap-south-1' && env.AWS_REGION !== 'asia-south1') {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
         path: ['AWS_REGION'],
-        message: 'Production data-plane services must run in ap-south-1',
+        message: 'Production data-plane services must run in Mumbai (ap-south-1 or asia-south1)',
       });
     }
     if (!env.APPROVAL_SIGNING_KEY) {

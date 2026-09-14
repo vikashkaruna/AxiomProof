@@ -1,35 +1,84 @@
+# ==============================================================================
 # Axiom Proof — Staging Docker Compose Overlay
-# Use with: docker compose -f docker-compose.yml -f infra/docker/docker-compose.staging.yml --env-file infra/docker/environments/.env.staging up -d
+# ==============================================================================
+# Usage:
+#   docker compose -f docker-compose.yml -f infra/docker/docker-compose.staging.yml --env-file infra/docker/environments/.env.staging up -d
+#
+# Supports pulling from Docker Hub or using locally built tagged images:
+#   ${DOCKER_REGISTRY:-}${DOCKER_REGISTRY:+/}axiom-<service>:${IMAGE_TAG:-staging}
+# ==============================================================================
 name: axiom-proof-staging
 
 services:
   model-gateway:
-    image: axiom-model-gateway:staging
+    image: ${DOCKER_REGISTRY:-}${DOCKER_REGISTRY:+/}axiom-model-gateway:${IMAGE_TAG:-staging}
+    ports:
+      - '0.0.0.0:${MODEL_GATEWAY_PORT:-8001}:8001'
     environment:
       - ENVIRONMENT=staging
-      - LOG_LEVEL=info
+      - LOG_LEVEL=${LOG_LEVEL:-info}
+      - REDACT_PII=true
 
   agent-runtime:
-    image: axiom-agent-runtime:staging
+    image: ${DOCKER_REGISTRY:-}${DOCKER_REGISTRY:+/}axiom-agent-runtime:${IMAGE_TAG:-staging}
+    ports:
+      - '0.0.0.0:${AGENT_RUNTIME_PORT:-8000}:8000'
     environment:
       - ENVIRONMENT=staging
-      - LOG_LEVEL=info
+      - LOG_LEVEL=${LOG_LEVEL:-info}
+      - MODEL_GATEWAY_URL=${MODEL_GATEWAY_URL:-http://model-gateway:8001}
+      - TEMPORAL_ADDRESS=${TEMPORAL_ADDRESS:-temporal:7233}
+      - TEMPORAL_NAMESPACE=${TEMPORAL_NAMESPACE:-axiom-proof}
+      - TEMPORAL_TLS=${TEMPORAL_TLS:-false}
+      - AWS_REGION=${AWS_REGION:-ap-south-1}
+      - S3_EVIDENCE_BUCKET=${AWS_S3_EVIDENCE_BUCKET:-axiom-proof-evidence-staging}
 
   bff:
-    image: axiom-bff:staging
+    image: ${DOCKER_REGISTRY:-}${DOCKER_REGISTRY:+/}axiom-bff:${IMAGE_TAG:-staging}
+    ports:
+      - '0.0.0.0:${BFF_PORT:-4000}:4000'
     environment:
       - NODE_ENV=staging
-      - LOG_LEVEL=info
+      - LOG_LEVEL=${LOG_LEVEL:-info}
+      - AGENT_RUNTIME_URL=${AGENT_RUNTIME_URL:-http://agent-runtime:8000}
+      - MODEL_GATEWAY_URL=${MODEL_GATEWAY_URL:-http://model-gateway:8001}
+      - TEMPORAL_ADDRESS=${TEMPORAL_ADDRESS:-temporal:7233}
+      - TEMPORAL_NAMESPACE=${TEMPORAL_NAMESPACE:-axiom-proof}
+      - TEMPORAL_TLS=${TEMPORAL_TLS:-false}
+      - BFF_CORS_ORIGINS=${BFF_CORS_ORIGINS:-http://localhost:3000,http://localhost:3001}
 
   temporal-worker:
-    image: axiom-temporal-worker:staging
+    image: ${DOCKER_REGISTRY:-}${DOCKER_REGISTRY:+/}axiom-temporal-worker:${IMAGE_TAG:-staging}
+    environment:
+      - TEMPORAL_ADDRESS=${TEMPORAL_ADDRESS:-temporal:7233}
+      - TEMPORAL_NAMESPACE=${TEMPORAL_NAMESPACE:-axiom-proof}
+      - TEMPORAL_TLS=${TEMPORAL_TLS:-false}
+      - AGENT_RUNTIME_URL=${AGENT_RUNTIME_URL:-http://agent-runtime:8000}
+
+  temporal-ui:
+    ports:
+      - '0.0.0.0:${TEMPORAL_UI_PORT:-8233}:8080'
+    environment:
+      - TEMPORAL_CORS_ORIGINS=${BFF_CORS_ORIGINS:-http://localhost:3000,http://localhost:3001}
 
   web:
-    image: axiom-web:staging
+    image: ${DOCKER_REGISTRY:-}${DOCKER_REGISTRY:+/}axiom-web:${IMAGE_TAG:-staging}
+    ports:
+      - '0.0.0.0:${WEB_PORT:-3001}:3001'
     environment:
       - NODE_ENV=production
+      - NEXT_PUBLIC_SUPABASE_URL=${NEXT_PUBLIC_SUPABASE_URL:-http://127.0.0.1:55321}
+      - NEXT_PUBLIC_SUPABASE_ANON_KEY=${NEXT_PUBLIC_SUPABASE_ANON_KEY}
+      - BFF_PUBLIC_URL=${BFF_URL:-http://bff:4000}
+      - AXIOM_E2E_BYPASS_AUTH=${AXIOM_E2E_BYPASS_AUTH:-false}
 
   marketing:
-    image: axiom-marketing:staging
+    image: ${DOCKER_REGISTRY:-}${DOCKER_REGISTRY:+/}axiom-marketing:${IMAGE_TAG:-staging}
+    ports:
+      - '0.0.0.0:${MARKETING_PORT:-3000}:3000'
     environment:
       - NODE_ENV=production
+      - NEXT_PUBLIC_SUPABASE_URL=${NEXT_PUBLIC_SUPABASE_URL:-http://127.0.0.1:55321}
+      - NEXT_PUBLIC_SUPABASE_ANON_KEY=${NEXT_PUBLIC_SUPABASE_ANON_KEY}
+      - BFF_PUBLIC_URL=${BFF_URL:-http://bff:4000}
+      - AXIOM_E2E_BYPASS_AUTH=${AXIOM_E2E_BYPASS_AUTH:-false}

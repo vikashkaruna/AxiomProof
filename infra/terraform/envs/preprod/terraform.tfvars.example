@@ -1,0 +1,27 @@
+# ==============================================================================
+# Axiom Proof — GCP Preprod Terraform Variables Example
+# ==============================================================================
+
+project_id             = "axiom-proof"
+region                 = "asia-south1" # Strictly Mumbai
+environment            = "preprod"
+cloud_sql_tier         = "db-custom-2-7680" # Or db-f1-micro for cost-optimized preprod
+cloud_sql_disk_size_gb = 20
+
+# Upstash Redis
+upstash_redis_url = "rediss://default:YOUR_UPSTASH_TOKEN@your-upstash-instance.upstash.io:6379"
+
+# Temporal Cloud GCP Subscription
+temporal_address   = "axiom-proof.tmprl.cloud:7233"
+temporal_namespace = "axiom-proof"
+temporal_api_key   = "your-temporal-cloud-api-key"
+
+# Agent Models Fallback Hierarchy (Anthropic -> OpenAI -> Gemini)
+anthropic_api_key = "sk-ant-api03-..."
+openai_api_key    = "sk-proj-..."
+gemini_api_key    = "AIzaSy..."
+
+# Security Tokens
+approval_signing_key         = "your-preprod-hmac-sha256-signing-secret-32-chars-long"
+agent_runtime_internal_token = "your-preprod-agent-runtime-token-xyz"
+model_gateway_api_key        = "your-preprod-model-gateway-api-key-abc"

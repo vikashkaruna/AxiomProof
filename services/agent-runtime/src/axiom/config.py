@@ -27,9 +27,9 @@ class Settings(BaseSettings):
 
     # ─── Service identity ───────────────────────────────────────────
     service_name: str = "axiom-agent-runtime"
-    environment: Literal["development", "staging", "production", "test"] = "development"
+    environment: Literal["development", "staging", "preprod", "production", "test"] = "development"
     log_level: Literal["debug", "info", "warn", "error"] = "info"
-    http_port: int = 8000
+    http_port: int = Field(default_factory=lambda: int(os.environ.get("PORT", "8000")))
     http_host: str = "0.0.0.0"
 
     # ─── Supabase ──────────────────────────────────────────────────
@@ -88,8 +88,8 @@ class Settings(BaseSettings):
                 raise ValueError("Valid production SUPABASE_URL is required")
             if not self.supabase_service_key or self.supabase_service_key.startswith("eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS1kZW1v"):
                 raise ValueError("Valid production SUPABASE_SERVICE_KEY is required")
-            if self.aws_region != "ap-south-1":
-                raise ValueError("Production data-plane services must run in ap-south-1")
+            if self.aws_region not in ("ap-south-1", "asia-south1"):
+                raise ValueError("Production data-plane services must run in Mumbai (ap-south-1 or asia-south1)")
             if not self.internal_token:
                 raise ValueError("INTERNAL_TOKEN is required in production")
             if not self.approval_signing_key:

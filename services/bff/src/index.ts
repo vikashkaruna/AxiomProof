@@ -62,7 +62,7 @@ app.route(
   }),
 );
 
-const port = env.BFF_PORT;
+const port = Number(process.env.PORT || env.BFF_PORT);
 log.info({ port }, 'starting BFF');
 
 export default {

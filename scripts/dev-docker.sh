@@ -61,6 +61,10 @@ while [[ $# -gt 0 ]]; do
       FORCE_BUILD=true
       shift
       ;;
+    --registry|-reg)
+      export DOCKER_REGISTRY="$2"
+      shift 2
+      ;;
     --down|-d)
       ACTION="down"
       shift
@@ -184,6 +188,10 @@ setup_environment() {
   COMPOSE_ARGS=("-f" "docker-compose.yml")
   if [[ "$TARGET_ENV" == "staging" && -f "infra/docker/docker-compose.staging.yml" ]]; then
     COMPOSE_ARGS+=("-f" "infra/docker/docker-compose.staging.yml")
+    if ! curl -fsS http://127.0.0.1:55321/rest/v1/ >/dev/null 2>&1 && [[ -f "infra/docker/docker-compose.supabase.yml" ]]; then
+      log_info "No host Supabase detected on port 55321; including containerized Supabase services..."
+      COMPOSE_ARGS+=("-f" "infra/docker/docker-compose.supabase.yml")
+    fi
   elif [[ "$TARGET_ENV" == "preprod" && -f "infra/docker/docker-compose.preprod.yml" ]]; then
     COMPOSE_ARGS+=("-f" "infra/docker/docker-compose.preprod.yml")
   elif [[ "$TARGET_ENV" == "prod" && -f "infra/docker/docker-compose.prod.yml" ]]; then
@@ -262,6 +270,7 @@ check_health_and_report() {
 
   local endpoints=(
     "Supabase Gateway:http://localhost:55321"
+    "Supabase Studio:http://localhost:55323"
     "Model Gateway:http://localhost:8001/health"
     "Agent Runtime:http://localhost:8000/health"
     "BFF API Engine:http://localhost:4000/health"

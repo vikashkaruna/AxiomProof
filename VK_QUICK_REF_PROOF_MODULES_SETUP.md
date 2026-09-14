@@ -4,6 +4,8 @@ This guide covers local development, full local/on-premise deployment, and produ
 
 Authoritative references:
 
+- [Staging & Windows 11 LAN deployment guide](docs/STAGING_DEPLOYMENT_WINDOWS_LAN.md)
+- [Live dynamic functional flow execution guide](docs/LIVE_FUNCTIONAL_FLOW_GUIDE.md)
 - [Deployment guide](docs/08_DEPLOYMENT_GUIDE.md)
 - [Operational runbook](docs/09_RUNBOOK.md)
 - [Docker Compose](docker-compose.yml)

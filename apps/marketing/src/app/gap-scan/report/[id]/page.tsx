@@ -17,10 +17,41 @@ import { GapScanReportSchema } from '@axiom/types';
 import { BRAND } from '@axiom/config';
 import { CONTROL_LIBRARY_COUNT } from '@axiom/control-library';
 
-export const dynamic = 'force-dynamic';
+export const dynamic = 'auto';
+
+export function generateStaticParams() {
+  if (process.env.NEXT_OUTPUT === 'export') {
+    return [{ id: 'sample' }];
+  }
+  return [];
+}
 
 export default async function GapScanReportPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
+
+  if (process.env.NEXT_OUTPUT === 'export') {
+    return (
+      <div className="mx-auto flex min-h-screen max-w-4xl flex-col gap-8 px-4 py-12 sm:px-6">
+        <Link href="/" className="text-sm text-slate-500 hover:text-indigo-500">
+          ← Back to home
+        </Link>
+        <div>
+          <Badge variant="indigo">Statutory Gap-Scan Report</Badge>
+          <h1 className="mt-2 text-3xl font-bold tracking-tight text-slate-900">
+            Interactive Assessment Preview
+          </h1>
+          <p className="mt-2 text-slate-600">
+            Take the live assessment at{' '}
+            <Link href="/gap-scan" className="text-teal-600 underline">
+              /gap-scan
+            </Link>{' '}
+            to generate your personalized compliance scorecard.
+          </p>
+        </div>
+      </div>
+    );
+  }
+
   const access = (await cookies()).get('gap_scan_access')?.value;
 
   const isLocal =

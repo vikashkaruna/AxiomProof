@@ -1,0 +1,128 @@
+# ==============================================================================
+# Axiom Proof — Standalone Containerized Supabase for Staging & Windows
+# ==============================================================================
+# Allows running the full Supabase backend (PostgreSQL 17, PostgREST, Auth, Studio)
+# in environments without the Supabase CLI installed.
+#
+# Usage:
+#   docker compose -f docker-compose.yml -f infra/docker/docker-compose.staging.yml -f infra/docker/docker-compose.supabase.yml --env-file infra/docker/environments/.env.staging up -d
+# ==============================================================================
+
+services:
+  supabase-db:
+    image: supabase/postgres:15.8.1.085
+    container_name: axiom-supabase-db
+    restart: unless-stopped
+    ports:
+      - '0.0.0.0:${SUPABASE_DB_PORT:-55322}:5432'
+    environment:
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=postgres
+      - POSTGRES_USER=postgres
+    volumes:
+      - supabase-db-data:/var/lib/postgresql/data
+      - ../supabase/migrations:/docker-entrypoint-initdb.d/migrations:ro
+      - ../supabase/seed.sql:/docker-entrypoint-initdb.d/seed.sql:ro
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U postgres -d postgres']
+      interval: 5s
+      timeout: 3s
+      retries: 10
+      start_period: 10s
+    networks:
+      - axiom-network
+
+  supabase-auth:
+    image: supabase/gotrue:v2.169.0
+    container_name: axiom-supabase-auth
+    restart: unless-stopped
+    depends_on:
+      supabase-db:
+        condition: service_healthy
+    environment:
+      - GOTRUE_API_HOST=0.0.0.0
+      - GOTRUE_API_PORT=9999
+      - GOTRUE_DB_DRIVER=postgres
+      - GOTRUE_DB_DATABASE_URL=postgresql://postgres:postgres@supabase-db:5432/postgres?sslmode=disable
+      - GOTRUE_SITE_URL=http://${HOST_IP:-localhost}:3000
+      - GOTRUE_URI_ALLOW_LIST=http://${HOST_IP:-localhost}:3000,http://${HOST_IP:-localhost}:3001,http://localhost:3000,http://localhost:3001,http://127.0.0.1:3000,http://127.0.0.1:3001
+      - GOTRUE_JWT_SECRET=super-secret-jwt-token-with-at-least-32-characters-long
+      - GOTRUE_JWT_EXP=3600
+      - GOTRUE_EXTERNAL_EMAIL_ENABLED=true
+      - GOTRUE_MAILER_AUTOCONFIRM=true
+    networks:
+      - axiom-network
+
+  supabase-rest:
+    image: postgrest/postgrest:v12.2.8
+    container_name: axiom-supabase-rest
+    restart: unless-stopped
+    depends_on:
+      supabase-db:
+        condition: service_healthy
+    environment:
+      - PGRST_DB_URI=postgresql://postgres:postgres@supabase-db:5432/postgres
+      - PGRST_DB_SCHEMAS=public,graphql_public
+      - PGRST_DB_ANON_ROLE=anon
+      - PGRST_JWT_SECRET=super-secret-jwt-token-with-at-least-32-characters-long
+    networks:
+      - axiom-network
+
+  supabase-studio:
+    image: supabase/studio:20250210-090637
+    container_name: axiom-supabase-studio
+    restart: unless-stopped
+    ports:
+      - '0.0.0.0:${SUPABASE_STUDIO_PORT:-55323}:3000'
+    environment:
+      - STUDIO_PG_META_URL=http://supabase-meta:8080
+      - POSTGRES_PASSWORD=postgres
+      - SUPABASE_REST_URL=http://${HOST_IP:-localhost}:${SUPABASE_API_PORT:-55321}/rest/v1
+      - SUPABASE_URL=http://${HOST_IP:-localhost}:${SUPABASE_API_PORT:-55321}
+    networks:
+      - axiom-network
+
+  # ─── Supabase Gateway (Kong API Gateway / PostgREST & Auth Proxy) ───────────
+  supabase-gateway:
+    image: nginx:alpine
+    container_name: axiom-supabase-gateway
+    restart: unless-stopped
+    ports:
+      - '0.0.0.0:${SUPABASE_API_PORT:-55321}:80'
+    depends_on:
+      supabase-rest:
+        condition: service_started
+      supabase-auth:
+        condition: service_started
+    command: >
+      /bin/sh -c 'cat << "EOF" > /etc/nginx/conf.d/default.conf
+      server {
+          listen 80;
+          client_max_body_size 50M;
+          location /rest/v1/ {
+              proxy_pass http://supabase-rest:3000/;
+              proxy_set_header Host $$host;
+              proxy_set_header X-Real-IP $$remote_addr;
+              proxy_set_header X-Forwarded-For $$proxy_add_x_forwarded_for;
+          }
+          location /auth/v1/ {
+              proxy_pass http://supabase-auth:9999/;
+              proxy_set_header Host $$host;
+              proxy_set_header X-Real-IP $$remote_addr;
+              proxy_set_header X-Forwarded-For $$proxy_add_x_forwarded_for;
+          }
+          location / {
+              proxy_pass http://supabase-rest:3000/;
+              proxy_set_header Host $$host;
+              proxy_set_header X-Real-IP $$remote_addr;
+              proxy_set_header X-Forwarded-For $$proxy_add_x_forwarded_for;
+          }
+      }
+      EOF
+      exec nginx -g "daemon off;"'
+    networks:
+      - axiom-network
+
+volumes:
+  supabase-db-data:
+    name: axiom-supabase-db-data

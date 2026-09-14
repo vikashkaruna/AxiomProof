@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import os
 import time
 import uuid
 from contextlib import asynccontextmanager
@@ -285,12 +286,85 @@ async def _dispatch(
     settings: Settings,
     log,
 ) -> tuple[str, int, int]:
-    """Dispatch to the chosen provider. For Phase 0/1, this is a stub
-    that returns a deterministic response. The real LiteLLM-based
-    dispatch is in `litellm_dispatch.py` (Phase 2+).
+    """Dispatch through the multi-model fallback chain:
+    1. Anthropic (Primary)
+    2. OpenAI (Fallback 1)
+    3. Gemini (Fallback 2)
+    4. Deterministic synthetic stub (Offline / test resilience)
     """
-    # Phase 0/1 stub — return a synthesised response so the rest of
-    # the system is testable end-to-end.
+    # Build candidate list based on decision fallback_chain or settings
+    candidates: list[tuple[str, str, str | None]] = []
+
+    # If decision has a fallback chain, use it
+    chain = getattr(decision, "fallback_chain", ())
+    if chain:
+        for provider_name, model_name in chain:
+            if provider_name == "anthropic":
+                key = settings.anthropic_api_key or os.environ.get("ANTHROPIC_API_KEY")
+                if key:
+                    candidates.append((provider_name, model_name, key))
+            elif provider_name == "openai":
+                key = settings.openai_api_key or os.environ.get("OPENAI_API_KEY")
+                if key:
+                    candidates.append((provider_name, model_name, key))
+            elif provider_name == "gemini":
+                key = (
+                    settings.gemini_api_key
+                    or os.environ.get("GEMINI_API_KEY")
+                    or os.environ.get("GOOGLE_API_KEY")
+                )
+                if key:
+                    candidates.append((provider_name, model_name, key))
+    else:
+        # Default priority: Anthropic -> OpenAI -> Gemini
+        ant_key = settings.anthropic_api_key or os.environ.get("ANTHROPIC_API_KEY")
+        if ant_key:
+            candidates.append(("anthropic", settings.anthropic_model, ant_key))
+        oai_key = settings.openai_api_key or os.environ.get("OPENAI_API_KEY")
+        if oai_key:
+            candidates.append(("openai", settings.openai_model, oai_key))
+        gem_key = (
+            settings.gemini_api_key
+            or os.environ.get("GEMINI_API_KEY")
+            or os.environ.get("GOOGLE_API_KEY")
+        )
+        if gem_key:
+            candidates.append(("gemini", settings.gemini_model, gem_key))
+
+    # Try live providers in order
+    if candidates:
+        for provider_name, model_name, api_key in candidates:
+            try:
+                import litellm
+
+                response = await litellm.acompletion(
+                    model=model_name,
+                    messages=[{"role": "user", "content": prompt}],
+                    api_key=api_key,
+                    temperature=req.temperature,
+                    max_tokens=req.max_tokens,
+                )
+                text = response.choices[0].message.content or ""
+                in_tokens = getattr(response.usage, "prompt_tokens", max(1, len(prompt) // 4))
+                out_tokens = getattr(response.usage, "completion_tokens", max(1, len(text) // 4))
+                log.info(
+                    "model_gateway.llm_dispatched_success",
+                    provider=provider_name,
+                    model=model_name,
+                    in_tokens=in_tokens,
+                    out_tokens=out_tokens,
+                )
+                return text, in_tokens, out_tokens
+            except Exception as e:
+                log.warning(
+                    "model_gateway.provider_failover",
+                    failed_provider=provider_name,
+                    failed_model=model_name,
+                    error=str(e),
+                )
+                continue
+
+    # Deterministic fallback stub
     text = _stub_completion(prompt, decision, req)
     input_tokens = max(1, len(prompt) // 4)
     output_tokens = max(1, len(text) // 4)

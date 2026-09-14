@@ -59,6 +59,7 @@ class EvidenceVault:
     def __init__(self, settings: Settings | None = None):
         s = settings or get_settings()
         self._settings = s
+        self._is_gcs = bool(s.s3_endpoint and "storage.googleapis.com" in s.s3_endpoint)
         kwargs: dict[str, Any] = {
             "region_name": s.aws_region,
             "config": Config(signature_version="s3v4"),
@@ -92,12 +93,17 @@ class EvidenceVault:
             "ContentType": input.content_type,
             "ContentMD5": _md5_b64(body),
             "Metadata": metadata,
-            "ObjectLockMode": "COMPLIANCE",
-            "ObjectLockRetainUntilDate": retain_until,
-            "ObjectLockLegalHoldStatus": "ON" if input.legal_hold else "OFF",
             "ServerSideEncryption": input.encryption,
-            "ChecksumAlgorithm": "SHA256",
         }
+        # Native AWS S3 requires ObjectLock headers.
+        # Google Cloud Storage as S3 WORM storage enforces WORM via Bucket Lock (retention policy)
+        # and rejects x-amz-object-lock-* request headers.
+        if not self._is_gcs:
+            put_kwargs["ObjectLockMode"] = "COMPLIANCE"
+            put_kwargs["ObjectLockRetainUntilDate"] = retain_until
+            put_kwargs["ObjectLockLegalHoldStatus"] = "ON" if input.legal_hold else "OFF"
+            put_kwargs["ChecksumAlgorithm"] = "SHA256"
+
         version_id = None
         try:
             result = self._s3.put_object(**put_kwargs)

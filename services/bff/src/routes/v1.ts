@@ -4,6 +4,9 @@ import {
   IssueApprovalRequestSchema,
   ExecutePlanRequestSchema,
   type ExecutePlanRequest,
+  ActorType,
+  LedgerActionType,
+  LedgerResult,
 } from '@axiom/types';
 import type { ApprovalEngine } from '../services/approval.js';
 import type { KillSwitchService } from '../services/kill-switch.js';
@@ -738,6 +741,193 @@ export function v1Routes(deps: Deps) {
     if (error)
       return c.json({ error: { code: 'persistence_failed', message: error.message } }, 500);
     return c.json(data, 201);
+  });
+
+  // ─── Dynamic Organization Onboarding & User Tenants ─────────────
+
+  // GET /v1/user/tenants — list all organizations the current user belongs to
+  app.get('/user/tenants', async (c) => {
+    const user = c.get('user');
+    const admin = createSupabaseAdmin();
+    const { data, error } = await admin
+      .from('tenant_users')
+      .select('tenant_id, role, tenants:tenant_id(*)')
+      .eq('user_id', user.id);
+
+    if (error) {
+      return c.json({ error: { code: 'query_failed', message: error.message } }, 500);
+    }
+
+    const tenants = (data ?? []).map((row: any) => {
+      const t = Array.isArray(row.tenants) ? row.tenants[0] : row.tenants;
+      return {
+        id: row.tenant_id,
+        role: row.role,
+        name: t?.name ?? 'Unknown',
+        slug: t?.slug ?? '',
+        tier: t?.tier ?? 'essential',
+        is_sdf: t?.is_sdf ?? false,
+        processes_health_data: t?.processes_health_data ?? false,
+        processes_children_data: t?.processes_children_data ?? false,
+        created_at: t?.created_at,
+      };
+    });
+
+    return c.json({ tenants });
+  });
+
+  // POST /v1/organizations/onboard — dynamic onboarding without hardcoded data
+  app.post('/organizations/onboard', async (c) => {
+    const user = c.get('user');
+    const body = await c.req.json().catch(() => ({}));
+
+    const OnboardSchema = z.object({
+      name: z.string().min(2).max(100),
+      slug: z.string().min(2).max(60).optional(),
+      tier: z.enum(['essential', 'growth', 'enterprise']).default('growth'),
+      is_sdf: z.boolean().default(false),
+      processes_health_data: z.boolean().default(false),
+      processes_children_data: z.boolean().default(false),
+      dpo_name: z.string().optional(),
+      dpo_email: z.string().email().optional(),
+      systems: z
+        .array(
+          z.object({
+            name: z.string(),
+            type: z.string(),
+            description: z.string().optional(),
+            hosts_personal_data: z.boolean().default(true),
+            region: z.string().default('ap-south-1'),
+            data_categories: z.array(z.string()).default(['contact', 'identity']),
+          }),
+        )
+        .optional(),
+    });
+
+    const parsed = OnboardSchema.safeParse(body);
+    if (!parsed.success) {
+      return c.json({ error: { code: 'validation_failed', details: parsed.error.flatten() } }, 400);
+    }
+
+    const {
+      name,
+      tier,
+      is_sdf,
+      processes_health_data,
+      processes_children_data,
+      dpo_name,
+      dpo_email,
+      systems,
+    } = parsed.data;
+
+    // Generate unique slug if not supplied
+    const baseSlug = (
+      parsed.data.slug ||
+      name
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, '-')
+        .replace(/(^-|-$)/g, '')
+    ).slice(0, 45);
+    const uniqueSlug = `${baseSlug}-${Math.random().toString(36).substring(2, 7)}`;
+
+    const admin = createSupabaseAdmin();
+
+    // 1. Insert into public.tenants
+    const { data: tenant, error: tenantErr } = await admin
+      .from('tenants')
+      .insert({
+        slug: uniqueSlug,
+        name,
+        tier,
+        data_residency_region: 'ap-south-1',
+        is_sdf,
+        processes_health_data,
+        processes_children_data,
+      })
+      .select()
+      .single();
+
+    if (tenantErr || !tenant) {
+      logger.error({ error: tenantErr }, 'failed to create tenant');
+      return c.json(
+        {
+          error: {
+            code: 'tenant_creation_failed',
+            message: tenantErr?.message || 'Failed to create organization',
+          },
+        },
+        500,
+      );
+    }
+
+    // 2. Add user as 'owner' in tenant_users
+    const { error: memberErr } = await admin.from('tenant_users').insert({
+      tenant_id: tenant.id,
+      user_id: user.id,
+      role: 'owner',
+      accepted_at: new Date().toISOString(),
+    });
+
+    if (memberErr) {
+      logger.error({ error: memberErr }, 'failed to link tenant owner');
+    }
+
+    // 3. Create initial engagement in engagements table
+    const { data: engagement, error: engErr } = await admin
+      .from('engagements')
+      .insert({
+        tenant_id: tenant.id,
+        library_version: '0.1.0',
+        title: `${name} — DPDPA Statutory Assessment`,
+        lead_reviewer_id: user.id,
+        status: 'intake',
+        started_at: new Date().toISOString(),
+      })
+      .select()
+      .single();
+
+    if (engErr) {
+      logger.warn({ error: engErr }, 'failed to create initial engagement for new tenant');
+    }
+
+    // 4. Record to immutable audit ledger
+    const correlationId = randomUUID();
+    deps.ledger.appendAndForget({
+      tenantId: tenant.id,
+      correlationId,
+      actorType: ActorType.HUMAN,
+      actorId: user.id,
+      actionType: LedgerActionType.TENANT_CREATED,
+      targetRef: `tenant:${tenant.id}`,
+      result: LedgerResult.SUCCESS,
+      detail: {
+        name,
+        slug: uniqueSlug,
+        tier,
+        is_sdf,
+        dpo_name: dpo_name || user.user_metadata?.full_name || 'Compliance Officer',
+        dpo_email: dpo_email || user.email,
+        systems_count: systems?.length || 0,
+      },
+    });
+
+    return c.json(
+      {
+        tenant,
+        engagement,
+        systems: systems || [
+          {
+            name: `${uniqueSlug}-core-db`,
+            type: 'postgres',
+            description: `Primary customer datastore in ap-south-1 for ${name}`,
+            hosts_personal_data: true,
+            region: 'ap-south-1',
+            data_categories: ['identity', 'contact', 'financial'],
+          },
+        ],
+      },
+      201,
+    );
   });
 
   // ─── Agent Invocation & Audit Pipeline ───────────────────────────

@@ -31,7 +31,17 @@
     "docker:status": "./scripts/dev-docker.sh --status",
     "docker:build": "./scripts/dev-docker.sh --build",
     "docker:test": "./scripts/dev-docker.sh --test",
-    "pre-ci": "./scripts/dev-docker.sh --test"
+    "pre-ci": "./scripts/dev-docker.sh --test",
+    "staging:deploy": "./scripts/deploy-staging.sh",
+    "staging:flow": "./scripts/run-staging-flow.sh",
+    "staging:setup:win": "powershell.exe -ExecutionPolicy Bypass -File ./scripts/setup-windows-staging.ps1",
+    "staging:deploy:win": "powershell.exe -ExecutionPolicy Bypass -File ./scripts/deploy-staging.ps1",
+    "staging:flow:win": "powershell.exe -ExecutionPolicy Bypass -File ./scripts/run-staging-flow.ps1",
+    "preprod:build": "./scripts/build-preprod-images.sh",
+    "preprod:deploy": "./scripts/deploy-preprod-gcp.sh",
+    "preprod:flow": "./scripts/run-preprod-flow.sh",
+    "preprod:migrate": "./scripts/migrate-cloudsql.sh",
+    "marketing:deploy:firebase": "./scripts/deploy-firebase-marketing.sh"
   },
   "devDependencies": {
     "@types/node": "^26.4.1",

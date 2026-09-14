@@ -187,11 +187,96 @@ cd tests/e2e && pnpm test:e2e
 
 ---
 
-## Deployment
+## Staging & Windows 11 LAN Deployment (Docker Desktop / Docker Hub)
+
+For staging deployment on Windows 11 Home running Docker Desktop (WSL2), locally accessible over LAN, with optional Docker Hub registry image integration:
+
+- Complete guide: [`docs/STAGING_DEPLOYMENT_WINDOWS_LAN.md`](./docs/STAGING_DEPLOYMENT_WINDOWS_LAN.md)
+
+### Quick Start on Windows 11 (PowerShell)
+
+```powershell
+# 1. Prepare environment & open Windows Firewall ports for LAN:
+.\scripts\setup-windows-staging.ps1
+
+# 2. Deploy all services (automatically attaches containerized Supabase if needed):
+.\scripts\deploy-staging.ps1 -Build
+
+# Or pull pre-built images from Docker Hub:
+.\scripts\deploy-staging.ps1 -Registry "vikashkaruna"
+```
+
+### Quick Start on Linux / macOS (Bash)
+
+```bash
+./scripts/deploy-staging.sh --build
+```
+
+### Containerized Microservices Topology & Ports
+
+Each layer runs as an independent Docker container for modular scalability and local fidelity:
+
+| Component | Localhost URL | Purpose & Scalability Role |
+| :--- | :--- | :--- |
+| **Web Workbench** | `http://localhost:3001` | Core operator UI, plan review, approval console, kill switch |
+| **Marketing Site** | `http://localhost:3000` | Public funnel & interactive 5-minute DPDPA gap-scan |
+| **BFF API Engine** | `http://localhost:4000` | Execution gate, auth, approval token issuance, kill switch |
+| **Agent Runtime** | `http://localhost:8000` | 10 named compliance agents (Drishti, Sudhaar, etc.) |
+| **Model Gateway** | `http://localhost:8001` | PII redactor (Presidio + regex) & LLM router |
+| **Temporal UI** | `http://localhost:8233` | Durable workflow state machine visualizer |
+| **Temporal Server** | `localhost:7233` | gRPC orchestration engine |
+| **Supabase Studio** | `http://localhost:55323` | Database inspection, tables, and SQL editor |
+| **Supabase Gateway** | `http://localhost:55321` | Kong API gateway & Supabase REST |
+
+---
+
+## Dynamic Live-Like Functional Flow (100% Non-Hardcoded)
+
+Execute the full statutory compliance flow (dynamic user creation, organization onboarding, datastore scanning across Drishti, Vibhaag, Parikshan, Sudhaar, token-gated Karya execution, Saakshi evidence sealing, Nazar, Sanket, and Prativedan reports) without hardcoded IDs:
+
+- Complete guide: [`docs/LIVE_FUNCTIONAL_FLOW_GUIDE.md`](./docs/LIVE_FUNCTIONAL_FLOW_GUIDE.md)
+
+```bash
+# On Linux / macOS:
+./scripts/run-staging-flow.sh
+
+# On Windows 11 (PowerShell):
+.\scripts\run-staging-flow.ps1
+```
+
+---
+
+## GCP Preprod Deployment (Cloud Run · Cloud SQL · Firebase · Upstash · Mumbai asia-south1)
+
+For preproduction deployment on **Google Cloud Platform (GCP)** in Mumbai (`asia-south1`), featuring independent Cloud Run microservices for each layer, Cloud SQL for PostgreSQL, Google Firebase static hosting for the marketing domain, Upstash Redis, Temporal Cloud on GCP, and an automated multi-model fallback chain (**Anthropic → OpenAI → Gemini**):
+
+- Complete guide: [`docs/GCP_PREPROD_DEPLOYMENT_GUIDE.md`](./docs/GCP_PREPROD_DEPLOYMENT_GUIDE.md)
+- Infrastructure code: [`infra/terraform/envs/preprod/`](./infra/terraform/envs/preprod/)
+
+### 1. One-Command Preprod Provisioning & Deploy
+
+```bash
+# Provision Cloud SQL, GCS WORM Vault, Artifact Registry, Secrets, and Cloud Run:
+./scripts/deploy-preprod-gcp.sh "axiom-proof" "asia-south1"
+
+# Or deploy marketing site specifically to Google Firebase Static Hosting:
+./scripts/deploy-firebase-marketing.sh "axiom-proof"
+```
+
+### 2. Run 100% Non-Hardcoded Preprod Live Functional Flow
+
+```bash
+# Runs dynamic user registration, tenant onboarding, all 10 agents,
+# human approval token issuance, evidence sealing, and ledger verification:
+./scripts/run-preprod-flow.sh "https://<YOUR_BFF_URL>"
+```
+
+---
+
+## Production Deployment (AWS ap-south-1)
 
 For production deployment to AWS `ap-south-1` (EKS + S3 + ElastiCache
-
-- Supabase + Temporal Cloud), see [`docs/08_DEPLOYMENT_GUIDE.md`](./docs/08_DEPLOYMENT_GUIDE.md).
++ Supabase + Temporal Cloud), see [`docs/08_DEPLOYMENT_GUIDE.md`](./docs/08_DEPLOYMENT_GUIDE.md).
   For day-2 operations, see [`docs/09_RUNBOOK.md`](./docs/09_RUNBOOK.md).
   For the security review and SDLC, see [`docs/07_SECURITY_REVIEW.md`](./docs/07_SECURITY_REVIEW.md).
 

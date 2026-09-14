@@ -1,0 +1,107 @@
+variable "project_id" {
+  description = "Google Cloud Platform Project ID"
+  type        = string
+  default     = "axiom-proof"
+}
+
+variable "region" {
+  description = "GCP Region (Default strictly Mumbai asia-south1 for Indian data residency)"
+  type        = string
+  default     = "asia-south1"
+}
+
+variable "environment" {
+  description = "Deployment environment name"
+  type        = string
+  default     = "preprod"
+}
+
+variable "cloud_sql_tier" {
+  description = "Compute tier for Cloud SQL PostgreSQL instance"
+  type        = string
+  default     = "db-custom-2-7680" # 2 vCPU, 7.5GB RAM; can use db-f1-micro for cost saving
+}
+
+variable "cloud_sql_disk_size_gb" {
+  description = "Disk size in GB for Cloud SQL instance"
+  type        = number
+  default     = 20
+}
+
+variable "retention_days" {
+  description = "Evidence vault retention duration in days (WORM Compliance lock)"
+  type        = number
+  default     = 2555 # 7 years statutory requirement under DPDPA
+}
+
+# Upstash Redis
+variable "upstash_redis_url" {
+  description = "Upstash Redis connection URL (rediss://...)"
+  type        = string
+  default     = ""
+  sensitive   = true
+}
+
+# Temporal Cloud GCP Subscription
+variable "temporal_address" {
+  description = "Temporal Cloud host address on GCP"
+  type        = string
+  default     = "axiom-proof.tmprl.cloud:7233"
+}
+
+variable "temporal_namespace" {
+  description = "Temporal Cloud namespace"
+  type        = string
+  default     = "axiom-proof"
+}
+
+variable "temporal_api_key" {
+  description = "Temporal Cloud API Key"
+  type        = string
+  default     = ""
+  sensitive   = true
+}
+
+# Model Provider API Keys
+variable "anthropic_api_key" {
+  description = "Anthropic Claude API Key (Primary agent model)"
+  type        = string
+  default     = ""
+  sensitive   = true
+}
+
+variable "openai_api_key" {
+  description = "OpenAI API Key (Fallback 1 model)"
+  type        = string
+  default     = ""
+  sensitive   = true
+}
+
+variable "gemini_api_key" {
+  description = "Google Gemini API Key (Fallback 2 model)"
+  type        = string
+  default     = ""
+  sensitive   = true
+}
+
+# Approval Engine & Auth Secrets
+variable "approval_signing_key" {
+  description = "HMAC secret key for signing scope-bound approval tokens (minimum 32 characters)"
+  type        = string
+  default     = ""
+  sensitive   = true
+}
+
+variable "agent_runtime_internal_token" {
+  description = "Service-to-service internal token between BFF and Agent Runtime"
+  type        = string
+  default     = ""
+  sensitive   = true
+}
+
+variable "model_gateway_api_key" {
+  description = "Service-to-service API key for Model Gateway"
+  type        = string
+  default     = ""
+  sensitive   = true
+}

@@ -23,6 +23,7 @@ import {
   type ObjectLockLegalHold,
   type ObjectLockMode,
   type ServerSideEncryption,
+  type PutObjectCommandInput,
 } from '@aws-sdk/client-s3';
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 import { createHash } from 'node:crypto';
@@ -70,16 +71,18 @@ export interface SealedEvidence {
 
 export class EvidenceVault {
   private readonly s3: S3Client;
+  private readonly isGcs: boolean;
 
   constructor(
     private readonly region: string,
     private readonly endpoint?: string,
     credentials?: { accessKeyId: string; secretAccessKey: string; sessionToken?: string },
   ) {
+    this.isGcs = Boolean(endpoint && endpoint.includes('storage.googleapis.com'));
     this.s3 = new S3Client({
       region,
       endpoint,
-      forcePathStyle: endpoint !== undefined, // MinIO / R2 etc
+      forcePathStyle: endpoint !== undefined, // MinIO / R2 / GCS
       credentials,
     });
   }
@@ -97,7 +100,7 @@ export class EvidenceVault {
 
     const contentHash = createHash('sha256').update(body).digest('hex');
 
-    // The bucket must be created with ObjectLockConfiguration enabled.
+    // The bucket must be created with ObjectLockConfiguration / Bucket Lock enabled.
     // We verify that here so a misconfigured bucket fails fast.
     await this.assertObjectLockEnabled(input.bucket);
 
@@ -107,7 +110,7 @@ export class EvidenceVault {
       Status: input.legalHold ? 'ON' : 'OFF',
     };
 
-    const cmd = new PutObjectCommand({
+    const putParams: PutObjectCommandInput = {
       Bucket: input.bucket,
       Key: input.key,
       Body: body,
@@ -121,12 +124,20 @@ export class EvidenceVault {
         'axiom-sealed-at': new Date().toISOString(),
         ...input.metadata,
       },
-      ObjectLockMode: 'COMPLIANCE', // WORM
-      ObjectLockRetainUntilDate: retainUntilDate,
-      ObjectLockLegalHoldStatus: legalHold.Status,
       ServerSideEncryption: input.encryption ?? 'AES256',
-      ChecksumAlgorithm: 'SHA256',
-    });
+    };
+
+    // For native AWS S3, specify ObjectLock headers.
+    // For Google Cloud Storage as S3 WORM storage, immutability is enforced at the bucket level
+    // via GCS Bucket Lock (Retention Policy) without unsupported AWS-specific request headers.
+    if (!this.isGcs) {
+      putParams.ObjectLockMode = 'COMPLIANCE';
+      putParams.ObjectLockRetainUntilDate = retainUntilDate;
+      putParams.ObjectLockLegalHoldStatus = legalHold.Status;
+      putParams.ChecksumAlgorithm = 'SHA256';
+    }
+
+    const cmd = new PutObjectCommand(putParams);
 
     const result = await this.s3.send(cmd);
 
@@ -212,6 +223,12 @@ export class EvidenceVault {
   }
 
   private async assertObjectLockEnabled(bucket: string): Promise<void> {
+    if (this.isGcs) {
+      // In Google Cloud Storage, WORM is enforced at the bucket level via Bucket Lock
+      // (Retention Policy) or Object Retention Lock. The HMAC S3 XML API does not support
+      // probing x-amz-object-lock headers.
+      return;
+    }
     try {
       const head = await this.s3.send(
         new HeadObjectCommand({ Bucket: bucket, Key: '__axiom_lock_probe' }),

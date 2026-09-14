@@ -20,6 +20,13 @@ export const tenantResolver = createMiddleware<{ Variables: Variables }>(async (
     process.env.NODE_ENV !== 'production' ||
     process.env.AXIOM_E2E_BYPASS_AUTH === 'true';
 
+  // Routes exempt from requiring an existing tenant context
+  const path = c.req.path;
+  if (path.endsWith('/organizations/onboard') || path.endsWith('/user/tenants')) {
+    c.set('role', 'owner' as UserRole);
+    return next();
+  }
+
   let tenantId = c.req.header('x-tenant-id');
   if (!tenantId && isDevOrTest) {
     tenantId = '00000000-0000-0000-0000-000000000001';

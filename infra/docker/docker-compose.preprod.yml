@@ -1,35 +1,77 @@
+# ==============================================================================
 # Axiom Proof — Preprod Docker Compose Overlay
-# Use with: docker compose -f docker-compose.yml -f infra/docker/docker-compose.preprod.yml --env-file infra/docker/environments/.env.preprod up -d
+# ==============================================================================
+# Usage:
+#   docker compose -f docker-compose.yml -f infra/docker/docker-compose.preprod.yml --env-file infra/docker/environments/.env.preprod up -d
+# ==============================================================================
 name: axiom-proof-preprod
 
 services:
   model-gateway:
     image: axiom-model-gateway:preprod
+    ports:
+      - "0.0.0.0:${MODEL_GATEWAY_PORT:-8001}:8001"
     environment:
-      - ENVIRONMENT=staging
-      - LOG_LEVEL=info
+      - ENVIRONMENT=preprod
+      - LOG_LEVEL=${LOG_LEVEL:-info}
+      - AWS_REGION=asia-south1
+      - PII_REDACTION_ENABLED=true
+      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY:-}
+      - OPENAI_API_KEY=${OPENAI_API_KEY:-}
+      - GEMINI_API_KEY=${GEMINI_API_KEY:-}
+      - REDIS_URL=${UPSTASH_REDIS_URL:-${REDIS_URL:-}}
 
   agent-runtime:
     image: axiom-agent-runtime:preprod
+    ports:
+      - "0.0.0.0:${AGENT_RUNTIME_PORT:-8000}:8000"
     environment:
-      - ENVIRONMENT=staging
-      - LOG_LEVEL=info
+      - ENVIRONMENT=preprod
+      - LOG_LEVEL=${LOG_LEVEL:-info}
+      - AWS_REGION=asia-south1
+      - MODEL_GATEWAY_URL=${MODEL_GATEWAY_URL:-http://model-gateway:8001}
+      - TEMPORAL_ADDRESS=${TEMPORAL_ADDRESS:-temporal:7233}
+      - TEMPORAL_NAMESPACE=${TEMPORAL_NAMESPACE:-axiom-proof}
+      - S3_EVIDENCE_BUCKET=${AWS_S3_EVIDENCE_BUCKET:-axiom-proof-evidence-preprod}
+      - S3_ENDPOINT=${AWS_S3_ENDPOINT:-https://storage.googleapis.com}
 
   bff:
     image: axiom-bff:preprod
+    ports:
+      - "0.0.0.0:${BFF_PORT:-4000}:4000"
     environment:
       - NODE_ENV=production
-      - LOG_LEVEL=info
+      - ENVIRONMENT=preprod
+      - LOG_LEVEL=${LOG_LEVEL:-info}
+      - AWS_REGION=asia-south1
+      - AGENT_RUNTIME_URL=${AGENT_RUNTIME_URL:-http://agent-runtime:8000}
+      - MODEL_GATEWAY_URL=${MODEL_GATEWAY_URL:-http://model-gateway:8001}
+      - TEMPORAL_ADDRESS=${TEMPORAL_ADDRESS:-temporal:7233}
+      - TEMPORAL_NAMESPACE=${TEMPORAL_NAMESPACE:-axiom-proof}
+      - UPSTASH_REDIS_URL=${UPSTASH_REDIS_URL:-}
+      - BFF_CORS_ORIGINS=${BFF_CORS_ORIGINS:-http://localhost:3000,http://localhost:3001}
 
   temporal-worker:
     image: axiom-temporal-worker:preprod
+    environment:
+      - TEMPORAL_ADDRESS=${TEMPORAL_ADDRESS:-temporal:7233}
+      - TEMPORAL_NAMESPACE=${TEMPORAL_NAMESPACE:-axiom-proof}
+      - TEMPORAL_TLS=${TEMPORAL_TLS:-true}
+      - TEMPORAL_API_KEY=${TEMPORAL_API_KEY:-}
+      - AGENT_RUNTIME_URL=${AGENT_RUNTIME_URL:-http://agent-runtime:8000}
 
   web:
     image: axiom-web:preprod
+    ports:
+      - "0.0.0.0:${WEB_PORT:-3001}:3001"
     environment:
       - NODE_ENV=production
+      - BFF_PUBLIC_URL=${BFF_URL:-http://localhost:4000}
 
   marketing:
     image: axiom-marketing:preprod
+    ports:
+      - "0.0.0.0:${MARKETING_PORT:-3000}:3000"
     environment:
       - NODE_ENV=production
+      - BFF_PUBLIC_URL=${BFF_URL:-http://localhost:4000}
