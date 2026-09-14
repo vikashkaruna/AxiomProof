@@ -19,6 +19,9 @@ PROJECT_ID="${1:-${GCP_PROJECT_ID:-axiom-proof}}"
 REGION="${2:-${GCP_REGION:-asia-south1}}"
 ENV="preprod"
 
+# Ensure all container operations default to linux/amd64 for Google Cloud Run
+export DOCKER_DEFAULT_PLATFORM="linux/amd64"
+
 # Colors
 BOLD='\033[1m'
 GREEN='\033[0;32m'

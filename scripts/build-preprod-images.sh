@@ -35,6 +35,9 @@ if command -v gcloud >/dev/null 2>&1; then
   gcloud auth configure-docker "${REGION}-docker.pkg.dev" --quiet || true
 fi
 
+# Force target platform for Google Cloud Run (always requires linux/amd64)
+export DOCKER_DEFAULT_PLATFORM="linux/amd64"
+
 SERVICES=(
   "bff:infra/docker/Dockerfile.bff"
   "web:infra/docker/Dockerfile.web"
@@ -50,8 +53,8 @@ for entry in "${SERVICES[@]}"; do
   IMAGE_URI="${REGISTRY}/axiom-${SVC_NAME}:${TAG}"
   LOCAL_TAG="axiom-${SVC_NAME}:${TAG}"
 
-  echo -e "\n▶ Building [${SVC_NAME}] using ${DOCKERFILE}..."
-  docker build -f "${DOCKERFILE}" -t "${LOCAL_TAG}" -t "${IMAGE_URI}" .
+  echo -e "\n▶ Building [${SVC_NAME}] using ${DOCKERFILE} (platform: linux/amd64)..."
+  docker build --platform linux/amd64 --provenance=false -f "${DOCKERFILE}" -t "${LOCAL_TAG}" -t "${IMAGE_URI}" .
 
   if [ "${PUSH_IMAGES:-false}" = "true" ] || [ "${1:-}" != "" ]; then
     echo "  Pushing ${IMAGE_URI}..."
