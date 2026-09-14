@@ -55,7 +55,7 @@ for entry in "${SERVICES[@]}"; do
 
   if [ "${PUSH_IMAGES:-false}" = "true" ] || [ "${1:-}" != "" ]; then
     echo "  Pushing ${IMAGE_URI}..."
-    docker push "${IMAGE_URI}" || echo "  Warning: Push failed. Ensure 'gcloud auth configure-docker' has permissions."
+    docker push "${IMAGE_URI}"
   fi
   echo "  ✓ Successfully built ${LOCAL_TAG}"
 done

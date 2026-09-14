@@ -63,28 +63,51 @@ if [ -z "${GOOGLE_APPLICATION_CREDENTIALS:-}" ] && [ -z "${GOOGLE_OAUTH_ACCESS_T
 fi
 
 
-# Step 2: Infrastructure Provisioning with Terraform
-info "Step 2/6: Planning & applying GCP Terraform infrastructure..."
+# Step 2: Foundational Infrastructure Provisioning with Terraform
+info "Step 2/7: Planning & applying GCP foundational infrastructure (VPC, Cloud SQL, GCS, Artifact Registry, Secrets)..."
 cd "infra/terraform/envs/preprod"
 terraform init -upgrade
 if [ ! -f "terraform.tfvars" ] && [ -f "terraform.tfvars.example" ]; then
   warn "terraform.tfvars not found. Creating from terraform.tfvars.example..."
   cp terraform.tfvars.example terraform.tfvars
 fi
-terraform apply -auto-approve -var="project_id=${PROJECT_ID}" -var="region=${REGION}"
-BFF_URL=$(terraform output -raw bff_url 2>/dev/null || echo "")
-WEB_URL=$(terraform output -raw web_url 2>/dev/null || echo "")
+terraform apply -auto-approve \
+  -target=google_artifact_registry_repository.docker_repo \
+  -target=google_storage_bucket.evidence_vault \
+  -target=google_storage_hmac_key.s3_compat_key \
+  -target=google_storage_bucket_iam_member.storage_admin \
+  -target=google_sql_database_instance.postgres \
+  -target=google_sql_database.axiom_db \
+  -target=google_sql_user.axiom_user \
+  -target=google_secret_manager_secret.secret \
+  -target=google_secret_manager_secret_version.version \
+  -target=google_vpc_access_connector.connector \
+  -target=google_service_account.cloudrun_sa \
+  -target=google_service_account.storage_sa \
+  -target=google_project_iam_member.secret_accessor \
+  -target=google_project_iam_member.artifact_reader \
+  -target=google_project_iam_member.cloudsql_client \
+  -var="project_id=${PROJECT_ID}" -var="region=${REGION}"
 DB_PUBLIC_IP=$(terraform output -raw cloud_sql_public_ip 2>/dev/null || echo "")
 cd "$REPO_ROOT"
-pass "GCP Infrastructure provisioned (VPC, Cloud SQL, GCS, Artifact Registry, Secrets)"
+pass "Foundational infrastructure provisioned (VPC, Cloud SQL, GCS, Artifact Registry, Secrets)"
 
 # Step 3: Build & Push Container Images to Artifact Registry
-info "Step 3/6: Building and pushing container images to Artifact Registry..."
+info "Step 3/7: Building and pushing container images to Artifact Registry..."
 PUSH_IMAGES=true ./scripts/build-preprod-images.sh "${PROJECT_ID}" "${REGION}" "${ENV}"
 pass "Container images pushed to ${REGION}-docker.pkg.dev/${PROJECT_ID}/axiom-proof-preprod"
 
-# Step 4: Cloud SQL Database Migrations
-info "Step 4/6: Applying database migrations to Cloud SQL PostgreSQL..."
+# Step 4: Deploy Cloud Run Microservices with Terraform
+info "Step 4/7: Deploying Cloud Run microservices (BFF, Web, Agent Runtime, Model Gateway, Temporal Worker)..."
+cd "infra/terraform/envs/preprod"
+terraform apply -auto-approve -var="project_id=${PROJECT_ID}" -var="region=${REGION}"
+BFF_URL=$(terraform output -raw bff_url 2>/dev/null || echo "")
+WEB_URL=$(terraform output -raw web_url 2>/dev/null || echo "")
+cd "$REPO_ROOT"
+pass "Cloud Run microservices deployed and accessible"
+
+# Step 5: Cloud SQL Database Migrations
+info "Step 5/7: Applying database migrations to Cloud SQL PostgreSQL..."
 if [ -n "$DB_PUBLIC_IP" ]; then
   echo "  Target Cloud SQL IP: ${DB_PUBLIC_IP}"
   ./scripts/migrate-cloudsql.sh "postgresql://axiom_admin:$(cd infra/terraform/envs/preprod && terraform output -raw db_password 2>/dev/null || echo '')@${DB_PUBLIC_IP}:5432/axiom_proof_preprod" || warn "Migrations direct connect notice — ensure authorized networks allow your IP."
@@ -92,12 +115,12 @@ else
   warn "Skipping direct migration; Cloud SQL public IP not exported."
 fi
 
-# Step 5: Firebase Static Deployment for Marketing Site
-info "Step 5/6: Deploying marketing site to Google Firebase Static Hosting..."
+# Step 6: Firebase Static Deployment for Marketing Site
+info "Step 6/7: Deploying marketing site to Google Firebase Static Hosting..."
 ./scripts/deploy-firebase-marketing.sh "${PROJECT_ID}" || warn "Firebase CLI deploy skipped or requires login."
 
-# Step 6: Health & Readiness Verification
-info "Step 6/6: Verifying service health..."
+# Step 7: Health & Readiness Verification
+info "Step 7/7: Verifying service health..."
 if [ -n "$BFF_URL" ]; then
   curl -fsS "${BFF_URL}/health" >/dev/null 2>&1 && pass "Cloud Run BFF is healthy (${BFF_URL})" || warn "BFF starting up..."
 fi

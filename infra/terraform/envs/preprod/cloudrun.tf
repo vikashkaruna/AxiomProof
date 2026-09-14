@@ -189,10 +189,6 @@ resource "google_cloud_run_v2_service" "web" {
         value = "1"
       }
       env {
-        name  = "PORT"
-        value = "3001"
-      }
-      env {
         name  = "BFF_PUBLIC_URL"
         value = google_cloud_run_v2_service.bff.uri
       }
@@ -251,10 +247,6 @@ resource "google_cloud_run_v2_service" "agent_runtime" {
       env {
         name  = "AWS_REGION"
         value = var.region
-      }
-      env {
-        name  = "PORT"
-        value = "8000"
       }
       env {
         name  = "MODEL_GATEWAY_URL"
@@ -370,10 +362,6 @@ resource "google_cloud_run_v2_service" "model_gateway" {
       env {
         name  = "AWS_REGION"
         value = var.region
-      }
-      env {
-        name  = "PORT"
-        value = "8001"
       }
       env {
         name  = "PII_REDACTION_ENABLED"
@@ -529,10 +517,6 @@ resource "google_cloud_run_v2_service" "marketing" {
       env {
         name  = "NODE_ENV"
         value = "production"
-      }
-      env {
-        name  = "PORT"
-        value = "3000"
       }
       env {
         name  = "BFF_PUBLIC_URL"

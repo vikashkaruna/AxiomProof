@@ -45,6 +45,13 @@ resource "google_vpc_access_connector" "connector" {
   max_instances = 5
   machine_type  = "e2-micro"
   depends_on    = [google_project_service.apis]
+
+  lifecycle {
+    ignore_changes = [
+      max_throughput,
+      min_throughput,
+    ]
+  }
 }
 
 # Private Service Connection for Cloud SQL
