@@ -49,6 +49,20 @@ command -v docker >/dev/null 2>&1 || { fail "Docker not installed or daemon not 
 command -v pnpm >/dev/null 2>&1 || { fail "pnpm not installed."; exit 1; }
 pass "Pre-flight dependencies verified (gcloud, terraform, docker, pnpm)"
 
+# GCP Authentication & Credentials verification
+if [ -z "${GOOGLE_APPLICATION_CREDENTIALS:-}" ] && [ -z "${GOOGLE_OAUTH_ACCESS_TOKEN:-}" ]; then
+  if gcloud auth application-default print-access-token >/dev/null 2>&1; then
+    pass "Google Cloud Application Default Credentials (ADC) verified"
+  elif TOKEN=$(gcloud auth print-access-token 2>/dev/null); then
+    export GOOGLE_OAUTH_ACCESS_TOKEN="$TOKEN"
+    pass "Active gcloud user session detected; exported GOOGLE_OAUTH_ACCESS_TOKEN for Terraform"
+  else
+    fail "No Google Cloud credentials found. Run 'gcloud auth application-default login' or 'gcloud auth login'."
+    exit 1
+  fi
+fi
+
+
 # Step 2: Infrastructure Provisioning with Terraform
 info "Step 2/6: Planning & applying GCP Terraform infrastructure..."
 cd "infra/terraform/envs/preprod"

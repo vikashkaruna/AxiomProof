@@ -3,7 +3,7 @@
 **Environment:** Preproduction (`preprod`)  
 **Target Cloud:** Google Cloud Platform (GCP)  
 **Primary Region:** Mumbai (`asia-south1`) — 100% Domestic Indian Data Residency  
-**Architecture Tagline:** *"Agents do the work. You approve. The proof is automatic."*
+**Architecture Tagline:** _"Agents do the work. You approve. The proof is automatic."_
 
 ---
 
@@ -30,7 +30,7 @@ flowchart TD
     GCS[(GCS Evidence Vault<br/>WORM Bucket Lock<br/>asia-south1)]
     UPSTASH[(Upstash Serverless Redis<br/>Rate Limiting & Cache)]
     TMPRL[(Temporal Cloud GCP<br/>Durable Workflow Cluster)]
-    
+
     subgraph ModelFallback["Multi-Model Fallback Chain (PII Redacted)"]
       M1[1. Anthropic Claude 3.5 Sonnet] -->|Failover| M2[2. OpenAI GPT-4o]
       M2 -->|Failover| M3[3. Google Gemini 2.0 Flash]
@@ -52,35 +52,35 @@ flowchart TD
 
 ### Component Inventory & Resource Allocations
 
-| Component | Repository Path | Deploy Platform | Port | Sizing (Preprod) | Scaling Bounds |
-| :--- | :--- | :--- | :---: | :--- | :---: |
-| **API Layer (BFF)** | `services/bff` | Cloud Run v2 | `4000` | 2 vCPU / 2 GiB RAM | 1 – 10 instances |
-| **App Layer (Workbench)** | `apps/web` | Cloud Run v2 | `3001` | 2 vCPU / 2 GiB RAM | 1 – 10 instances |
-| **Agents Layer (Runtime)** | `services/agent-runtime` | Cloud Run v2 | `8000` | 2 vCPU / 4 GiB RAM | 1 – 5 instances |
-| **Model Gateway** | `services/model-gateway` | Cloud Run v2 | `8001` | 2 vCPU / 4 GiB RAM | 1 – 5 instances |
-| **Temporal Worker** | `services/temporal-workers` | Cloud Run v2 | — | 1 vCPU / 2 GiB RAM | 1 – 3 instances |
-| **Marketing (Container)** | `apps/marketing` | Cloud Run v2 | `3000` | 1 vCPU / 1 GiB RAM | 1 – 5 instances |
-| **Marketing (Public Site)**| `apps/marketing/out` | Firebase Static | — | CDN Edge Cached | Global CDN Edge |
-| **Database** | `infra/supabase/migrations`| Cloud SQL PG 15 | `5432` | `db-custom-2-7680` | Auto-resize SSD |
-| **Evidence Vault** | `packages/evidence` | Google Cloud Storage| — | Standard / WORM Lock | Unlimited |
-| **Cache & Queue** | Upstash Redis | Serverless Upstash | `6379` | Serverless Redis | Auto-scale |
-| **Orchestration** | Temporal Cloud | GCP Subscription | `7233` | Managed Cloud | SLA 99.99% |
+| Component                   | Repository Path             | Deploy Platform      |  Port  | Sizing (Preprod)     |  Scaling Bounds  |
+| :-------------------------- | :-------------------------- | :------------------- | :----: | :------------------- | :--------------: |
+| **API Layer (BFF)**         | `services/bff`              | Cloud Run v2         | `4000` | 2 vCPU / 2 GiB RAM   | 1 – 10 instances |
+| **App Layer (Workbench)**   | `apps/web`                  | Cloud Run v2         | `3001` | 2 vCPU / 2 GiB RAM   | 1 – 10 instances |
+| **Agents Layer (Runtime)**  | `services/agent-runtime`    | Cloud Run v2         | `8000` | 2 vCPU / 4 GiB RAM   | 1 – 5 instances  |
+| **Model Gateway**           | `services/model-gateway`    | Cloud Run v2         | `8001` | 2 vCPU / 4 GiB RAM   | 1 – 5 instances  |
+| **Temporal Worker**         | `services/temporal-workers` | Cloud Run v2         |   —    | 1 vCPU / 2 GiB RAM   | 1 – 3 instances  |
+| **Marketing (Container)**   | `apps/marketing`            | Cloud Run v2         | `3000` | 1 vCPU / 1 GiB RAM   | 1 – 5 instances  |
+| **Marketing (Public Site)** | `apps/marketing/out`        | Firebase Static      |   —    | CDN Edge Cached      | Global CDN Edge  |
+| **Database**                | `infra/supabase/migrations` | Cloud SQL PG 15      | `5432` | `db-custom-2-7680`   | Auto-resize SSD  |
+| **Evidence Vault**          | `packages/evidence`         | Google Cloud Storage |   —    | Standard / WORM Lock |    Unlimited     |
+| **Cache & Queue**           | Upstash Redis               | Serverless Upstash   | `6379` | Serverless Redis     |    Auto-scale    |
+| **Orchestration**           | Temporal Cloud              | GCP Subscription     | `7233` | Managed Cloud        |    SLA 99.99%    |
 
 ### Independent Docker Topology for Scalability & Local Parity
 
 To maximize horizontal scalability, failure isolation, and independent rollouts, Cloud Run executes different Docker containers for each microservice layer. When running locally (or testing preprod on localhost), the exact same architecture runs across 9 distinct Docker containers:
 
-| Service | Container Name | Localhost URL | Purpose & Scalability Role |
-| :--- | :--- | :--- | :--- |
-| **Web Workbench** | `axiom-web` | `http://localhost:3001` | Core operator UI, plan review, approval console, kill switch (Scales 1–10 on Cloud Run) |
-| **Marketing Site** | `axiom-marketing` | `http://localhost:3000` | Public funnel & interactive 5-minute DPDPA gap-scan (Scales 1–5 on Cloud Run, or Firebase CDN) |
-| **BFF API Engine** | `axiom-bff` | `http://localhost:4000` | Execution gate, auth, approval token issuance, kill switch (Scales 1–10 on Cloud Run) |
-| **Agent Runtime** | `axiom-agent-runtime` | `http://localhost:8000` | 10 named compliance agents: Drishti, Sudhaar, etc. (Scales 1–5 on Cloud Run) |
-| **Model Gateway** | `axiom-model-gateway` | `http://localhost:8001` | PII redactor (Presidio + regex) & LLM router (Scales 1–5 on Cloud Run) |
-| **Temporal UI** | `axiom-temporal-ui` | `http://localhost:8233` | Durable workflow state machine visualizer |
-| **Temporal Server** | `axiom-temporal` | `localhost:7233` | gRPC orchestration engine |
-| **Supabase Studio** | `axiom-supabase-studio` | `http://localhost:55323` | Database inspection, tables, and SQL editor |
-| **Supabase Gateway** | `axiom-supabase-gateway`| `http://localhost:55321` | Kong API gateway & Supabase REST |
+| Service              | Container Name           | Localhost URL            | Purpose & Scalability Role                                                                     |
+| :------------------- | :----------------------- | :----------------------- | :--------------------------------------------------------------------------------------------- |
+| **Web Workbench**    | `axiom-web`              | `http://localhost:3001`  | Core operator UI, plan review, approval console, kill switch (Scales 1–10 on Cloud Run)        |
+| **Marketing Site**   | `axiom-marketing`        | `http://localhost:3000`  | Public funnel & interactive 5-minute DPDPA gap-scan (Scales 1–5 on Cloud Run, or Firebase CDN) |
+| **BFF API Engine**   | `axiom-bff`              | `http://localhost:4000`  | Execution gate, auth, approval token issuance, kill switch (Scales 1–10 on Cloud Run)          |
+| **Agent Runtime**    | `axiom-agent-runtime`    | `http://localhost:8000`  | 10 named compliance agents: Drishti, Sudhaar, etc. (Scales 1–5 on Cloud Run)                   |
+| **Model Gateway**    | `axiom-model-gateway`    | `http://localhost:8001`  | PII redactor (Presidio + regex) & LLM router (Scales 1–5 on Cloud Run)                         |
+| **Temporal UI**      | `axiom-temporal-ui`      | `http://localhost:8233`  | Durable workflow state machine visualizer                                                      |
+| **Temporal Server**  | `axiom-temporal`         | `localhost:7233`         | gRPC orchestration engine                                                                      |
+| **Supabase Studio**  | `axiom-supabase-studio`  | `http://localhost:55323` | Database inspection, tables, and SQL editor                                                    |
+| **Supabase Gateway** | `axiom-supabase-gateway` | `http://localhost:55321` | Kong API gateway & Supabase REST                                                               |
 
 ---
 
@@ -239,6 +239,7 @@ export DATABASE_URL="postgresql://axiom_admin:${DB_PASSWORD}@${CLOUD_SQL_IP}:543
 ```
 
 This applies:
+
 1. `0000_bootstrap_roles_and_extensions.sql` (Sovereign roles & pgcrypto)
 2. `0001_init_tenants_users.sql` (Multi-tenant foundation, users, engagements)
 3. `0002_control_library.sql` (Statutory control library schemas)
@@ -264,6 +265,7 @@ PUSH_IMAGES=true ./scripts/build-preprod-images.sh "${GCP_PROJECT_ID}" "${GCP_RE
 ```
 
 Images built and pushed:
+
 - `asia-south1-docker.pkg.dev/axiom-proof/axiom-proof-preprod/axiom-bff:preprod`
 - `asia-south1-docker.pkg.dev/axiom-proof/axiom-proof-preprod/axiom-web:preprod`
 - `asia-south1-docker.pkg.dev/axiom-proof/axiom-proof-preprod/axiom-agent-runtime:preprod`
@@ -280,6 +282,7 @@ The public-facing marketing site (`apps/marketing`) is deployed to **Google Fire
 ### Firebase Project Integration with GCP
 
 Firebase is enabled directly on the existing GCP project `axiom-proof`:
+
 ```bash
 # Integrate Firebase into the GCP project (if not already enabled in console)
 firebase projects:addfirebase axiom-proof
@@ -294,6 +297,7 @@ firebase login
 ```
 
 Under the hood, this executes:
+
 - `NEXT_OUTPUT=export pnpm --filter @axiom/marketing build:export`
 - Exports 12 pre-rendered pages to `apps/marketing/out`
 - Deploys static assets, security headers (`X-Frame-Options: DENY`, `X-Content-Type-Options: nosniff`), clean URLs, and SSL certificates to `https://axiom-proof.web.app` and `https://axiom-proof.firebaseapp.com`.
@@ -405,6 +409,7 @@ curl -s -X POST "${BFF_URL}/v1/ledger/verify" \
 ```
 
 Expected response:
+
 ```json
 {
   "valid": true,

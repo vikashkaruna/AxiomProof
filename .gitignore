@@ -69,3 +69,7 @@ charts/*/charts/
 infra/supabase/.branches/
 infra/supabase/.temp/
 infra/supabase/snippets/
+
+# Firebase
+.firebase/
+

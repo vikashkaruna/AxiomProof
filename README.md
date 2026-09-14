@@ -216,17 +216,17 @@ For staging deployment on Windows 11 Home running Docker Desktop (WSL2), locally
 
 Each layer runs as an independent Docker container for modular scalability and local fidelity:
 
-| Component | Localhost URL | Purpose & Scalability Role |
-| :--- | :--- | :--- |
-| **Web Workbench** | `http://localhost:3001` | Core operator UI, plan review, approval console, kill switch |
-| **Marketing Site** | `http://localhost:3000` | Public funnel & interactive 5-minute DPDPA gap-scan |
-| **BFF API Engine** | `http://localhost:4000` | Execution gate, auth, approval token issuance, kill switch |
-| **Agent Runtime** | `http://localhost:8000` | 10 named compliance agents (Drishti, Sudhaar, etc.) |
-| **Model Gateway** | `http://localhost:8001` | PII redactor (Presidio + regex) & LLM router |
-| **Temporal UI** | `http://localhost:8233` | Durable workflow state machine visualizer |
-| **Temporal Server** | `localhost:7233` | gRPC orchestration engine |
-| **Supabase Studio** | `http://localhost:55323` | Database inspection, tables, and SQL editor |
-| **Supabase Gateway** | `http://localhost:55321` | Kong API gateway & Supabase REST |
+| Component            | Localhost URL            | Purpose & Scalability Role                                   |
+| :------------------- | :----------------------- | :----------------------------------------------------------- |
+| **Web Workbench**    | `http://localhost:3001`  | Core operator UI, plan review, approval console, kill switch |
+| **Marketing Site**   | `http://localhost:3000`  | Public funnel & interactive 5-minute DPDPA gap-scan          |
+| **BFF API Engine**   | `http://localhost:4000`  | Execution gate, auth, approval token issuance, kill switch   |
+| **Agent Runtime**    | `http://localhost:8000`  | 10 named compliance agents (Drishti, Sudhaar, etc.)          |
+| **Model Gateway**    | `http://localhost:8001`  | PII redactor (Presidio + regex) & LLM router                 |
+| **Temporal UI**      | `http://localhost:8233`  | Durable workflow state machine visualizer                    |
+| **Temporal Server**  | `localhost:7233`         | gRPC orchestration engine                                    |
+| **Supabase Studio**  | `http://localhost:55323` | Database inspection, tables, and SQL editor                  |
+| **Supabase Gateway** | `http://localhost:55321` | Kong API gateway & Supabase REST                             |
 
 ---
 
@@ -276,7 +276,8 @@ For preproduction deployment on **Google Cloud Platform (GCP)** in Mumbai (`asia
 ## Production Deployment (AWS ap-south-1)
 
 For production deployment to AWS `ap-south-1` (EKS + S3 + ElastiCache
-+ Supabase + Temporal Cloud), see [`docs/08_DEPLOYMENT_GUIDE.md`](./docs/08_DEPLOYMENT_GUIDE.md).
+
+- Supabase + Temporal Cloud), see [`docs/08_DEPLOYMENT_GUIDE.md`](./docs/08_DEPLOYMENT_GUIDE.md).
   For day-2 operations, see [`docs/09_RUNBOOK.md`](./docs/09_RUNBOOK.md).
   For the security review and SDLC, see [`docs/07_SECURITY_REVIEW.md`](./docs/07_SECURITY_REVIEW.md).
 
