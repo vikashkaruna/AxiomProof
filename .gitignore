@@ -57,7 +57,8 @@ playwright/.cache/
 .terraform/
 .terraform.lock.hcl
 *.tfstate
-*.tfstate.backup
+*.tfstate.*
+.*.lock.info
 *.tfvars
 !example.tfvars
 charts/*/charts/
