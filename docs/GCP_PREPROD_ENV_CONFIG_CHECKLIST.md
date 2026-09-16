@@ -427,6 +427,125 @@ internet. **Keep it that way.** The BFF calls them with the
 
 ---
 
+### Step 2.13 — Cost-minimized sizing & scaling (keep the bill small)
+
+Preprod currently runs with hardcoded generous sizes (`2 vCPU + 2 GiB`, `min_instance_count = 1` on every
+service). That keeps the idle bill at roughly **₹36,000/month**. Cut it to roughly **₹1,000/month at idle**
+with the edits below.
+
+#### Where every size and scale knob lives
+
+| # | Layer | File | Lines | What's there |
+|---|---|---|---|---|
+| 1 | **Cloud Run services** (biggest lever) | `infra/terraform/envs/preprod/cloudrun.tf` | 23–35, 176–188, 256–268, 371–383, 478–490, 548–560 | `scaling { min_instance_count, max_instance_count }` + `resources.limits { cpu, memory }` per service. **Hardcoded today — edit in place.** |
+| 2 | **Cloud SQL PostgreSQL** | `infra/terraform/envs/preprod/cloudsql.tf` | 21–23, 61 | `tier`, `disk_size`, `availability_type`, `deletion_protection`. Tier + disk come from variables — set them in `terraform.tfvars`. |
+| 3 | **VPC Serverless Connector** | `infra/terraform/envs/preprod/main.tf` | 39–55 | `min_instances`, `max_instances`, `machine_type`. Always-on billing per instance. |
+| 4 | **GCS Evidence Vault** | `infra/terraform/envs/preprod/storage.tf` | 11–47 | `storage_class`, `versioning`, `lifecycle_rule` (→ ARCHIVE), `enable_object_retention`. WORM constraint means retention/v versioning are non-negotiable. |
+| 5 | **Helm (legacy EKS path)** | `infra/helm/axiom-proof/values.yaml` | 35–151 | `replicaCount`, `resources.requests`, `resources.limits`, `autoscaling.min/maxReplicas`. **Not used for GCP preprod** (Cloud Run only). |
+| 6 | **Local Docker compose** | `docker-compose.yml` + `infra/docker/docker-compose.preprod.yml` | n/a | No resource limits today. Host caps apply. Add `cpus:` and `mem_limit:` per service if you want a hard cap on local CI. |
+
+#### Current (costly) defaults vs. recommended cost-minimized values
+
+##### A. Cloud Run — `cloudrun.tf` (biggest saving)
+
+Apply these six edits:
+
+```hcl
+# BFF (block at line 23 + line 31)
+scaling { min_instance_count = 0  max_instance_count = 3 }   # was: 1 / 10
+resources.limits { cpu = "1"  memory = "1Gi" }               # was: 2 / 2Gi
+
+# Web (block at line 176 + line 184)
+scaling { min_instance_count = 0  max_instance_count = 3 }
+resources.limits { cpu = "1"  memory = "1Gi" }
+
+# Agent Runtime (block at line 256 + line 264) — heaviest, keep modestly warm if demos are frequent
+scaling { min_instance_count = 0  max_instance_count = 2 }
+resources.limits { cpu = "1"  memory = "2Gi" }                # was: 2 / 4Gi
+
+# Model Gateway (block at line 371 + line 379)
+scaling { min_instance_count = 0  max_instance_count = 2 }
+resources.limits { cpu = "1"  memory = "2Gi" }
+
+# Temporal Worker (block at line 478 + line 486) — only runs workflows
+scaling { min_instance_count = 0  max_instance_count = 2 }
+resources.limits { cpu = "1"  memory = "1Gi" }                # was: 1 / 2Gi
+
+# Marketing CR (block at line 548 + line 556)
+scaling { min_instance_count = 0  max_instance_count = 2 }
+resources.limits { cpu = "1"  memory = "512Mi" }             # was: 1Gi
+```
+
+##### B. Cloud SQL — `terraform.tfvars` (set in step 2.x above)
+
+```hcl
+cloud_sql_tier         = "db-f1-micro"      # was db-custom-2-7680
+cloud_sql_disk_size_gb = 10                 # was 20; resize up with `gcloud sql instances patch` if needed
+```
+
+For very heavy operations (full 46-control re-assessment, Parikshan run, migrations), temporarily bump
+the tier:
+
+```bash
+gcloud sql instances patch axiom-proof-preprod-pg-af455108 \
+  --project axiom-proof --region asia-south1 \
+  --tier=db-custom-2-7680
+# ... run heavy work ...
+gcloud sql instances patch axiom-proof-preprod-pg-af455108 \
+  --project axiom-proof --region asia-south1 \
+  --tier=db-f1-micro
+```
+
+`db-f1-micro` is shared-CPU, so during the spike you get ~6× throughput. Fine for one-off.
+
+##### C. VPC Connector — `infra/terraform/envs/preprod/main.tf`
+
+```hcl
+# Block at line 39–46
+resource "google_vpc_access_connector" "connector" {
+  ...
+  min_instances = 0       # was: 2  → drops idle connector cost from ~₹1,300/mo to ₹0
+  max_instances = 3       # was: 5
+  machine_type  = "e2-micro"
+}
+```
+
+Trade-off: first Cloud Run → Cloud SQL request after idle pays a ~5 s connector spin-up cost.
+
+##### D. GCS Evidence Vault — keep as-is
+
+`storage.tf` already does the right thing for cost: STANDARD storage with a lifecycle rule that pushes
+objects to ARCHIVE after `retention_days + 30` (= 2585 days). **Do NOT** turn off versioning — it's part
+of the WORM audit guarantee and removing it would break Hard Rule 4 (statutory DPDPA retention).
+
+#### Trade-offs to be aware of
+
+| Choice | What you save | What you give up |
+|---|---|---|
+| `min_instance_count = 0` on Cloud Run | ~₹1,000/instance/month idle | 1–3 s cold start after idle (≥15 min no traffic) |
+| `db-f1-micro` | ~₹12,000/month vs `db-custom-2-7680` | Shared CPU; 5–15 s slowdown during heavy operations |
+| VPC connector `min_instances = 0` | ~₹1,300/month | ~5 s connector spin-up on first request after idle |
+| Lower `cpu` (e.g. `1` vs `2`) | Lower per-request charge | Caps per-instance concurrency at ~80 (vs ~33 with `2`) — irrelevant for preprod traffic |
+| Lower `memory` (`512Mi` vs `1Gi`) | Lower per-request GiB·seconds | OOM risk on Parikshan's 46-control evaluation if concurrent assessments spike |
+
+**Recommended posture for preprod:** keep BFF and Web `min_instance_count = 1` so demos and smoke tests
+don't pay cold-start tax. Set the rest to 0. The numbers above are the absolute floor.
+
+#### Approximate monthly bill (asia-south1, Sept 2026 pricing)
+
+| Component | Before | After (full cut) | After (BFF+Web warm) |
+|---|---|---|---|
+| Cloud SQL (`db-custom-2-7680` → `db-f1-micro`) | ₹28,000 | ₹250 | ₹250 |
+| Cloud Run 6 services (idle, `min=1` × 6) | ₹6,000 | **₹0** | ₹2,000 (BFF + Web) |
+| VPC connector (`min=2`) | ₹1,300 | **₹0** | ₹130 (min=1) |
+| Artifact Registry + Secret Manager + GCS versioning | ₹500 | ₹500 | ₹500 |
+| Pay-per-request spike during `run-preprod-flow.sh` | varies | ~₹50 | ~₹50 |
+| **Total at idle** | **~₹36,000/mo** | **~₹800/mo** | **~₹2,900/mo** |
+
+The 12–45× saving is almost entirely from `min_instance_count = 0` on Cloud Run.
+
+---
+
 ## 3. Filled-in `terraform.tfvars` (template)
 
 Save the values below into `terraform.tfvars`. **Do not commit the file** —
