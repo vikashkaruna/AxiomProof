@@ -138,7 +138,17 @@ supabase start
 cd ../..
 pnpm db:migrate
 pnpm seed:controls
+pnpm seed:users
 ```
+
+#### Standard Demo Users
+
+| Persona / Role         | Email                    | Password            | Scope / Tenant                                 |
+| :--------------------- | :----------------------- | :------------------ | :--------------------------------------------- |
+| **Founder / Admin**    | `founder@axiomminds.ai`  | `Admin@12345678`    | All Tenants · Role: `owner`                    |
+| **Fintech DPO**        | `dpo@meridianpay.com`    | `Meridian@123456`   | Meridian Pay (`...0001`) · Role: `admin`       |
+| **Healthcare Auditor** | `auditor@aarogya.in`     | `Aarogya@123456`    | Aarogya Health (`...0002`) · Role: `reviewer`  |
+| **SaaS SecOps Lead**   | `security@streamline.io` | `Streamline@123456` | Streamline SaaS (`...0003`) · Role: `approver` |
 
 ### 4. Build the controls.json for the Python agent runtime
 

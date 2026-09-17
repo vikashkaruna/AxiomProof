@@ -1295,13 +1295,13 @@ This section organizes environment-specific settings, automated and manual verif
 
 #### 1. Environment Architecture & Matrix
 
-| Environment            | Purpose                              | Auth Mechanism                          | Database & Storage                       | Model Gateway                             |
-| :--------------------- | :----------------------------------- | :-------------------------------------- | :--------------------------------------- | :---------------------------------------- |
-| **Local Dev**          | Rapid iteration & debugging          | Local Supabase GoTrue (`55321`)         | Local Postgres (`55322`) + Local S3 mock | Self-hosted Ollama or Bedrock mock        |
-| **E2E / CI**           | Automated Playwright regression      | `axiom_e2e_bypass` cookie & mock client | In-memory deterministic fixture store    | Mocked PII redaction layer                |
-| **Staging / Pre-Prod** | UAT, auditor partner dry-runs        | Supabase Cloud / IAM JWT                | Managed AWS RDS Postgres (`ap-south-1`)  | AWS Bedrock in `ap-south-1`               |
-| **On-Premise**         | Air-gapped enterprise deployment     | Active Directory / OIDC / Kerberos      | Customer PostgreSQL (SECURITY DEFINER)   | Self-hosted vLLM / Ollama in enclave      |
-| **Production**         | Live sovereign enterprise compliance | Supabase Enterprise / Multi-Tenant RLS  | Sovereign AWS RDS + S3 Object Lock Vault | Dedicated AWS Bedrock / Mistral Sovereign |
+| Environment            | Purpose                              | Auth Mechanism                            | Database & Storage                         | Model Gateway                              |
+| :--------------------- | :----------------------------------- | :---------------------------------------- | :----------------------------------------- | :----------------------------------------- |
+| **Local Dev**          | Rapid iteration & debugging          | Local Supabase GoTrue (`55321`) / Seed    | Local Postgres (`55322`) + Local S3 mock   | Self-hosted Ollama or Bedrock mock         |
+| **E2E / CI**           | Automated Playwright regression      | Test Runner Mock Client (`NODE_ENV=test`) | In-memory deterministic fixture store      | Mocked PII redaction layer                 |
+| **Staging / Pre-Prod** | UAT, auditor partner dry-runs        | Supabase Auth / Multi-Tenant Seed Roster  | Managed Cloud SQL Postgres (`asia-south1`) | Multi-model fallback chain (Anthropic/OAI) |
+| **On-Premise**         | Air-gapped enterprise deployment     | Direct Postgres / OIDC / Intranet Seed    | Customer PostgreSQL (SECURITY DEFINER)     | Self-hosted vLLM / Ollama in enclave       |
+| **Production**         | Live sovereign enterprise compliance | Supabase Enterprise / Multi-Tenant RLS    | Sovereign Cloud SQL + S3 Object Lock Vault | Dedicated Mistral / Anthropic Sovereign    |
 
 #### 2. Pre-Requisites Checklist (Before Deployment / Audit)
 
@@ -1329,10 +1329,14 @@ pnpm typecheck
 # 2. Vitest UI & shared library unit tests (10/10 passed)
 pnpm test
 
-# 3. Python Agent Runtime test suite (36/36 passed)
+# 3. Seed statutory control library and standard authenticated user roster
+pnpm seed:controls
+pnpm seed:users
+
+# 4. Python Agent Runtime test suite (36/36 passed)
 cd services/agent-runtime && uv run pytest
 
-# 4. End-to-End Playwright test suite (11/11 passed)
+# 5. End-to-End Playwright test suite (11/11 passed)
 cd ../..
 pnpm --dir tests/e2e test:e2e
 ```

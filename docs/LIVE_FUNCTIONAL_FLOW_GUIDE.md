@@ -45,11 +45,20 @@ flowchart TD
 
 ## 2. Walkthrough Option A: Web Workbench UI (Interactive)
 
-### Step 1: Create a Fresh Compliance User
+### Step 1: Sign in with a Seeded Compliance User (or Sign Up)
 
-1. Navigate to the Web App: `http://localhost:3001/login?mode=signup` (or `http://<HOST_IP>:3001/login?mode=signup` from LAN).
-2. Enter your Full Name, official Email, and a secure password (minimum 12 characters).
-3. Click **Create account**. The system registers your auth credentials and signs you in.
+You can log in directly using one of the pre-seeded multi-tenant user accounts:
+
+| Role / Persona              | Email                    | Password            | Tenant / Scope                                   |
+| :-------------------------- | :----------------------- | :------------------ | :----------------------------------------------- |
+| **Founder / Super Admin**   | `founder@axiomminds.ai`  | `Admin@12345678`    | All Tenants · Role: `owner` (Full scope `{"*"}`) |
+| **Fintech Compliance DPO**  | `dpo@meridianpay.com`    | `Meridian@123456`   | Meridian Pay (`...0001`) · Role: `admin`         |
+| **Healthcare Lead Auditor** | `auditor@aarogya.in`     | `Aarogya@123456`    | Aarogya Health (`...0002`) · Role: `reviewer`    |
+| **SaaS SecOps Lead**        | `security@streamline.io` | `Streamline@123456` | Streamline SaaS (`...0003`) · Role: `approver`   |
+
+1. Navigate to the Web App: `http://localhost:3001/login` (or preprod Cloud Run URL).
+2. Enter the credentials for any of the above personas, or click **Sign up** (`http://localhost:3001/login?mode=signup`) to register a new tenant account.
+3. Click **Sign in**. The system validates your credentials and redirects to the Compliance Workbench (`/workbench` or `/dashboard`). Note: skip-login bypass is forbidden in all environments.
 
 ### Step 2: Onboard your Organization Dynamically
 

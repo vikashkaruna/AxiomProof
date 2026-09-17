@@ -249,6 +249,24 @@ This applies:
 7. `0006_ledger_role_and_extras.sql` (Security definer `append_ledger()`)
 8. `0007_storage_buckets_and_policies.sql` (Storage schemas)
 9. Statutory seed of all 46 DPDPA controls (`pnpm seed:controls`).
+10. Standard authenticated user & tenant provisioning (`infra/supabase/seed-users.sql` and `pnpm seed:users`).
+
+### Standard Authenticated User Roster
+
+Axiom Proof strictly forbids authentication bypasses or mock sessions in live environments. Login requires genuine credentials provisioned via the seed pipeline:
+
+| Role / Persona              | Email                    | Password            | Tenant / Scope                                   |
+| :-------------------------- | :----------------------- | :------------------ | :----------------------------------------------- |
+| **Founder / Super Admin**   | `founder@axiomminds.ai`  | `Admin@12345678`    | All Tenants · Role: `owner` (Full scope `{"*"}`) |
+| **Fintech Compliance DPO**  | `dpo@meridianpay.com`    | `Meridian@123456`   | Meridian Pay (`...0001`) · Role: `admin`         |
+| **Healthcare Lead Auditor** | `auditor@aarogya.in`     | `Aarogya@123456`    | Aarogya Health (`...0002`) · Role: `reviewer`    |
+| **SaaS SecOps Lead**        | `security@streamline.io` | `Streamline@123456` | Streamline SaaS (`...0003`) · Role: `approver`   |
+
+To re-seed or verify users programmatically:
+
+```bash
+pnpm seed:users
+```
 
 ---
 

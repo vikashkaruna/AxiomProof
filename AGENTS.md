@@ -105,8 +105,9 @@ cd tests/e2e && pnpm test:e2e
 pnpm db:migrate
 pnpm db:reset            # dev only
 
-# Seed the control library
+# Seed the control library & users
 pnpm seed:controls
+pnpm seed:users
 
 # Build the controls.json for the Python runtime
 pnpm tsx scripts/build-controls-json.mjs

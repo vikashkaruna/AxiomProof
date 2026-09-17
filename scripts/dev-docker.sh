@@ -239,9 +239,10 @@ preflight_checks() {
       else
         log_succ "Local Supabase stack is running on port 55321 (DB port 55322)."
       fi
-      # Sync migrations & seed controls
+      # Sync migrations & seed controls and users
       pnpm db:migrate || true
       pnpm seed:controls || true
+      pnpm seed:users || true
     else
       log_warn "Supabase CLI not found. Assuming external/containerized Supabase."
     fi
