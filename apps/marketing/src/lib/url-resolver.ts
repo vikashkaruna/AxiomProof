@@ -14,7 +14,6 @@ export function resolveAppUrl(): string {
 
     // Check Cloud Run preprod / staging / prod URLs
     // e.g. https://axiom-marketing-preprod-188516662106.asia-south1.run.app
-    // or https://axiom-marketing-preprod-7zb7qphjbq-el.a.run.app
     if (host.includes('marketing-preprod')) {
       return origin.replace('marketing-preprod', 'web-preprod');
     }
@@ -70,7 +69,13 @@ export function resolveAppUrl(): string {
     return process.env.APP_URL;
   }
   if (process.env.ENVIRONMENT === 'preprod') {
-    return 'https://axiom-web-preprod-7zb7qphjbq-el.a.run.app';
+    const projectNumber = process.env.GCP_PROJECT_NUMBER || '188516662106';
+    const region = process.env.GCP_REGION || 'asia-south1';
+    return (
+      process.env.NEXT_PUBLIC_APP_URL ||
+      process.env.APP_URL ||
+      `https://axiom-web-preprod-${projectNumber}.${region}.run.app`
+    );
   }
   return process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3001';
 }

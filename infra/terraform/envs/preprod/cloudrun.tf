@@ -57,11 +57,15 @@ resource "google_cloud_run_v2_service" "bff" {
       }
       env {
         name  = "AGENT_RUNTIME_URL"
-        value = "https://axiom-agent-runtime-${var.environment}-${substr(google_service_account.cloudrun_sa.unique_id, 0, 10)}.a.run.app"
+        value = "https://axiom-agent-runtime-${var.environment}-${data.google_project.project.number}.${var.region}.run.app"
       }
       env {
         name  = "MODEL_GATEWAY_URL"
-        value = "https://axiom-model-gateway-${var.environment}-${substr(google_service_account.cloudrun_sa.unique_id, 0, 10)}.a.run.app"
+        value = "https://axiom-model-gateway-${var.environment}-${data.google_project.project.number}.${var.region}.run.app"
+      }
+      env {
+        name  = "BFF_CORS_ORIGINS"
+        value = "https://axiom-marketing-${var.environment}-${data.google_project.project.number}.${var.region}.run.app,https://axiom-web-${var.environment}-${data.google_project.project.number}.${var.region}.run.app,http://localhost:3000,http://localhost:3001"
       }
       env {
         name  = "AWS_S3_EVIDENCE_BUCKET"

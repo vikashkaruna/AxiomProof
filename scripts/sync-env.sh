@@ -152,6 +152,13 @@ do_verify() {
     "FEATURE_KILL_SWITCH:Feature Flags"
   )
 
+  if [[ "$TARGET_ENV" == "preprod" || "$TARGET_ENV" == "production" ]]; then
+    required_keys+=(
+      "GCP_PROJECT_ID:Cloud Infrastructure"
+      "GCP_PROJECT_NUMBER:Cloud Infrastructure"
+    )
+  fi
+
   local ok_count=0
   local warn_count=0
   local simulated_count=0
@@ -173,6 +180,10 @@ do_verify() {
         printf "  %-32s %-22s \033[0;31m%-12s\033[0m %s\n" "$key" "$cat" "MISSING" "(empty)"
         missing_count=$((missing_count + 1))
       fi
+    elif [[ "$val" == *"-el.a.run.app"* || "$val" == *"7zb7qphjbq"* || "$val" == *"<hash>"* ]]; then
+      local preview="${val:0:18}..."
+      printf "  %-32s %-22s \033[0;33m%-12s\033[0m %s (ephemeral hash)\n" "$key" "$cat" "EPHEMERAL_URL" "$preview"
+      warn_count=$((warn_count + 1))
     elif [[ "$val" == *"placeholder"* || "$val" == *"<"*">"* || "$val" == *"YOUR_"* ]]; then
       if [[ ("$TARGET_ENV" == "local" || "$TARGET_ENV" == "staging" || "$TARGET_ENV" == "onprem") && ("$cat" == "LLM Gateway" || "$cat" == "Email Delivery" || "$key" == "TEMPORAL_API_KEY") ]]; then
         printf "  %-32s %-22s \033[0;34m%-12s\033[0m %s\n" "$key" "$cat" "SIMULATED" "(mock/offline)"

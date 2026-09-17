@@ -20,6 +20,16 @@ TAG="${3:-${IMAGE_TAG:-preprod}}"
 REPO_NAME="axiom-proof-preprod"
 REGISTRY="${REGION}-docker.pkg.dev/${PROJECT_ID}/${REPO_NAME}"
 
+# Auto-load preprod environment if available
+if [ -f "${REPO_ROOT}/infra/docker/environments/.env.preprod" ]; then
+  while IFS='=' read -r key val || [ -n "$key" ]; do
+    key="$(echo "$key" | sed -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//')"
+    if [[ "$key" =~ ^#.*$ ]] || [ -z "$key" ]; then continue; fi
+    val="$(echo "$val" | sed -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//' -e 's/^"//' -e 's/"$//' -e "s/^'//" -e "s/'$//")"
+    if [ -z "${!key:-}" ]; then export "$key"="$val"; fi
+  done < "${REPO_ROOT}/infra/docker/environments/.env.preprod"
+fi
+
 echo "================================================================="
 echo "  AXIOM PROOF — Preprod Container Image Builder                  "
 echo "================================================================="
@@ -81,14 +91,19 @@ for entry in "${SERVICES[@]}"; do
   fi
 
   BUILD_ARGS=()
-  if [ "$SVC_NAME" = "marketing" ]; then
-    WEB_URL="${NEXT_PUBLIC_APP_URL:-https://axiom-web-preprod-7zb7qphjbq-el.a.run.app}"
-    BFF_URL="${NEXT_PUBLIC_BFF_URL:-https://axiom-bff-preprod-7zb7qphjbq-el.a.run.app}"
-    BUILD_ARGS+=(--build-arg "NEXT_PUBLIC_APP_URL=${WEB_URL}" --build-arg "NEXT_PUBLIC_BFF_URL=${BFF_URL}")
-  elif [ "$SVC_NAME" = "web" ]; then
-    WEB_URL="${NEXT_PUBLIC_APP_URL:-https://axiom-web-preprod-7zb7qphjbq-el.a.run.app}"
-    BFF_URL="${NEXT_PUBLIC_BFF_URL:-https://axiom-bff-preprod-7zb7qphjbq-el.a.run.app}"
-    BUILD_ARGS+=(--build-arg "NEXT_PUBLIC_APP_URL=${WEB_URL}" --build-arg "NEXT_PUBLIC_BFF_URL=${BFF_URL}")
+  if [ "$SVC_NAME" = "marketing" ] || [ "$SVC_NAME" = "web" ]; then
+    local_proj_num="${GCP_PROJECT_NUMBER:-}"
+    if [ -z "$local_proj_num" ] && command -v gcloud >/dev/null 2>&1; then
+      local_proj_num="$(gcloud projects describe "$PROJECT_ID" --format='value(projectNumber)' 2>/dev/null || echo "")"
+    fi
+    if [ -z "$local_proj_num" ]; then
+      local_proj_num="188516662106"
+    fi
+
+    local_web_url="${NEXT_PUBLIC_APP_URL:-https://axiom-web-preprod-${local_proj_num}.${REGION}.run.app}"
+    local_bff_url="${NEXT_PUBLIC_BFF_URL:-https://axiom-bff-preprod-${local_proj_num}.${REGION}.run.app}"
+
+    BUILD_ARGS+=(--build-arg "NEXT_PUBLIC_APP_URL=${local_web_url}" --build-arg "NEXT_PUBLIC_BFF_URL=${local_bff_url}")
   fi
 
   echo -e "\n▶ Building [${SVC_NAME}] using ${DOCKERFILE} (platform: linux/amd64)..."

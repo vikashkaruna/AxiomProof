@@ -19,6 +19,11 @@ resource "google_project_service" "apis" {
   disable_on_destroy = false
 }
 
+# Dynamic Project Metadata (retrieves project number for deterministic Cloud Run URLs)
+data "google_project" "project" {
+  project_id = var.project_id
+}
+
 # Custom VPC for isolation
 resource "google_compute_network" "vpc" {
   name                    = "axiom-${var.environment}-vpc"

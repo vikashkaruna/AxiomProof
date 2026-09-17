@@ -13,9 +13,9 @@ The Terraform plan has already been applied. The following resources exist live 
 
 | Resource                                    | Live value                                                                  | Status                     |
 | ------------------------------------------- | --------------------------------------------------------------------------- | -------------------------- |
-| `axiom-bff-preprod`                         | `https://axiom-bff-preprod-7zb7qphjbq-el.a.run.app`                         | ✅ 200 OK on `/health`     |
-| `axiom-web-preprod`                         | `https://axiom-web-preprod-7zb7qphjbq-el.a.run.app`                         | ✅ 200 OK on `/api/health` |
-| `axiom-marketing-preprod`                   | `https://axiom-marketing-preprod-7zb7qphjbq-el.a.run.app`                   | ✅ 200 OK on `/api/health` |
+| `axiom-bff-preprod`                         | `https://axiom-bff-preprod-188516662106.asia-south1.run.app`               | ✅ 200 OK on `/health`     |
+| `axiom-web-preprod`                         | `https://axiom-web-preprod-188516662106.asia-south1.run.app`               | ✅ 200 OK on `/api/health` |
+| `axiom-marketing-preprod`                   | `https://axiom-marketing-preprod-188516662106.asia-south1.run.app`         | ✅ 200 OK on `/api/health` |
 | Marketing Firebase site                     | `https://axiom-proof.web.app`                                               | ✅ 200 OK                  |
 | `axiom-agent-runtime-preprod`               | (Cloud Run internal — ingress `INGRESS_TRAFFIC_ALL` but requires token)     | ⚠️ 403 (expected)          |
 | `axiom-model-gateway-preprod`               | (Cloud Run internal — ingress `INGRESS_TRAFFIC_ALL` but requires token)     | ⚠️ 403 (expected)          |
@@ -223,7 +223,7 @@ The biggest "looks deployed but doesn't work" source. Apply the edits below to
 # After the existing MODEL_GATEWAY_URL block on line ~64:
 env {
   name  = "BFF_CORS_ORIGINS"
-  value = "https://axiom-proof.web.app,https://axiom-web-preprod-7zb7qphjbq-el.a.run.app,https://axiom-marketing-preprod-7zb7qphjbq-el.a.run.app"
+  value = "https://axiom-proof.web.app,https://axiom-web-preprod-188516662106.asia-south1.run.app,https://axiom-marketing-preprod-188516662106.asia-south1.run.app"
 }
 env {
   name  = "BFF_PUBLIC_URL"
@@ -621,9 +621,9 @@ moving to the next.
 ### 4.1 — Service health
 
 ```bash
-BFF="https://axiom-bff-preprod-7zb7qphjbq-el.a.run.app"
-WEB="https://axiom-web-preprod-7zb7qphjbq-el.a.run.app"
-MKT="https://axiom-marketing-preprod-7zb7qphjbq-el.a.run.app"
+BFF="https://axiom-bff-preprod-188516662106.asia-south1.run.app"
+WEB="https://axiom-web-preprod-188516662106.asia-south1.run.app"
+MKT="https://axiom-marketing-preprod-188516662106.asia-south1.run.app"
 FB="https://axiom-proof.web.app"
 
 for url in "$BFF/health" "$WEB/api/health" "$MKT/api/health" "$FB"; do
@@ -661,7 +661,7 @@ curl -s -X POST "$BFF/v1/agents/drishti/run" \
 
 ```bash
 # (This is what the agent-runtime does under the hood)
-curl -s -X POST "https://axiom-model-gateway-preprod-7zb7qphjbq-el.a.run.app/v1/chat" \
+curl -s -X POST "https://axiom-model-gateway-preprod-188516662106.asia-south1.run.app/v1/chat" \
   -H "X-API-Key: $MODEL_GATEWAY_API_KEY" \
   -H "Content-Type: application/json" \
   -d '{"model":"anthropic/claude-3-5-haiku-20241022","messages":[{"role":"user","content":"ping"}]}' \
