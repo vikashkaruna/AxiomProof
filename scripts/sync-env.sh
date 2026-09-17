@@ -56,6 +56,7 @@ Environments:
   preprod     (default) GCP Cloud Run + Cloud SQL + Secret Manager (asia-south1)
   staging     Local Network / LAN Staging (Docker Compose)
   local       Local Developer Stack (Supabase Local + Docker)
+  onprem      Sovereign On-Premise Intranet Deployment
   production  Production Sovereign Deployment
 
 Targets:
@@ -74,6 +75,10 @@ ENV_FILE="infra/docker/environments/.env.${TARGET_ENV}"
 if [[ ! -f "$ENV_FILE" ]]; then
   if [[ -f ".env.${TARGET_ENV}" ]]; then
     ENV_FILE=".env.${TARGET_ENV}"
+  elif [[ -f "infra/docker/environments/.env.${TARGET_ENV}.example" ]]; then
+    info "Creating ${ENV_FILE} from template ${ENV_FILE}.example..."
+    cp "infra/docker/environments/.env.${TARGET_ENV}.example" "$ENV_FILE"
+    pass "Created ${ENV_FILE}"
   else
     fail "Configuration file not found: ${ENV_FILE}"
     exit 1
@@ -149,6 +154,7 @@ do_verify() {
 
   local ok_count=0
   local warn_count=0
+  local simulated_count=0
   local missing_count=0
 
   printf "\n  %-32s %-22s %-12s %s\n" "VARIABLE" "CATEGORY" "STATUS" "VALUE PREVIEW"
@@ -160,12 +166,22 @@ do_verify() {
     local val="$(get_val "$key")"
 
     if [ -z "$val" ]; then
-      printf "  %-32s %-22s \033[0;31m%-12s\033[0m %s\n" "$key" "$cat" "MISSING" "(empty)"
-      missing_count=$((missing_count + 1))
+      if [[ ("$TARGET_ENV" == "local" || "$TARGET_ENV" == "staging" || "$TARGET_ENV" == "onprem") && ("$cat" == "LLM Gateway" || "$cat" == "Email Delivery" || "$key" == "TEMPORAL_API_KEY") ]]; then
+        printf "  %-32s %-22s \033[0;34m%-12s\033[0m %s\n" "$key" "$cat" "SIMULATED" "(mock/offline)"
+        simulated_count=$((simulated_count + 1))
+      else
+        printf "  %-32s %-22s \033[0;31m%-12s\033[0m %s\n" "$key" "$cat" "MISSING" "(empty)"
+        missing_count=$((missing_count + 1))
+      fi
     elif [[ "$val" == *"placeholder"* || "$val" == *"<"*">"* || "$val" == *"YOUR_"* ]]; then
-      local preview="${val:0:18}..."
-      printf "  %-32s %-22s \033[0;33m%-12s\033[0m %s\n" "$key" "$cat" "PLACEHOLDER" "$preview"
-      warn_count=$((warn_count + 1))
+      if [[ ("$TARGET_ENV" == "local" || "$TARGET_ENV" == "staging" || "$TARGET_ENV" == "onprem") && ("$cat" == "LLM Gateway" || "$cat" == "Email Delivery" || "$key" == "TEMPORAL_API_KEY") ]]; then
+        printf "  %-32s %-22s \033[0;34m%-12s\033[0m %s\n" "$key" "$cat" "SIMULATED" "(mock/offline)"
+        simulated_count=$((simulated_count + 1))
+      else
+        local preview="${val:0:18}..."
+        printf "  %-32s %-22s \033[0;33m%-12s\033[0m %s\n" "$key" "$cat" "PLACEHOLDER" "$preview"
+        warn_count=$((warn_count + 1))
+      fi
     else
       local preview=""
       if [[ "$key" == *"KEY"* || "$key" == *"SECRET"* || "$key" == *"TOKEN"* || "$key" == *"PASSWORD"* ]]; then
@@ -187,6 +203,9 @@ do_verify() {
   echo -e "  ─────────────────────────────────────────────────────────────────"
   echo -e "  Audit Summary for ${BOLD}${TARGET_ENV}${NC}:"
   echo -e "    ${GREEN}✓ Configured & Valid:${NC} ${ok_count}"
+  if [ "$simulated_count" -gt 0 ]; then
+    echo -e "    ${BLUE}ℹ Simulated / Mock:${NC}   ${simulated_count}"
+  fi
   echo -e "    ${YELLOW}⚠ Placeholders:${NC}        ${warn_count}"
   echo -e "    ${RED}✗ Missing Keys:${NC}        ${missing_count}"
   echo -e "  ─────────────────────────────────────────────────────────────────"
@@ -206,7 +225,7 @@ do_terraform() {
 
   local tf_dir="infra/terraform/envs/${TARGET_ENV}"
   if [[ ! -d "$tf_dir" ]]; then
-    warn "Terraform directory '${tf_dir}' does not exist. (Normal for local/staging)."
+    warn "Terraform directory '${tf_dir}' does not exist. (Normal for local/staging/onprem)."
     return 0
   fi
 

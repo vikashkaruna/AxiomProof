@@ -45,6 +45,7 @@ TARGET_ENV="local"
 ACTION="up"
 FORCE_BUILD=false
 SPECIFIC_SERVICE=""
+NO_MARKETING=false
 
 # Parse arguments
 while [[ $# -gt 0 ]]; do
@@ -52,6 +53,14 @@ while [[ $# -gt 0 ]]; do
     --env|-e)
       TARGET_ENV="$2"
       shift 2
+      ;;
+    --onprem)
+      TARGET_ENV="onprem"
+      shift
+      ;;
+    --no-marketing)
+      NO_MARKETING=true
+      shift
       ;;
     --status|-s)
       ACTION="status"
@@ -98,7 +107,9 @@ while [[ $# -gt 0 ]]; do
       echo -e "${BOLD}Axiom Proof — Docker Deployment Manager${NC}"
       echo -e "Usage: ./scripts/dev-docker.sh [OPTIONS]"
       echo -e "Options:"
-      echo -e "  --env, -e <name>   Target environment: local (default), staging, preprod, prod"
+      echo -e "  --env, -e <name>   Target environment: local (default), staging, onprem, preprod, prod"
+      echo -e "  --onprem           Shortcut to target sovereign on-premises environment"
+      echo -e "  --no-marketing     Exclude the public marketing site (workbench-only / intranet)"
       echo -e "  --status, -s       Inspect & report status of all components"
       echo -e "  --build, -b        Force rebuild of all Docker images"
       echo -e "  --down, -d         Stop and remove containers"
@@ -186,8 +197,13 @@ setup_environment() {
 
   # Compose file selection
   COMPOSE_ARGS=("-f" "docker-compose.yml")
-  if [[ "$TARGET_ENV" == "staging" && -f "infra/docker/docker-compose.staging.yml" ]]; then
+  if [[ ("$TARGET_ENV" == "staging" || "$TARGET_ENV" == "onprem") && -f "infra/docker/docker-compose.staging.yml" ]]; then
     COMPOSE_ARGS+=("-f" "infra/docker/docker-compose.staging.yml")
+    if ! curl -fsS http://127.0.0.1:55321/rest/v1/ >/dev/null 2>&1 && [[ -f "infra/docker/docker-compose.supabase.yml" ]]; then
+      log_info "No host Supabase detected on port 55321; including containerized Supabase services..."
+      COMPOSE_ARGS+=("-f" "infra/docker/docker-compose.supabase.yml")
+    fi
+  elif [[ "$TARGET_ENV" == "local" ]]; then
     if ! curl -fsS http://127.0.0.1:55321/rest/v1/ >/dev/null 2>&1 && [[ -f "infra/docker/docker-compose.supabase.yml" ]]; then
       log_info "No host Supabase detected on port 55321; including containerized Supabase services..."
       COMPOSE_ARGS+=("-f" "infra/docker/docker-compose.supabase.yml")
@@ -236,7 +252,13 @@ preflight_checks() {
 verify_and_deploy_components() {
   log_step "Step 4: Verifying module containers & deploying missing components..."
 
-  local services=("model-gateway" "agent-runtime" "bff" "temporal" "temporal-ui" "temporal-worker" "web" "marketing")
+  local services=("model-gateway" "agent-runtime" "bff" "temporal" "temporal-ui" "temporal-worker" "web")
+  if [[ "$NO_MARKETING" != "true" ]]; then
+    services+=("marketing")
+  fi
+  if [[ "${COMPOSE_ARGS[*]}" == *"docker-compose.supabase.yml"* ]]; then
+    services+=("supabase-db" "supabase-auth" "supabase-rest" "supabase-studio" "supabase-gateway")
+  fi
   local missing_or_stopped=()
 
   for svc in "${services[@]}"; do
@@ -253,9 +275,9 @@ verify_and_deploy_components() {
   done
 
   if [[ "$FORCE_BUILD" == "true" ]]; then
-    log_info "Force rebuild requested. Rebuilding all module images..."
-    docker compose "${COMPOSE_ARGS[@]}" build
-    docker compose "${COMPOSE_ARGS[@]}" up -d
+    log_info "Force rebuild requested. Rebuilding module images..."
+    docker compose "${COMPOSE_ARGS[@]}" build "${services[@]}"
+    docker compose "${COMPOSE_ARGS[@]}" up -d "${services[@]}"
   elif (( ${#missing_or_stopped[@]} > 0 )); then
     log_info "Deploying ${#missing_or_stopped[@]} missing/stopped component(s): ${missing_or_stopped[*]}..."
     docker compose "${COMPOSE_ARGS[@]}" up -d "${missing_or_stopped[@]}"
@@ -276,8 +298,10 @@ check_health_and_report() {
     "BFF API Engine:http://localhost:4000/health"
     "Temporal UI:http://localhost:8233"
     "Web Workbench:http://localhost:3001"
-    "Marketing Public:http://localhost:3000"
   )
+  if [[ "$NO_MARKETING" != "true" ]]; then
+    endpoints+=("Marketing Public:http://localhost:3000")
+  fi
 
   printf "\n  ${BOLD}%-22s %-32s %-12s %-10s${NC}\n" "MODULE" "URL" "STATUS" "LATENCY"
   echo -e "  -------------------------------------------------------------------------------"
@@ -349,10 +373,12 @@ case "$ACTION" in
     verify_and_deploy_components
     check_health_and_report
     echo -e "${BOLD}${GREEN}================================================================${NC}"
-    echo -e "${BOLD}${GREEN}  ✓ Axiom Proof is running and ready for development!          ${NC}"
+    echo -e "${BOLD}${GREEN}  ✓ Axiom Proof is running and ready!                          ${NC}"
     echo -e "${BOLD}${GREEN}================================================================${NC}"
     echo -e "  • Web App (Workbench / Console): ${CYAN}http://localhost:3001${NC}"
-    echo -e "  • Marketing Site (Gap-Scan):     ${CYAN}http://localhost:3000${NC}"
+    if [[ "$NO_MARKETING" != "true" ]]; then
+      echo -e "  • Marketing Site (Gap-Scan):     ${CYAN}http://localhost:3000${NC}"
+    fi
     echo -e "  • BFF API & Execution Gate:      ${CYAN}http://localhost:4000${NC}"
     echo -e "  • Agent Runtime:                 ${CYAN}http://localhost:8000${NC}"
     echo -e "  • Model Gateway:                 ${CYAN}http://localhost:8001${NC}"

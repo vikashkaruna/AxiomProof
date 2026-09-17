@@ -70,15 +70,17 @@ export async function POST(request: Request) {
     estimatedExposureInr: report.estimatedExposureInr,
     findingsCount: report.findings.length,
   });
-  const isLocal =
+  const isLocalOrInsecure =
     process.env.ENVIRONMENT === 'local' ||
     process.env.ENVIRONMENT === 'development' ||
-    process.env.NODE_ENV !== 'production';
+    process.env.ENVIRONMENT === 'staging' ||
+    process.env.NODE_ENV !== 'production' ||
+    !request.url.startsWith('https:');
 
   response.cookies.set('gap_scan_access', sessionHash, {
     httpOnly: true,
     sameSite: 'lax',
-    secure: !isLocal,
+    secure: !isLocalOrInsecure,
     maxAge: 60 * 60 * 24 * 7,
     path: '/',
   });

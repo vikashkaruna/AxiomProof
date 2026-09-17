@@ -19,6 +19,12 @@ services:
       - HTTP_HOST=0.0.0.0
       - LOG_LEVEL=${LOG_LEVEL:-info}
       - REDACT_PII=true
+      - PII_REDACTION_ENABLED=${PII_REDACTION_ENABLED:-true}
+      - MODEL_GATEWAY_API_KEY=${MODEL_GATEWAY_API_KEY:-dev-model-gateway-key-axiom}
+      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY:-}
+      - OPENAI_API_KEY=${OPENAI_API_KEY:-}
+      - GEMINI_API_KEY=${GEMINI_API_KEY:-}
+      - REDIS_URL=${UPSTASH_REDIS_URL:-${REDIS_URL:-}}
       - DEFAULT_MODEL=${DEFAULT_MODEL:-anthropic.claude-3-5-sonnet@20240620}
       - FALLBACK_MODEL=${FALLBACK_MODEL:-anthropic.claude-3-haiku@20240307}
     extra_hosts:
@@ -85,11 +91,13 @@ services:
       - '${BFF_PORT:-4000}:4000'
     environment:
       - NODE_ENV=${NODE_ENV:-development}
+      - ENVIRONMENT=${ENVIRONMENT:-development}
       - BFF_PORT=4000
       - LOG_LEVEL=${LOG_LEVEL:-info}
       - SUPABASE_URL=${SUPABASE_URL:-http://host.docker.internal:55321}
       - SUPABASE_ANON_KEY=${SUPABASE_ANON_KEY:-eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS1kZW1vIiwicm9sZSI6ImFub24iLCJleHAiOjE5ODM4MTI5OTZ9.CRXP1A7WOeoJeXxjNni43kdQwgnWNReilDMblYTn_I0}
       - SUPABASE_SERVICE_KEY=${SUPABASE_SERVICE_KEY:-eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS1kZW1vIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImV4cCI6MTk4MzgxMjk5Nn0.EGIM96RAZx35lJzdJsyH-qQwv8Hdp7fsn3W0YpN81IU}
+      - SUPABASE_DB_URL=${SUPABASE_DB_URL:-postgresql://postgres:postgres@host.docker.internal:55322/postgres}
       - AGENT_RUNTIME_URL=${AGENT_RUNTIME_URL:-http://agent-runtime:8000}
       - AGENT_RUNTIME_INTERNAL_TOKEN=${AGENT_RUNTIME_INTERNAL_TOKEN:-dev-agent-runtime-token-axiom}
       - MODEL_GATEWAY_URL=${MODEL_GATEWAY_URL:-http://model-gateway:8001}
@@ -99,8 +107,16 @@ services:
       - TEMPORAL_ADDRESS=${TEMPORAL_ADDRESS:-temporal:7233}
       - TEMPORAL_NAMESPACE=${TEMPORAL_NAMESPACE:-axiom-proof}
       - TEMPORAL_TLS=${TEMPORAL_TLS:-false}
+      - UPSTASH_REDIS_URL=${UPSTASH_REDIS_URL:-}
+      - REDIS_URL=${UPSTASH_REDIS_URL:-${REDIS_URL:-}}
+      - RESEND_API_KEY=${RESEND_API_KEY:-}
       - AWS_REGION=${AWS_REGION:-ap-south-1}
       - AWS_S3_EVIDENCE_BUCKET=${AWS_S3_EVIDENCE_BUCKET:-axiom-proof-evidence-local}
+      - FEATURE_DRY_RUN_ENGINE=${FEATURE_DRY_RUN_ENGINE:-true}
+      - FEATURE_EXECUTION_ENGINE=${FEATURE_EXECUTION_ENGINE:-true}
+      - FEATURE_LIVE_CONNECTORS=${FEATURE_LIVE_CONNECTORS:-false}
+      - FEATURE_KILL_SWITCH=${FEATURE_KILL_SWITCH:-true}
+      - PII_REDACTION_ENABLED=${PII_REDACTION_ENABLED:-true}
     extra_hosts:
       - 'host.docker.internal:host-gateway'
     depends_on:
@@ -251,7 +267,9 @@ services:
       - SUPABASE_URL=${SUPABASE_URL:-http://host.docker.internal:55321}
       - SUPABASE_ANON_KEY=${SUPABASE_ANON_KEY:-eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS1kZW1vIiwicm9sZSI6ImFub24iLCJleHAiOjE5ODM4MTI5OTZ9.CRXP1A7WOeoJeXxjNni43kdQwgnWNReilDMblYTn_I0}
       - SUPABASE_SERVICE_KEY=${SUPABASE_SERVICE_KEY:-eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS1kZW1vIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImV4cCI6MTk4MzgxMjk5Nn0.EGIM96RAZx35lJzdJsyH-qQwv8Hdp7fsn3W0YpN81IU}
-      - ENVIRONMENT=local
+      - ENVIRONMENT=${ENVIRONMENT:-development}
+      - NEXT_PUBLIC_BFF_URL=${NEXT_PUBLIC_BFF_URL:-http://localhost:4000}
+      - NEXT_PUBLIC_APP_URL=${NEXT_PUBLIC_APP_URL:-http://localhost:3001}
       - AXIOM_E2E_BYPASS_AUTH=${AXIOM_E2E_BYPASS_AUTH:-true}
       - BFF_PUBLIC_URL=${BFF_URL:-http://bff:4000}
     extra_hosts:
@@ -288,12 +306,16 @@ services:
       - SUPABASE_URL=${SUPABASE_URL:-http://host.docker.internal:55321}
       - SUPABASE_ANON_KEY=${SUPABASE_ANON_KEY:-eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS1kZW1vIiwicm9sZSI6ImFub24iLCJleHAiOjE5ODM4MTI5OTZ9.CRXP1A7WOeoJeXxjNni43kdQwgnWNReilDMblYTn_I0}
       - SUPABASE_SERVICE_KEY=${SUPABASE_SERVICE_KEY:-eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS1kZW1vIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImV4cCI6MTk4MzgxMjk5Nn0.EGIM96RAZx35lJzdJsyH-qQwv8Hdp7fsn3W0YpN81IU}
-      - ENVIRONMENT=local
+      - ENVIRONMENT=${ENVIRONMENT:-development}
+      - NEXT_PUBLIC_BFF_URL=${NEXT_PUBLIC_BFF_URL:-http://localhost:4000}
+      - NEXT_PUBLIC_APP_URL=${NEXT_PUBLIC_APP_URL:-http://localhost:3001}
+      - NEXT_PUBLIC_MARKETING_URL=${NEXT_PUBLIC_MARKETING_URL:-http://localhost:3000}
       - AXIOM_E2E_BYPASS_AUTH=false
       - BFF_PUBLIC_URL=${BFF_URL:-http://bff:4000}
       - RESEND_API_KEY=${RESEND_API_KEY:-}
       - RESEND_FROM_EMAIL=${RESEND_FROM_EMAIL:-Axiom Proof <onboarding@resend.dev>}
       - CONTACT_RECIPIENT_EMAIL=${CONTACT_RECIPIENT_EMAIL:-hello@axiomminds.ai}
+      - CONTACT_FALLBACK_RECIPIENT_EMAIL=${CONTACT_FALLBACK_RECIPIENT_EMAIL:-hello@axiomminds.ai}
     extra_hosts:
       - 'host.docker.internal:host-gateway'
     depends_on:

@@ -51,6 +51,7 @@ export default async function GapScanReportPage({ params }: { params: Promise<{ 
     process.env.ENVIRONMENT === 'local' ||
     process.env.ENVIRONMENT === 'development' ||
     process.env.ENVIRONMENT === 'preprod' ||
+    process.env.ENVIRONMENT === 'staging' ||
     process.env.NODE_ENV !== 'production';
 
   const scan = await getGapScanReport(id, access, isLocal);

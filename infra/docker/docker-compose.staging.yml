@@ -17,7 +17,13 @@ services:
     environment:
       - ENVIRONMENT=staging
       - LOG_LEVEL=${LOG_LEVEL:-info}
-      - REDACT_PII=true
+      - AWS_REGION=${AWS_REGION:-ap-south-1}
+      - PII_REDACTION_ENABLED=${PII_REDACTION_ENABLED:-true}
+      - MODEL_GATEWAY_API_KEY=${MODEL_GATEWAY_API_KEY:-dev-model-gateway-key-axiom}
+      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY:-}
+      - OPENAI_API_KEY=${OPENAI_API_KEY:-}
+      - GEMINI_API_KEY=${GEMINI_API_KEY:-}
+      - REDIS_URL=${UPSTASH_REDIS_URL:-${REDIS_URL:-}}
 
   agent-runtime:
     image: ${DOCKER_REGISTRY:-}${DOCKER_REGISTRY:+/}axiom-agent-runtime:${IMAGE_TAG:-staging}
@@ -26,12 +32,23 @@ services:
     environment:
       - ENVIRONMENT=staging
       - LOG_LEVEL=${LOG_LEVEL:-info}
+      - AWS_REGION=${AWS_REGION:-ap-south-1}
       - MODEL_GATEWAY_URL=${MODEL_GATEWAY_URL:-http://model-gateway:8001}
+      - MODEL_GATEWAY_API_KEY=${MODEL_GATEWAY_API_KEY:-dev-model-gateway-key-axiom}
+      - INTERNAL_TOKEN=${AGENT_RUNTIME_INTERNAL_TOKEN:-dev-agent-runtime-token-axiom}
+      - AGENT_RUNTIME_INTERNAL_TOKEN=${AGENT_RUNTIME_INTERNAL_TOKEN:-dev-agent-runtime-token-axiom}
+      - APPROVAL_SIGNING_KEY=${APPROVAL_SIGNING_KEY:-dev-signing-secret-key-at-least-32-chars-long-12345}
+      - SUPABASE_URL=${SUPABASE_URL:-http://host.docker.internal:55321}
+      - SUPABASE_SERVICE_KEY=${SUPABASE_SERVICE_KEY:-}
+      - SUPABASE_DB_URL=${SUPABASE_DB_URL:-}
+      - REDIS_URL=${UPSTASH_REDIS_URL:-${REDIS_URL:-}}
       - TEMPORAL_ADDRESS=${TEMPORAL_ADDRESS:-temporal:7233}
       - TEMPORAL_NAMESPACE=${TEMPORAL_NAMESPACE:-axiom-proof}
       - TEMPORAL_TLS=${TEMPORAL_TLS:-false}
-      - AWS_REGION=${AWS_REGION:-ap-south-1}
       - S3_EVIDENCE_BUCKET=${AWS_S3_EVIDENCE_BUCKET:-axiom-proof-evidence-staging}
+      - S3_ENDPOINT=${AWS_S3_ENDPOINT:-}
+      - AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID:-test}
+      - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY:-test}
 
   bff:
     image: ${DOCKER_REGISTRY:-}${DOCKER_REGISTRY:+/}axiom-bff:${IMAGE_TAG:-staging}
@@ -39,13 +56,34 @@ services:
       - '0.0.0.0:${BFF_PORT:-4000}:4000'
     environment:
       - NODE_ENV=staging
+      - ENVIRONMENT=staging
       - LOG_LEVEL=${LOG_LEVEL:-info}
+      - AWS_REGION=${AWS_REGION:-ap-south-1}
       - AGENT_RUNTIME_URL=${AGENT_RUNTIME_URL:-http://agent-runtime:8000}
+      - AGENT_RUNTIME_INTERNAL_TOKEN=${AGENT_RUNTIME_INTERNAL_TOKEN:-dev-agent-runtime-token-axiom}
       - MODEL_GATEWAY_URL=${MODEL_GATEWAY_URL:-http://model-gateway:8001}
+      - MODEL_GATEWAY_API_KEY=${MODEL_GATEWAY_API_KEY:-dev-model-gateway-key-axiom}
+      - APPROVAL_SIGNING_KEY=${APPROVAL_SIGNING_KEY:-dev-signing-secret-key-at-least-32-chars-long-12345}
       - TEMPORAL_ADDRESS=${TEMPORAL_ADDRESS:-temporal:7233}
       - TEMPORAL_NAMESPACE=${TEMPORAL_NAMESPACE:-axiom-proof}
       - TEMPORAL_TLS=${TEMPORAL_TLS:-false}
+      - UPSTASH_REDIS_URL=${UPSTASH_REDIS_URL:-}
+      - REDIS_URL=${UPSTASH_REDIS_URL:-${REDIS_URL:-}}
+      - SUPABASE_URL=${SUPABASE_URL:-http://host.docker.internal:55321}
+      - SUPABASE_ANON_KEY=${SUPABASE_ANON_KEY:-}
+      - SUPABASE_SERVICE_KEY=${SUPABASE_SERVICE_KEY:-}
+      - SUPABASE_DB_URL=${SUPABASE_DB_URL:-}
+      - AWS_S3_EVIDENCE_BUCKET=${AWS_S3_EVIDENCE_BUCKET:-axiom-proof-evidence-staging}
+      - AWS_S3_ENDPOINT=${AWS_S3_ENDPOINT:-}
+      - AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID:-test}
+      - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY:-test}
       - BFF_CORS_ORIGINS=${BFF_CORS_ORIGINS:-http://localhost:3000,http://localhost:3001}
+      - RESEND_API_KEY=${RESEND_API_KEY:-}
+      - FEATURE_DRY_RUN_ENGINE=${FEATURE_DRY_RUN_ENGINE:-true}
+      - FEATURE_EXECUTION_ENGINE=${FEATURE_EXECUTION_ENGINE:-true}
+      - FEATURE_LIVE_CONNECTORS=${FEATURE_LIVE_CONNECTORS:-true}
+      - FEATURE_KILL_SWITCH=${FEATURE_KILL_SWITCH:-true}
+      - PII_REDACTION_ENABLED=${PII_REDACTION_ENABLED:-true}
 
   temporal-worker:
     image: ${DOCKER_REGISTRY:-}${DOCKER_REGISTRY:+/}axiom-temporal-worker:${IMAGE_TAG:-staging}
@@ -54,6 +92,7 @@ services:
       - TEMPORAL_NAMESPACE=${TEMPORAL_NAMESPACE:-axiom-proof}
       - TEMPORAL_TLS=${TEMPORAL_TLS:-false}
       - AGENT_RUNTIME_URL=${AGENT_RUNTIME_URL:-http://agent-runtime:8000}
+      - AGENT_RUNTIME_INTERNAL_TOKEN=${AGENT_RUNTIME_INTERNAL_TOKEN:-dev-agent-runtime-token-axiom}
 
   temporal-ui:
     ports:
@@ -67,9 +106,15 @@ services:
       - '0.0.0.0:${WEB_PORT:-3001}:3001'
     environment:
       - NODE_ENV=production
+      - ENVIRONMENT=staging
+      - NEXT_PUBLIC_BFF_URL=${NEXT_PUBLIC_BFF_URL:-http://${HOST_IP:-localhost}:4000}
+      - NEXT_PUBLIC_APP_URL=${NEXT_PUBLIC_APP_URL:-http://${HOST_IP:-localhost}:3001}
+      - BFF_PUBLIC_URL=${BFF_URL:-http://bff:4000}
+      - SUPABASE_URL=${SUPABASE_URL:-http://host.docker.internal:55321}
+      - SUPABASE_ANON_KEY=${SUPABASE_ANON_KEY:-}
+      - SUPABASE_SERVICE_KEY=${SUPABASE_SERVICE_KEY:-}
       - NEXT_PUBLIC_SUPABASE_URL=${NEXT_PUBLIC_SUPABASE_URL:-http://127.0.0.1:55321}
       - NEXT_PUBLIC_SUPABASE_ANON_KEY=${NEXT_PUBLIC_SUPABASE_ANON_KEY}
-      - BFF_PUBLIC_URL=${BFF_URL:-http://bff:4000}
       - AXIOM_E2E_BYPASS_AUTH=${AXIOM_E2E_BYPASS_AUTH:-false}
 
   marketing:
@@ -78,7 +123,18 @@ services:
       - '0.0.0.0:${MARKETING_PORT:-3000}:3000'
     environment:
       - NODE_ENV=production
+      - ENVIRONMENT=staging
+      - NEXT_PUBLIC_BFF_URL=${NEXT_PUBLIC_BFF_URL:-http://${HOST_IP:-localhost}:4000}
+      - NEXT_PUBLIC_APP_URL=${NEXT_PUBLIC_APP_URL:-http://${HOST_IP:-localhost}:3001}
+      - NEXT_PUBLIC_MARKETING_URL=${NEXT_PUBLIC_MARKETING_URL:-http://${HOST_IP:-localhost}:3000}
+      - BFF_PUBLIC_URL=${BFF_URL:-http://bff:4000}
+      - SUPABASE_URL=${SUPABASE_URL:-http://host.docker.internal:55321}
+      - SUPABASE_ANON_KEY=${SUPABASE_ANON_KEY:-}
+      - SUPABASE_SERVICE_KEY=${SUPABASE_SERVICE_KEY:-}
       - NEXT_PUBLIC_SUPABASE_URL=${NEXT_PUBLIC_SUPABASE_URL:-http://127.0.0.1:55321}
       - NEXT_PUBLIC_SUPABASE_ANON_KEY=${NEXT_PUBLIC_SUPABASE_ANON_KEY}
-      - BFF_PUBLIC_URL=${BFF_URL:-http://bff:4000}
+      - RESEND_API_KEY=${RESEND_API_KEY:-}
+      - RESEND_FROM_EMAIL=${RESEND_FROM_EMAIL:-Axiom Proof <onboarding@resend.dev>}
+      - CONTACT_RECIPIENT_EMAIL=${CONTACT_RECIPIENT_EMAIL:-hello@axiomminds.ai}
+      - CONTACT_FALLBACK_RECIPIENT_EMAIL=${CONTACT_FALLBACK_RECIPIENT_EMAIL:-hello@axiomminds.ai}
       - AXIOM_E2E_BYPASS_AUTH=${AXIOM_E2E_BYPASS_AUTH:-false}

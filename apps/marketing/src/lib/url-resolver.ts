@@ -42,6 +42,12 @@ export function resolveAppUrl(): string {
       return process.env.NEXT_PUBLIC_APP_URL;
     }
 
+    // On-Premise / LAN IP deployment (e.g. http://192.168.x.x:3000 -> http://192.168.x.x:3001)
+    if (window.location.port === '3000' || window.location.port === String(process.env.MARKETING_PORT || '3000')) {
+      const targetPort = String(process.env.WEB_PORT || '3001');
+      return `${window.location.protocol}//${window.location.hostname}:${targetPort}`;
+    }
+
     // Localhost development
     if (host === 'localhost' || host === '127.0.0.1') {
       return process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3001';
