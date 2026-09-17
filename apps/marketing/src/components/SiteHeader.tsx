@@ -1,9 +1,16 @@
+'use client';
+
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { BRAND } from '@axiom/config';
 import { Button, AxiomLogo } from '@axiom/ui';
+import { resolveAppUrl } from '@/lib/url-resolver';
 
 export function SiteHeader() {
-  const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3001';
+  const [appUrl, setAppUrl] = useState<string>(() => resolveAppUrl());
+
+  useEffect(() => {
+    setAppUrl(resolveAppUrl());
+  }, []);
 
   return (
     <header className="sticky top-0 z-10 border-b border-slate-200 bg-white/90 backdrop-blur">

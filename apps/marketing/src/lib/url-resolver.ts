@@ -1,0 +1,70 @@
+/**
+ * Resolves the appropriate Workbench Web App URL dynamically across all environments:
+ * - Preprod Cloud Run: automatically transforms axiom-marketing-preprod-* -> axiom-web-preprod-*
+ * - Generic Cloud Run: transforms *-marketing-* -> *-web-*
+ * - Production: axiomminds.ai / www.axiomminds.ai -> https://app.axiomminds.ai
+ * - Staging: staging.axiomminds.ai -> https://app-staging.axiomminds.ai
+ * - Localhost: http://localhost:3001
+ * - Honors NEXT_PUBLIC_APP_URL / APP_URL if explicitly configured with a non-localhost target.
+ */
+export function resolveAppUrl(): string {
+  if (typeof window !== 'undefined') {
+    const host = window.location.hostname;
+    const origin = window.location.origin;
+
+    // Check Cloud Run preprod / staging / prod URLs
+    // e.g. https://axiom-marketing-preprod-188516662106.asia-south1.run.app
+    // or https://axiom-marketing-preprod-7zb7qphjbq-el.a.run.app
+    if (host.includes('marketing-preprod')) {
+      return origin.replace('marketing-preprod', 'web-preprod');
+    }
+    if (host.includes('marketing-staging')) {
+      return origin.replace('marketing-staging', 'web-staging');
+    }
+    if (host.includes('marketing-')) {
+      return origin.replace('marketing-', 'web-');
+    }
+
+    // Production domain mapping
+    if (host === 'axiomminds.ai' || host === 'www.axiomminds.ai') {
+      return 'https://app.axiomminds.ai';
+    }
+    if (host === 'staging.axiomminds.ai') {
+      return 'https://app-staging.axiomminds.ai';
+    }
+
+    // Explicit env variable if valid and not localhost when running in a remote browser
+    if (
+      process.env.NEXT_PUBLIC_APP_URL &&
+      !process.env.NEXT_PUBLIC_APP_URL.includes('localhost') &&
+      !process.env.NEXT_PUBLIC_APP_URL.includes('127.0.0.1')
+    ) {
+      return process.env.NEXT_PUBLIC_APP_URL;
+    }
+
+    // Localhost development
+    if (host === 'localhost' || host === '127.0.0.1') {
+      return process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3001';
+    }
+  }
+
+  // Server-side fallback:
+  if (
+    process.env.NEXT_PUBLIC_APP_URL &&
+    !process.env.NEXT_PUBLIC_APP_URL.includes('localhost') &&
+    !process.env.NEXT_PUBLIC_APP_URL.includes('127.0.0.1')
+  ) {
+    return process.env.NEXT_PUBLIC_APP_URL;
+  }
+  if (
+    process.env.APP_URL &&
+    !process.env.APP_URL.includes('localhost') &&
+    !process.env.APP_URL.includes('127.0.0.1')
+  ) {
+    return process.env.APP_URL;
+  }
+  if (process.env.ENVIRONMENT === 'preprod') {
+    return 'https://axiom-web-preprod-7zb7qphjbq-el.a.run.app';
+  }
+  return process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3001';
+}

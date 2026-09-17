@@ -1,7 +1,7 @@
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { cookies } from 'next/headers';
-import { createSupabaseAdmin } from '@axiom/supabase';
+import { getGapScanReport } from '@/lib/gap-scan-store';
 import {
   Card,
   CardContent,
@@ -17,14 +17,7 @@ import { GapScanReportSchema } from '@axiom/types';
 import { BRAND } from '@axiom/config';
 import { CONTROL_LIBRARY_COUNT } from '@axiom/control-library';
 
-export const dynamic = 'auto';
-
-export function generateStaticParams() {
-  if (process.env.NEXT_OUTPUT === 'export') {
-    return [{ id: 'sample' }];
-  }
-  return [];
-}
+export const dynamic = 'force-dynamic';
 
 export default async function GapScanReportPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
@@ -57,20 +50,12 @@ export default async function GapScanReportPage({ params }: { params: Promise<{ 
   const isLocal =
     process.env.ENVIRONMENT === 'local' ||
     process.env.ENVIRONMENT === 'development' ||
+    process.env.ENVIRONMENT === 'preprod' ||
     process.env.NODE_ENV !== 'production';
 
-  if (!access && !isLocal) notFound();
-
-  const supabase = createSupabaseAdmin();
-  let query = supabase.from('gap_scan_responses').select('*').eq('id', id);
-
-  if (access) {
-    query = query.eq('session_id', access);
-  }
-
-  const { data: scan, error } = await query.single();
-  if (error || !scan) {
-    console.error('Gap scan report fetch failed:', error ?? 'Not found');
+  const scan = await getGapScanReport(id, access, isLocal);
+  if (!scan) {
+    console.error(`Gap scan report fetch failed for id: ${id}`);
     notFound();
   }
 

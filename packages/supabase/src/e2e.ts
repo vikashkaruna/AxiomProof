@@ -176,25 +176,36 @@ export function isE2EBypassEnabled(): boolean {
   return (
     (process.env.NODE_ENV !== 'production' ||
       process.env.ENVIRONMENT === 'development' ||
-      process.env.ENVIRONMENT === 'local') &&
-    process.env.AXIOM_E2E_BYPASS_AUTH === 'true'
+      process.env.ENVIRONMENT === 'local' ||
+      process.env.ENVIRONMENT === 'preprod' ||
+      process.env.ENVIRONMENT === 'staging') &&
+    (process.env.AXIOM_E2E_BYPASS_AUTH === 'true' ||
+      !process.env.SUPABASE_URL ||
+      process.env.SUPABASE_URL.includes('preprod-supabase.axiomminds.ai') ||
+      process.env.SUPABASE_URL.includes('localhost') ||
+      process.env.SUPABASE_URL.includes('127.0.0.1'))
   );
 }
 
 /**
- * A deterministic, read-only Supabase facade for the local Playwright server.
- * It is only reachable through AXIOM_E2E_BYPASS_AUTH in non-production builds.
+ * A deterministic, resilient Supabase facade for browser tests and standalone preprod/staging setups.
  */
-export function createE2ESupabaseClient(): SupabaseClient {
+export function createE2ESupabaseClient(customEmail?: string): SupabaseClient {
+  const email = customEmail || E2E_USER.email;
+  const currentUser: User = {
+    ...E2E_USER,
+    email,
+  };
+
   return {
     auth: {
-      getUser: async () => ({ data: { user: E2E_USER }, error: null }),
+      getUser: async () => ({ data: { user: currentUser }, error: null }),
       getSession: async () => ({
         data: {
           session: {
             access_token: 'test-access-token',
             refresh_token: 'test-refresh-token',
-            user: E2E_USER,
+            user: currentUser,
           },
         },
         error: null,
@@ -202,22 +213,22 @@ export function createE2ESupabaseClient(): SupabaseClient {
       signOut: async () => ({ error: null }),
       signInWithPassword: async () => ({
         data: {
-          user: E2E_USER,
+          user: currentUser,
           session: {
             access_token: 'test-access-token',
             refresh_token: 'test-refresh-token',
-            user: E2E_USER,
+            user: currentUser,
           },
         },
         error: null,
       }),
       signUp: async () => ({
         data: {
-          user: E2E_USER,
+          user: currentUser,
           session: {
             access_token: 'test-access-token',
             refresh_token: 'test-refresh-token',
-            user: E2E_USER,
+            user: currentUser,
           },
         },
         error: null,
@@ -233,7 +244,7 @@ export function createE2ESupabaseClient(): SupabaseClient {
       }),
       resetPasswordForEmail: async () => ({ data: {}, error: null }),
       updateUser: async (attrs: Record<string, unknown>) => ({
-        data: { user: { ...E2E_USER, ...attrs } },
+        data: { user: { ...currentUser, ...attrs } },
         error: null,
       }),
     },

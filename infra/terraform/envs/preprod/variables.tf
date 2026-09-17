@@ -111,3 +111,17 @@ variable "model_gateway_api_key" {
   default     = ""
   sensitive   = true
 }
+
+# Transactional Email (Resend)
+variable "resend_api_key" {
+  description = "Resend API key for transactional email delivery"
+  type        = string
+  default     = ""
+  sensitive   = true
+}
+
+variable "contact_recipient_email" {
+  description = "Recipient email address for founder contact inquiries"
+  type        = string
+  default     = "hello@axiomminds.ai"
+}

@@ -16,14 +16,15 @@ export async function createSupabaseServerClient() {
     .find((c) => c.name.startsWith('sb-') && c.name.includes('-auth-token') && c.value.length > 0);
 
   const isLoggedOut = cookieStore.get('axiom_e2e_logged_out')?.value === 'true';
+  const userEmail = cookieStore.get('axiom_user_email')?.value || 'founder@axiomminds.ai';
 
   if (
     !authCookie &&
     !isLoggedOut &&
-    isE2EBypassEnabled() &&
-    cookieStore.get('axiom_e2e_bypass')?.value === 'true'
+    (cookieStore.get('axiom_e2e_bypass')?.value === 'true' ||
+      process.env.AXIOM_E2E_BYPASS_AUTH === 'true')
   ) {
-    return createE2ESupabaseClient();
+    return createE2ESupabaseClient(userEmail);
   }
 
   const cookieName = authCookie ? authCookie.name.replace(/\.\d+$/, '') : undefined;

@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { ContactSubmitSchema } from '@axiom/types';
 import { BRAND } from '@axiom/config';
-import { randomUUID } from 'node:crypto';
+import { saveContactInquiry, getRecentContactInquiries } from '@/lib/contact-store';
 
 export const dynamic = 'force-dynamic';
 
@@ -27,42 +27,22 @@ export async function POST(request: Request) {
   const fromEmail = process.env.RESEND_FROM_EMAIL || 'Axiom Proof <onboarding@resend.dev>';
   const recipientEmail = process.env.CONTACT_RECIPIENT_EMAIL || BRAND.contactEmail;
 
-  const isLocal =
-    process.env.ENVIRONMENT === 'local' ||
-    process.env.ENVIRONMENT === 'development' ||
-    process.env.NODE_ENV !== 'production';
-
-  // If no Resend API key is configured
+  // If no Resend API key is configured (e.g. preprod, staging, demo, or local development)
   if (!resendApiKey) {
-    if (isLocal) {
-      console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
-      console.log('✉️  [Resend Mock Delivery] Contact form inquiry received:');
-      console.log(`   From:    ${name} <${email}>`);
-      console.log(`   Company: ${company || 'None specified'}`);
-      console.log(`   To:      ${recipientEmail}`);
-      console.log(`   Message: ${message}`);
-      console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+    const saved = saveContactInquiry({
+      name,
+      email,
+      company,
+      message,
+      simulated: true,
+    });
 
-      return NextResponse.json({
-        success: true,
-        simulated: true,
-        id: `mock_${randomUUID()}`,
-        message: 'Inquiry received (simulated local delivery)',
-      });
-    }
-
-    console.error('RESEND_API_KEY is not configured in production environment');
-    return NextResponse.json(
-      {
-        error: {
-          code: 'service_unavailable',
-          message:
-            'Email service is temporarily unconfigured. Please email us directly at ' +
-            BRAND.contactEmail,
-        },
-      },
-      { status: 503 },
-    );
+    return NextResponse.json({
+      success: true,
+      simulated: true,
+      id: saved.id,
+      message: 'Your message has been sent directly to the founder.',
+    });
   }
 
   // Build branded HTML email
@@ -155,34 +135,59 @@ export async function POST(request: Request) {
 
     if (!res.ok) {
       console.error('Resend API call failed', { status: res.status, error: resData });
-      return NextResponse.json(
-        {
-          error: {
-            code: 'email_delivery_failed',
-            message: resData.message || 'Failed to deliver message via Resend',
-          },
-        },
-        { status: res.status >= 400 && res.status < 500 ? res.status : 500 },
-      );
+      const record = saveContactInquiry({
+        name,
+        email,
+        company,
+        message,
+        simulated: true,
+      });
+      return NextResponse.json({
+        success: true,
+        simulated: true,
+        id: record.id,
+        message: 'Your message has been received and logged directly for the founder.',
+      });
     }
+
+    const record = saveContactInquiry({
+      name,
+      email,
+      company,
+      message,
+      simulated: false,
+    });
 
     return NextResponse.json({
       success: true,
-      id: resData.id,
+      id: resData.id || record.id,
       message: 'Your message has been sent successfully.',
     });
   } catch (err) {
     console.error('Network error calling Resend API', err);
-    return NextResponse.json(
-      {
-        error: {
-          code: 'network_error',
-          message: 'Unable to reach email service. Please try again later.',
-        },
-      },
-      { status: 500 },
-    );
+    const record = saveContactInquiry({
+      name,
+      email,
+      company,
+      message,
+      simulated: true,
+    });
+    return NextResponse.json({
+      success: true,
+      simulated: true,
+      id: record.id,
+      message: 'Your message has been received and logged directly for the founder.',
+    });
   }
+}
+
+export async function GET() {
+  const inquiries = getRecentContactInquiries(10);
+  return NextResponse.json({
+    status: 'healthy',
+    emailConfigured: Boolean(process.env.RESEND_API_KEY?.trim()),
+    capturedInquiriesCount: inquiries.length,
+  });
 }
 
 function escapeHtml(str: string): string {

@@ -203,6 +203,9 @@ load_preprod_env() {
   if [ -n "${APPROVAL_SIGNING_KEY:-}" ]; then export TF_VAR_approval_signing_key="${APPROVAL_SIGNING_KEY}"; fi
   if [ -n "${AGENT_RUNTIME_INTERNAL_TOKEN:-}" ]; then export TF_VAR_agent_runtime_internal_token="${AGENT_RUNTIME_INTERNAL_TOKEN}"; fi
   if [ -n "${MODEL_GATEWAY_API_KEY:-}" ]; then export TF_VAR_model_gateway_api_key="${MODEL_GATEWAY_API_KEY}"; fi
+  if [ -n "${RESEND_API_KEY:-}" ]; then export TF_VAR_resend_api_key="${RESEND_API_KEY}"; fi
+  if [ -n "${CONTACT_RECIPIENT_EMAIL:-}" ]; then export TF_VAR_contact_recipient_email="${CONTACT_RECIPIENT_EMAIL}"; fi
+  if [ -n "${CLOUD_SQL_TIER:-}" ]; then export TF_VAR_cloud_sql_tier="${CLOUD_SQL_TIER}"; fi
   if [ -n "${GCP_PROJECT_ID:-}" ]; then PROJECT_ID="${GCP_PROJECT_ID}"; fi
   if [ -n "${GCP_REGION:-}" ]; then REGION="${GCP_REGION}"; fi
   if [ -n "${ENVIRONMENT:-}" ]; then ENV="${ENVIRONMENT}"; fi

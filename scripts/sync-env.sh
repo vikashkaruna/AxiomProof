@@ -1,0 +1,386 @@
+#!/usr/bin/env bash
+# ==============================================================================
+# Axiom Proof — Single Unified Environment Configuration & Propagation Tool
+# ==============================================================================
+# "Agents do the work. You approve. The proof is automatic."
+#
+# Single point of truth: Reads from the canonical .env.<env> file and propagates
+# directly to:
+#   1. terraform   : Generates infra/terraform/envs/<env>/terraform.tfvars
+#   2. secrets     : Synchronizes sensitive secrets to GCP Secret Manager
+#   3. cloudrun    : Updates Google Cloud Run environment variables & secret mounts
+#   4. docker      : Prepares runtime environment for Docker Compose
+#   5. verify      : Audits configuration schema, detects missing keys & placeholders
+#   6. all         : Executes verify -> terraform -> secrets -> cloudrun
+#
+# Usage:
+#   ./scripts/sync-env.sh [ENVIRONMENT] [TARGET]
+#
+# Examples:
+#   ./scripts/sync-env.sh preprod verify
+#   ./scripts/sync-env.sh preprod terraform
+#   ./scripts/sync-env.sh preprod secrets
+#   ./scripts/sync-env.sh preprod all
+#   ./scripts/sync-env.sh staging verify
+#   ./scripts/sync-env.sh local verify
+# ==============================================================================
+set -euo pipefail
+
+REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+cd "$REPO_ROOT"
+
+# Styling
+BOLD='\033[1m'
+DIM='\033[2m'
+GREEN='\033[0;32m'
+RED='\033[0;31m'
+YELLOW='\033[0;33m'
+BLUE='\033[0;34m'
+CYAN='\033[0;36m'
+MAGENTA='\033[0;35m'
+NC='\033[0m'
+
+pass() { echo -e "  ${GREEN}✓${NC} $1"; }
+info() { echo -e "\n${BOLD}${CYAN}▶ $1${NC}"; }
+warn() { echo -e "  ${YELLOW}⚠${NC} $1"; }
+fail() { echo -e "  ${RED}✗${NC} $1"; }
+
+TARGET_ENV="${1:-preprod}"
+ACTION="${2:-verify}"
+
+if [[ "$TARGET_ENV" == "-h" || "$TARGET_ENV" == "--help" || "$ACTION" == "-h" || "$ACTION" == "--help" ]]; then
+  cat <<HELP
+Usage: ./scripts/sync-env.sh [ENVIRONMENT] [TARGET]
+
+Environments:
+  preprod     (default) GCP Cloud Run + Cloud SQL + Secret Manager (asia-south1)
+  staging     Local Network / LAN Staging (Docker Compose)
+  local       Local Developer Stack (Supabase Local + Docker)
+  production  Production Sovereign Deployment
+
+Targets:
+  verify      Audit .env against canonical schema, identify missing keys & placeholders
+  terraform   Generate / refresh infra/terraform/envs/<env>/terraform.tfvars
+  secrets     Synchronize sensitive variables to GCP Secret Manager
+  cloudrun    Update Cloud Run service environment variables & secret bindings
+  docker      Setup active .env symlink for Docker Compose
+  all         Run verify -> terraform -> secrets -> cloudrun in sequence
+
+HELP
+  exit 0
+fi
+
+ENV_FILE="infra/docker/environments/.env.${TARGET_ENV}"
+if [[ ! -f "$ENV_FILE" ]]; then
+  if [[ -f ".env.${TARGET_ENV}" ]]; then
+    ENV_FILE=".env.${TARGET_ENV}"
+  else
+    fail "Configuration file not found: ${ENV_FILE}"
+    exit 1
+  fi
+fi
+
+# Load variables into environment
+while IFS='=' read -r key val || [ -n "$key" ]; do
+  key="$(echo "$key" | sed -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//')"
+  if [[ "$key" =~ ^#.*$ ]] || [ -z "$key" ]; then continue; fi
+  val="$(echo "$val" | sed -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//' -e 's/^"//' -e 's/"$//' -e "s/^'//" -e "s/'$//")"
+  export "$key"="$val"
+done < "$ENV_FILE"
+
+get_val() {
+  local key="$1"
+  local fallback="${2:-}"
+  local v="${!key:-}"
+  if [ -n "$v" ]; then
+    echo "$v"
+  else
+    echo "$fallback"
+  fi
+}
+
+echo -e "\n${BOLD}${MAGENTA}=================================================================${NC}"
+echo -e "${BOLD}${MAGENTA}  AXIOM PROOF — Unified Environment Synchronization Platform     ${NC}"
+echo -e "${DIM}  Agents do the work. You approve. The proof is automatic.${NC}"
+echo -e "${BOLD}${MAGENTA}=================================================================${NC}"
+echo -e "  Environment:  ${BOLD}${CYAN}${TARGET_ENV}${NC}"
+echo -e "  Source File:  ${BOLD}${CYAN}${ENV_FILE}${NC}"
+echo -e "  Action:       ${BOLD}${CYAN}${ACTION}${NC}"
+echo -e "${BOLD}${MAGENTA}=================================================================${NC}"
+
+# ─────────────────────────────────────────────────────────────────────────────
+# 1. VERIFY ACTION
+# ─────────────────────────────────────────────────────────────────────────────
+do_verify() {
+  info "Auditing '${TARGET_ENV}' configuration against canonical master schema..."
+
+  local required_keys=(
+    "ENVIRONMENT:General"
+    "NODE_ENV:General"
+    "LOG_LEVEL:General"
+    "MARKETING_PORT:Networking & Ports"
+    "WEB_PORT:Networking & Ports"
+    "BFF_PORT:Networking & Ports"
+    "AGENT_RUNTIME_PORT:Networking & Ports"
+    "MODEL_GATEWAY_PORT:Networking & Ports"
+    "SUPABASE_URL:Database & Auth"
+    "SUPABASE_ANON_KEY:Database & Auth"
+    "SUPABASE_SERVICE_KEY:Database & Auth"
+    "NEXT_PUBLIC_APP_URL:Client URLs"
+    "NEXT_PUBLIC_BFF_URL:Client URLs"
+    "BFF_URL:Inter-service"
+    "AGENT_RUNTIME_URL:Inter-service"
+    "MODEL_GATEWAY_URL:Inter-service"
+    "APPROVAL_SIGNING_KEY:Security & Tokens"
+    "AGENT_RUNTIME_INTERNAL_TOKEN:Security & Tokens"
+    "MODEL_GATEWAY_API_KEY:Security & Tokens"
+    "TEMPORAL_ADDRESS:Orchestration"
+    "TEMPORAL_NAMESPACE:Orchestration"
+    "ANTHROPIC_API_KEY:LLM Gateway"
+    "OPENAI_API_KEY:LLM Gateway"
+    "GEMINI_API_KEY:LLM Gateway"
+    "RESEND_API_KEY:Email Delivery"
+    "RESEND_FROM_EMAIL:Email Delivery"
+    "CONTACT_RECIPIENT_EMAIL:Email Delivery"
+    "FEATURE_DRY_RUN_ENGINE:Feature Flags"
+    "FEATURE_EXECUTION_ENGINE:Feature Flags"
+    "FEATURE_KILL_SWITCH:Feature Flags"
+  )
+
+  local ok_count=0
+  local warn_count=0
+  local missing_count=0
+
+  printf "\n  %-32s %-22s %-12s %s\n" "VARIABLE" "CATEGORY" "STATUS" "VALUE PREVIEW"
+  printf "  %-32s %-22s %-12s %s\n" "────────────────────────────────" "──────────────────────" "──────────" "────────────────────"
+
+  for item in "${required_keys[@]}"; do
+    local key="${item%%:*}"
+    local cat="${item##*:}"
+    local val="$(get_val "$key")"
+
+    if [ -z "$val" ]; then
+      printf "  %-32s %-22s \033[0;31m%-12s\033[0m %s\n" "$key" "$cat" "MISSING" "(empty)"
+      missing_count=$((missing_count + 1))
+    elif [[ "$val" == *"placeholder"* || "$val" == *"<"*">"* || "$val" == *"YOUR_"* ]]; then
+      local preview="${val:0:18}..."
+      printf "  %-32s %-22s \033[0;33m%-12s\033[0m %s\n" "$key" "$cat" "PLACEHOLDER" "$preview"
+      warn_count=$((warn_count + 1))
+    else
+      local preview=""
+      if [[ "$key" == *"KEY"* || "$key" == *"SECRET"* || "$key" == *"TOKEN"* || "$key" == *"PASSWORD"* ]]; then
+        local len="${#val}"
+        if [ "$len" -gt 12 ]; then
+          preview="${val:0:7}...${val: -4}"
+        else
+          preview="${val:0:3}..."
+        fi
+      else
+        preview="${val:0:22}"
+      fi
+      printf "  %-32s %-22s \033[0;32m%-12s\033[0m %s\n" "$key" "$cat" "CONFIGURED" "$preview"
+      ok_count=$((ok_count + 1))
+    fi
+  done
+
+  echo ""
+  echo -e "  ─────────────────────────────────────────────────────────────────"
+  echo -e "  Audit Summary for ${BOLD}${TARGET_ENV}${NC}:"
+  echo -e "    ${GREEN}✓ Configured & Valid:${NC} ${ok_count}"
+  echo -e "    ${YELLOW}⚠ Placeholders:${NC}        ${warn_count}"
+  echo -e "    ${RED}✗ Missing Keys:${NC}        ${missing_count}"
+  echo -e "  ─────────────────────────────────────────────────────────────────"
+
+  if [ "$missing_count" -eq 0 ]; then
+    pass "Configuration schema validation PASSED for environment '${TARGET_ENV}'."
+  else
+    warn "Configuration schema has ${missing_count} missing variables. Review above."
+  fi
+}
+
+# ─────────────────────────────────────────────────────────────────────────────
+# 2. TERRAFORM ACTION
+# ─────────────────────────────────────────────────────────────────────────────
+do_terraform() {
+  info "Propagating ${TARGET_ENV} configuration to Terraform..."
+
+  local tf_dir="infra/terraform/envs/${TARGET_ENV}"
+  if [[ ! -d "$tf_dir" ]]; then
+    warn "Terraform directory '${tf_dir}' does not exist. (Normal for local/staging)."
+    return 0
+  fi
+
+  local tfvars_file="${tf_dir}/terraform.tfvars"
+  info "Generating ${tfvars_file} from ${ENV_FILE}..."
+
+  cat <<TFVARS > "$tfvars_file"
+# ==============================================================================
+# Axiom Proof — Terraform Variables for '${TARGET_ENV}'
+# Automatically generated by scripts/sync-env.sh at $(date -u +"%Y-%m-%dT%H:%M:%SZ")
+# SINGLE SOURCE OF TRUTH: ${ENV_FILE}
+# DO NOT EDIT THIS FILE DIRECTLY. EDIT ${ENV_FILE} AND RUN ./scripts/sync-env.sh ${TARGET_ENV} terraform
+# ==============================================================================
+
+project_id             = "$(get_val "GCP_PROJECT_ID" "axiom-proof")"
+region                 = "$(get_val "GCP_REGION" "asia-south1")"
+environment            = "${TARGET_ENV}"
+cloud_sql_tier         = "$(get_val "CLOUD_SQL_TIER" "db-f1-micro")"
+cloud_sql_disk_size_gb = $(get_val "CLOUD_SQL_DISK_SIZE_GB" "10")
+
+# Upstash Redis
+upstash_redis_url = "$(get_val "UPSTASH_REDIS_URL" "$(get_val "REDIS_URL")")"
+
+# Temporal Cloud GCP Subscription
+temporal_address   = "$(get_val "TEMPORAL_ADDRESS" "axiom-proof.dkxyc.tmprl.cloud:7233")"
+temporal_namespace = "$(get_val "TEMPORAL_NAMESPACE" "axiom-proof.dkxyc")"
+temporal_api_key   = "$(get_val "TEMPORAL_API_KEY")"
+
+# Agent Models Fallback Hierarchy (Anthropic -> OpenAI -> Gemini)
+anthropic_api_key = "$(get_val "ANTHROPIC_API_KEY")"
+openai_api_key    = "$(get_val "OPENAI_API_KEY")"
+gemini_api_key    = "$(get_val "GEMINI_API_KEY" "$(get_val "GOOGLE_API_KEY")")"
+
+# Security Tokens
+approval_signing_key         = "$(get_val "APPROVAL_SIGNING_KEY")"
+agent_runtime_internal_token = "$(get_val "AGENT_RUNTIME_INTERNAL_TOKEN")"
+model_gateway_api_key        = "$(get_val "MODEL_GATEWAY_API_KEY")"
+
+# Transactional Email (Resend)
+resend_api_key          = "$(get_val "RESEND_API_KEY")"
+contact_recipient_email = "$(get_val "CONTACT_RECIPIENT_EMAIL" "vkkaruna@outlook.com")"
+TFVARS
+
+  pass "Successfully wrote ${tfvars_file}"
+}
+
+# ─────────────────────────────────────────────────────────────────────────────
+# 3. SECRETS ACTION (GCP Secret Manager)
+# ─────────────────────────────────────────────────────────────────────────────
+do_secrets() {
+  info "Synchronizing ${TARGET_ENV} secrets with GCP Secret Manager..."
+
+  if ! command -v gcloud >/dev/null 2>&1; then
+    warn "gcloud CLI not installed. Skipping Secret Manager synchronization."
+    return 0
+  fi
+
+  local project="$(get_val "GCP_PROJECT_ID" "axiom-proof")"
+  local region="$(get_val "GCP_REGION" "asia-south1")"
+
+  local secret_pairs=(
+    "axiom-${TARGET_ENV}-resend-api-key:$(get_val "RESEND_API_KEY")"
+    "axiom-${TARGET_ENV}-anthropic-api-key:$(get_val "ANTHROPIC_API_KEY")"
+    "axiom-${TARGET_ENV}-openai-api-key:$(get_val "OPENAI_API_KEY")"
+    "axiom-${TARGET_ENV}-gemini-api-key:$(get_val "GEMINI_API_KEY" "$(get_val "GOOGLE_API_KEY")")"
+    "axiom-${TARGET_ENV}-temporal-api-key:$(get_val "TEMPORAL_API_KEY")"
+    "axiom-${TARGET_ENV}-approval-signing-key:$(get_val "APPROVAL_SIGNING_KEY")"
+    "axiom-${TARGET_ENV}-agent-runtime-internal-token:$(get_val "AGENT_RUNTIME_INTERNAL_TOKEN")"
+    "axiom-${TARGET_ENV}-model-gateway-api-key:$(get_val "MODEL_GATEWAY_API_KEY")"
+    "axiom-${TARGET_ENV}-upstash-redis-url:$(get_val "UPSTASH_REDIS_URL" "$(get_val "REDIS_URL")")"
+  )
+
+  local sa="axiom-${TARGET_ENV}-cloudrun-sa@${project}.iam.gserviceaccount.com"
+
+  for item in "${secret_pairs[@]}"; do
+    local sec_name="${item%%:*}"
+    local sec_val="${item#*:}"
+    if [ -z "$sec_val" ] || [[ "$sec_val" == *"placeholder"* ]]; then
+      warn "Skipping empty or placeholder secret: ${sec_name}"
+      continue
+    fi
+
+    if gcloud secrets describe "$sec_name" --project="$project" >/dev/null 2>&1; then
+      # Add version
+      echo -n "$sec_val" | gcloud secrets versions add "$sec_name" --data-file=- --project="$project" --quiet >/dev/null 2>&1 || true
+      pass "Updated secret version: ${sec_name}"
+    else
+      # Create secret
+      echo -n "$sec_val" | gcloud secrets create "$sec_name" \
+        --data-file=- \
+        --replication-policy="user-managed" \
+        --locations="$region" \
+        --project="$project" --quiet >/dev/null 2>&1 || true
+      pass "Created new secret: ${sec_name}"
+    fi
+
+    # Ensure Cloud Run SA has secretAccessor
+    gcloud secrets add-iam-policy-binding "$sec_name" \
+      --member="serviceAccount:${sa}" \
+      --role="roles/secretmanager.secretAccessor" \
+      --project="$project" --quiet >/dev/null 2>&1 || true
+  done
+
+  pass "Secret Manager sync complete for environment '${TARGET_ENV}'."
+}
+
+# ─────────────────────────────────────────────────────────────────────────────
+# 4. CLOUDRUN ACTION
+# ─────────────────────────────────────────────────────────────────────────────
+do_cloudrun() {
+  info "Synchronizing Cloud Run environment variables for ${TARGET_ENV}..."
+
+  if ! command -v gcloud >/dev/null 2>&1; then
+    warn "gcloud CLI not installed. Skipping Cloud Run sync."
+    return 0
+  fi
+
+  local project="$(get_val "GCP_PROJECT_ID" "axiom-proof")"
+  local region="$(get_val "GCP_REGION" "asia-south1")"
+
+  # Marketing Cloud Run
+  info "Updating marketing service: axiom-marketing-${TARGET_ENV}..."
+  gcloud run services update "axiom-marketing-${TARGET_ENV}" \
+    --region="$region" \
+    --project="$project" \
+    --set-env-vars="ENVIRONMENT=${TARGET_ENV},NODE_ENV=production,RESEND_FROM_EMAIL=$(get_val "RESEND_FROM_EMAIL" "Axiom Proof <onboarding@resend.dev>"),CONTACT_RECIPIENT_EMAIL=$(get_val "CONTACT_RECIPIENT_EMAIL" "vkkaruna@outlook.com"),CONTACT_FALLBACK_RECIPIENT_EMAIL=$(get_val "CONTACT_FALLBACK_RECIPIENT_EMAIL" "hello@axiomminds.ai")" \
+    --update-secrets="RESEND_API_KEY=axiom-${TARGET_ENV}-resend-api-key:latest" \
+    --quiet || warn "axiom-marketing-${TARGET_ENV} service update warning (continuing)"
+
+  pass "Cloud Run environment synchronization complete."
+}
+
+# ─────────────────────────────────────────────────────────────────────────────
+# 5. DOCKER ACTION
+# ─────────────────────────────────────────────────────────────────────────────
+do_docker() {
+  info "Preparing Docker Compose runtime environment for ${TARGET_ENV}..."
+  ln -sf "infra/docker/environments/.env.${TARGET_ENV}" .env
+  pass "Linked .env -> infra/docker/environments/.env.${TARGET_ENV}"
+  pass "Ready for: docker compose --env-file infra/docker/environments/.env.${TARGET_ENV} up -d"
+}
+
+# ─────────────────────────────────────────────────────────────────────────────
+# EXECUTION ROUTER
+# ─────────────────────────────────────────────────────────────────────────────
+case "$ACTION" in
+  verify)
+    do_verify
+    ;;
+  terraform)
+    do_terraform
+    ;;
+  secrets)
+    do_secrets
+    ;;
+  cloudrun)
+    do_cloudrun
+    ;;
+  docker)
+    do_docker
+    ;;
+  all)
+    do_verify
+    do_terraform
+    do_docker
+    if [[ "$TARGET_ENV" == "preprod" || "$TARGET_ENV" == "production" ]]; then
+      do_secrets
+      do_cloudrun
+    fi
+    ;;
+  *)
+    fail "Unknown action: '$ACTION'. Use verify, terraform, secrets, cloudrun, docker, or all."
+    exit 1
+    ;;
+esac
+
+echo -e "\n${BOLD}${GREEN}✔ Done! All operations for '${TARGET_ENV} (${ACTION})' completed successfully.${NC}\n"

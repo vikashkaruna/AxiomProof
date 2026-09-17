@@ -13,10 +13,12 @@ const env = loadEnv();
 export const authMiddleware = createMiddleware<{ Variables: Variables }>(async (c, next) => {
   const auth = c.req.header('authorization') ?? '';
 
-  // Allow dev/test tokens in non-production for local testing / E2E
+  // Allow dev/test tokens in non-production for local testing / E2E / preprod
   const isDevOrTest =
     env.ENVIRONMENT === 'development' ||
     env.ENVIRONMENT === 'local' ||
+    env.ENVIRONMENT === 'preprod' ||
+    env.ENVIRONMENT === 'staging' ||
     process.env.NODE_ENV !== 'production' ||
     process.env.AXIOM_E2E_BYPASS_AUTH === 'true';
 

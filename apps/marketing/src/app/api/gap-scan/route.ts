@@ -1,8 +1,8 @@
 import { NextResponse } from 'next/server';
-import { createSupabaseAdmin } from '@axiom/supabase';
 import { GapScanSubmitSchema } from '@axiom/types';
 import { computeGapScanReport } from '@/lib/gap-scan-scoring';
-import { createHash } from 'node:crypto';
+import { saveGapScanSubmission } from '@/lib/gap-scan-store';
+import { createHash, randomUUID } from 'node:crypto';
 
 export const runtime = 'nodejs';
 
@@ -42,40 +42,30 @@ export async function POST(request: Request) {
   const sessionHash = createHash('sha256').update(`${input.sessionId}|${ip}|${ua}`).digest('hex');
 
   const report = await computeGapScanReport(input.answers);
+  const scanId = randomUUID();
 
-  const supabase = createSupabaseAdmin();
-  const { data, error } = await supabase
-    .from('gap_scan_responses')
-    .insert({
-      session_id: sessionHash,
-      sector: input.sector,
-      employee_band: input.employeeBand,
-      processes_children_data: input.processesChildrenData,
-      is_sdf: input.isSdf,
-      answers: input.answers,
-      report_snapshot: report,
-      library_version: '0.1.0',
-      posture_score: report.postureScore,
-      estimated_exposure_inr: report.estimatedExposureInr,
-      contact_name: input.contactName,
-      contact_email: input.contactEmail,
-      contact_company: input.contactCompany,
-      follow_up_requested: input.followUpRequested,
-      marketing_consent: input.marketingConsent,
-    })
-    .select('id')
-    .single();
-
-  if (error) {
-    console.error('gap_scan insert failed', error);
-    return NextResponse.json(
-      { error: { code: 'persistence_failed', message: 'Could not save scan' } },
-      { status: 500 },
-    );
-  }
+  const savedId = await saveGapScanSubmission({
+    id: scanId,
+    session_id: sessionHash,
+    sector: input.sector,
+    employee_band: input.employeeBand,
+    processes_children_data: input.processesChildrenData,
+    is_sdf: input.isSdf,
+    answers: input.answers,
+    report_snapshot: report,
+    library_version: '0.1.0',
+    posture_score: report.postureScore,
+    estimated_exposure_inr: report.estimatedExposureInr,
+    contact_name: input.contactName,
+    contact_email: input.contactEmail,
+    contact_company: input.contactCompany,
+    follow_up_requested: input.followUpRequested,
+    marketing_consent: input.marketingConsent,
+    created_at: new Date().toISOString(),
+  });
 
   const response = NextResponse.json({
-    id: data.id,
+    id: savedId,
     postureScore: report.postureScore,
     estimatedExposureInr: report.estimatedExposureInr,
     findingsCount: report.findings.length,

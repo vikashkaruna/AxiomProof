@@ -11,19 +11,19 @@ exact steps to wire it up so the environment is 100% functional.**
 
 The Terraform plan has already been applied. The following resources exist live in `asia-south1`:
 
-| Resource                      | Live value                                                                       | Status                  |
-| ----------------------------- | -------------------------------------------------------------------------------- | ----------------------- |
-| `axiom-bff-preprod`           | `https://axiom-bff-preprod-7zb7qphjbq-el.a.run.app`                              | ✅ 200 OK on `/health`  |
-| `axiom-web-preprod`           | `https://axiom-web-preprod-7zb7qphjbq-el.a.run.app`                              | ✅ 200 OK on `/api/health` |
-| `axiom-marketing-preprod`     | `https://axiom-marketing-preprod-7zb7qphjbq-el.a.run.app`                        | ✅ 200 OK on `/api/health` |
-| Marketing Firebase site       | `https://axiom-proof.web.app`                                                    | ✅ 200 OK               |
-| `axiom-agent-runtime-preprod` | (Cloud Run internal — ingress `INGRESS_TRAFFIC_ALL` but requires token)          | ⚠️ 403 (expected)       |
-| `axiom-model-gateway-preprod` | (Cloud Run internal — ingress `INGRESS_TRAFFIC_ALL` but requires token)          | ⚠️ 403 (expected)       |
-| `axiom-temporal-worker-preprod` | Ingress `INGRESS_TRAFFIC_INTERNAL_ONLY` (BFF-only)                            | ⚠️ 403 (expected)       |
-| Cloud SQL `axiom-proof-preprod-pg-af455108` | Public IP `34.93.127.93`, PG 15, `db-custom-2-7680`               | ✅ Created              |
-| GCS `axiom-proof-evidence-preprod-e8a572ea` | WORM retention 2555 days, HMAC key provisioned                    | ✅ Created              |
-| Secret Manager                | 11 secret IDs (`axiom-preprod-*`) — **all created with placeholder values**       | ⚠️ Values are fake      |
-| VPC + Serverless Connector    | `axiom-preprod-vpc`, `axiom-preprod-conn` (10.10.16.0/28)                        | ✅ Created              |
+| Resource                                    | Live value                                                                  | Status                     |
+| ------------------------------------------- | --------------------------------------------------------------------------- | -------------------------- |
+| `axiom-bff-preprod`                         | `https://axiom-bff-preprod-7zb7qphjbq-el.a.run.app`                         | ✅ 200 OK on `/health`     |
+| `axiom-web-preprod`                         | `https://axiom-web-preprod-7zb7qphjbq-el.a.run.app`                         | ✅ 200 OK on `/api/health` |
+| `axiom-marketing-preprod`                   | `https://axiom-marketing-preprod-7zb7qphjbq-el.a.run.app`                   | ✅ 200 OK on `/api/health` |
+| Marketing Firebase site                     | `https://axiom-proof.web.app`                                               | ✅ 200 OK                  |
+| `axiom-agent-runtime-preprod`               | (Cloud Run internal — ingress `INGRESS_TRAFFIC_ALL` but requires token)     | ⚠️ 403 (expected)          |
+| `axiom-model-gateway-preprod`               | (Cloud Run internal — ingress `INGRESS_TRAFFIC_ALL` but requires token)     | ⚠️ 403 (expected)          |
+| `axiom-temporal-worker-preprod`             | Ingress `INGRESS_TRAFFIC_INTERNAL_ONLY` (BFF-only)                          | ⚠️ 403 (expected)          |
+| Cloud SQL `axiom-proof-preprod-pg-af455108` | Public IP `34.93.127.93`, PG 15, `db-custom-2-7680`                         | ✅ Created                 |
+| GCS `axiom-proof-evidence-preprod-e8a572ea` | WORM retention 2555 days, HMAC key provisioned                              | ✅ Created                 |
+| Secret Manager                              | 11 secret IDs (`axiom-preprod-*`) — **all created with placeholder values** | ⚠️ Values are fake         |
+| VPC + Serverless Connector                  | `axiom-preprod-vpc`, `axiom-preprod-conn` (10.10.16.0/28)                   | ✅ Created                 |
 
 **Net: infrastructure exists, but `terraform.tfvars` was never filled in, so every
 `google_secret_manager_secret_version` was written with the placeholder fallback from
@@ -36,17 +36,17 @@ the Supabase URLs are hardcoded to a domain that doesn't resolve.
 
 ## 1. Where every configuration lives
 
-| Layer                         | File                                                                 | What it controls                                                                                  |
-| ----------------------------- | -------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------- |
-| **Terraform variables**       | `infra/terraform/envs/preprod/terraform.tfvars`                       | 8 sensitive values → Secret Manager → Cloud Run env                                              |
-| **Terraform resource wiring** | `infra/terraform/envs/preprod/{main,cloudrun,cloudsql,storage,iam,secrets,artifact_registry}.tf` | Resources provisioned in GCP                                                              |
-| **Preprod Environment Config** | `infra/docker/environments/.env.preprod` (or root `.env.preprod`)    | **Automatically read by `deploy-preprod-gcp.sh` and `teardown-preprod-gcp.sh`**; maps to `TF_VAR_*` without manual copying |
-| **BFF runtime schema**        | `packages/config/src/index.ts`                                       | Zod validation — every key the BFF requires at boot                                              |
-| **Agent-runtime config**      | `services/agent-runtime/src/axiom/config.py`                         | Pydantic `Settings` — agent runtime boot validation                                              |
-| **Model-gateway config**      | `services/model-gateway/src/model_gateway/config.py`                 | Pydantic `Settings` — provider keys, cache backend, region gate                                  |
-| **Web (Next.js) runtime**     | `apps/web/.env.example` + `apps/web/src/middleware.ts`               | Browser-facing env (`NEXT_PUBLIC_*`), server-side env for API rewrites                            |
-| **Database migrations**       | `infra/supabase/migrations/0000..0007_*.sql`                         | Append-only SQL applied to Cloud SQL                                                              |
-| **Control library seed**      | `packages/control-library/src/controls.ts` + `scripts/build-controls-json.mjs` | 46 DPDPA statutory controls seeded via `pnpm seed:controls`                                 |
+| Layer                          | File                                                                                             | What it controls                                                                                                           |
+| ------------------------------ | ------------------------------------------------------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------- |
+| **Terraform variables**        | `infra/terraform/envs/preprod/terraform.tfvars`                                                  | 8 sensitive values → Secret Manager → Cloud Run env                                                                        |
+| **Terraform resource wiring**  | `infra/terraform/envs/preprod/{main,cloudrun,cloudsql,storage,iam,secrets,artifact_registry}.tf` | Resources provisioned in GCP                                                                                               |
+| **Preprod Environment Config** | `infra/docker/environments/.env.preprod` (or root `.env.preprod`)                                | **Automatically read by `deploy-preprod-gcp.sh` and `teardown-preprod-gcp.sh`**; maps to `TF_VAR_*` without manual copying |
+| **BFF runtime schema**         | `packages/config/src/index.ts`                                                                   | Zod validation — every key the BFF requires at boot                                                                        |
+| **Agent-runtime config**       | `services/agent-runtime/src/axiom/config.py`                                                     | Pydantic `Settings` — agent runtime boot validation                                                                        |
+| **Model-gateway config**       | `services/model-gateway/src/model_gateway/config.py`                                             | Pydantic `Settings` — provider keys, cache backend, region gate                                                            |
+| **Web (Next.js) runtime**      | `apps/web/.env.example` + `apps/web/src/middleware.ts`                                           | Browser-facing env (`NEXT_PUBLIC_*`), server-side env for API rewrites                                                     |
+| **Database migrations**        | `infra/supabase/migrations/0000..0007_*.sql`                                                     | Append-only SQL applied to Cloud SQL                                                                                       |
+| **Control library seed**       | `packages/control-library/src/controls.ts` + `scripts/build-controls-json.mjs`                   | 46 DPDPA statutory controls seeded via `pnpm seed:controls`                                                                |
 
 ### Automated Deployment & Teardown Orchestration
 
@@ -66,16 +66,16 @@ The deployment tooling provides a progressive, dependency-aware pipeline with au
 
 ### Files that have **placeholders** today and need real values
 
-| File                                                                 | Problem                                                                                          |
-| -------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------ |
-| `infra/terraform/envs/preprod/terraform.tfvars`                      | Identical to `.example`. All 8 sensitive fields are `sk-ant-api03-…`, `your-temporal-api-key`, etc.|
-| `infra/docker/environments/.env.preprod`                            | Central preprod configuration. Contains verified values; automatically read by deployment scripts. |
-| `infra/docker/environments/.env.preprod.example`                    | Template with all placeholders marked and cross-references to the checklist steps.               |
-| `infra/terraform/envs/preprod/cloudrun.tf` (lines 76–85, 217–230)    | `SUPABASE_URL=https://preprod-supabase.axiomminds.ai` and `*_KEY=preprod-…-placeholder…` are **hardcoded** into the Cloud Run env blocks. |
-| `infra/terraform/envs/preprod/cloudrun.tf` (BFF, lines 38–161)        | Missing `BFF_CORS_ORIGINS`, `BFF_PUBLIC_URL`, `MODEL_GATEWAY_API_KEY`, `RESEND_API_KEY`, `CONTACT_RECIPIENT_EMAIL`. |
-| `infra/terraform/envs/preprod/cloudrun.tf` (Web, lines 167–245)      | Missing `NEXT_PUBLIC_APP_URL`, `NEXT_PUBLIC_MARKETING_URL`.                                      |
-| `infra/terraform/envs/preprod/cloudrun.tf` (temporal-worker, lines 469–537) | Missing `MODEL_GATEWAY_URL`, `MODEL_GATEWAY_API_KEY`, `TEMPORAL_CLIENT_CERT/KEY`.          |
-| `infra/terraform/envs/preprod/cloudrun.tf` (model-gateway, lines 362–467) | Missing `CACHE_BACKEND=redis` (currently defaults to `memory` despite REDIS_URL being set).  |
+| File                                                                        | Problem                                                                                                                                   |
+| --------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------- |
+| `infra/terraform/envs/preprod/terraform.tfvars`                             | Identical to `.example`. All 8 sensitive fields are `sk-ant-api03-…`, `your-temporal-api-key`, etc.                                       |
+| `infra/docker/environments/.env.preprod`                                    | Central preprod configuration. Contains verified values; automatically read by deployment scripts.                                        |
+| `infra/docker/environments/.env.preprod.example`                            | Template with all placeholders marked and cross-references to the checklist steps.                                                        |
+| `infra/terraform/envs/preprod/cloudrun.tf` (lines 76–85, 217–230)           | `SUPABASE_URL=https://preprod-supabase.axiomminds.ai` and `*_KEY=preprod-…-placeholder…` are **hardcoded** into the Cloud Run env blocks. |
+| `infra/terraform/envs/preprod/cloudrun.tf` (BFF, lines 38–161)              | Missing `BFF_CORS_ORIGINS`, `BFF_PUBLIC_URL`, `MODEL_GATEWAY_API_KEY`, `RESEND_API_KEY`, `CONTACT_RECIPIENT_EMAIL`.                       |
+| `infra/terraform/envs/preprod/cloudrun.tf` (Web, lines 167–245)             | Missing `NEXT_PUBLIC_APP_URL`, `NEXT_PUBLIC_MARKETING_URL`.                                                                               |
+| `infra/terraform/envs/preprod/cloudrun.tf` (temporal-worker, lines 469–537) | Missing `MODEL_GATEWAY_URL`, `MODEL_GATEWAY_API_KEY`, `TEMPORAL_CLIENT_CERT/KEY`.                                                         |
+| `infra/terraform/envs/preprod/cloudrun.tf` (model-gateway, lines 362–467)   | Missing `CACHE_BACKEND=redis` (currently defaults to `memory` despite REDIS_URL being set).                                               |
 
 ---
 
@@ -167,8 +167,8 @@ resolve, so every authenticated request 401s.
 > in `asia-south1` serves as the core relational datastore and immutable audit ledger
 > (via `append_ledger()`), while Supabase provides the Identity Provider (GoTrue Auth,
 > `@supabase/ssr` session cookies, and JWT issuance). Both reside in Mumbai to satisfy
-> DPDPA data residency requirements. *(See [Section 8](#8-architectural-deep-dive-supabase-vs-cloud-sql-dual-setup--future-alternatives)
-> below for the complete architectural analysis, trade-offs, and consolidation alternatives).*
+> DPDPA data residency requirements. _(See [Section 8](#8-architectural-deep-dive-supabase-vs-cloud-sql-dual-setup--future-alternatives)
+> below for the complete architectural analysis, trade-offs, and consolidation alternatives)._
 
 You have two options for preprod. **Pick one.**
 
@@ -459,14 +459,14 @@ with the edits below.
 
 #### Where every size and scale knob lives
 
-| # | Layer | File | Lines | What's there |
-|---|---|---|---|---|
-| 1 | **Cloud Run services** (biggest lever) | `infra/terraform/envs/preprod/cloudrun.tf` | 23–35, 176–188, 256–268, 371–383, 478–490, 548–560 | `scaling { min_instance_count, max_instance_count }` + `resources.limits { cpu, memory }` per service. **Hardcoded today — edit in place.** |
-| 2 | **Cloud SQL PostgreSQL** | `infra/terraform/envs/preprod/cloudsql.tf` | 21–23, 61 | `tier`, `disk_size`, `availability_type`, `deletion_protection`. Tier + disk come from variables — set them in `terraform.tfvars`. |
-| 3 | **VPC Serverless Connector** | `infra/terraform/envs/preprod/main.tf` | 39–55 | `min_instances`, `max_instances`, `machine_type`. Always-on billing per instance. |
-| 4 | **GCS Evidence Vault** | `infra/terraform/envs/preprod/storage.tf` | 11–47 | `storage_class`, `versioning`, `lifecycle_rule` (→ ARCHIVE), `enable_object_retention`. WORM constraint means retention/v versioning are non-negotiable. |
-| 5 | **Helm (legacy EKS path)** | `infra/helm/axiom-proof/values.yaml` | 35–151 | `replicaCount`, `resources.requests`, `resources.limits`, `autoscaling.min/maxReplicas`. **Not used for GCP preprod** (Cloud Run only). |
-| 6 | **Local Docker compose** | `docker-compose.yml` + `infra/docker/docker-compose.preprod.yml` | n/a | No resource limits today. Host caps apply. Add `cpus:` and `mem_limit:` per service if you want a hard cap on local CI. |
+| #   | Layer                                  | File                                                             | Lines                                              | What's there                                                                                                                                             |
+| --- | -------------------------------------- | ---------------------------------------------------------------- | -------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 1   | **Cloud Run services** (biggest lever) | `infra/terraform/envs/preprod/cloudrun.tf`                       | 23–35, 176–188, 256–268, 371–383, 478–490, 548–560 | `scaling { min_instance_count, max_instance_count }` + `resources.limits { cpu, memory }` per service. **Hardcoded today — edit in place.**              |
+| 2   | **Cloud SQL PostgreSQL**               | `infra/terraform/envs/preprod/cloudsql.tf`                       | 21–23, 61                                          | `tier`, `disk_size`, `availability_type`, `deletion_protection`. Tier + disk come from variables — set them in `terraform.tfvars`.                       |
+| 3   | **VPC Serverless Connector**           | `infra/terraform/envs/preprod/main.tf`                           | 39–55                                              | `min_instances`, `max_instances`, `machine_type`. Always-on billing per instance.                                                                        |
+| 4   | **GCS Evidence Vault**                 | `infra/terraform/envs/preprod/storage.tf`                        | 11–47                                              | `storage_class`, `versioning`, `lifecycle_rule` (→ ARCHIVE), `enable_object_retention`. WORM constraint means retention/v versioning are non-negotiable. |
+| 5   | **Helm (legacy EKS path)**             | `infra/helm/axiom-proof/values.yaml`                             | 35–151                                             | `replicaCount`, `resources.requests`, `resources.limits`, `autoscaling.min/maxReplicas`. **Not used for GCP preprod** (Cloud Run only).                  |
+| 6   | **Local Docker compose**               | `docker-compose.yml` + `infra/docker/docker-compose.preprod.yml` | n/a                                                | No resource limits today. Host caps apply. Add `cpus:` and `mem_limit:` per service if you want a hard cap on local CI.                                  |
 
 #### Current (costly) defaults vs. recommended cost-minimized values
 
@@ -544,27 +544,27 @@ of the WORM audit guarantee and removing it would break Hard Rule 4 (statutory D
 
 #### Trade-offs to be aware of
 
-| Choice | What you save | What you give up |
-|---|---|---|
-| `min_instance_count = 0` on Cloud Run | ~₹1,000/instance/month idle | 1–3 s cold start after idle (≥15 min no traffic) |
-| `db-f1-micro` | ~₹12,000/month vs `db-custom-2-7680` | Shared CPU; 5–15 s slowdown during heavy operations |
-| VPC connector `min_instances = 0` | ~₹1,300/month | ~5 s connector spin-up on first request after idle |
-| Lower `cpu` (e.g. `1` vs `2`) | Lower per-request charge | Caps per-instance concurrency at ~80 (vs ~33 with `2`) — irrelevant for preprod traffic |
-| Lower `memory` (`512Mi` vs `1Gi`) | Lower per-request GiB·seconds | OOM risk on Parikshan's 46-control evaluation if concurrent assessments spike |
+| Choice                                | What you save                        | What you give up                                                                        |
+| ------------------------------------- | ------------------------------------ | --------------------------------------------------------------------------------------- |
+| `min_instance_count = 0` on Cloud Run | ~₹1,000/instance/month idle          | 1–3 s cold start after idle (≥15 min no traffic)                                        |
+| `db-f1-micro`                         | ~₹12,000/month vs `db-custom-2-7680` | Shared CPU; 5–15 s slowdown during heavy operations                                     |
+| VPC connector `min_instances = 0`     | ~₹1,300/month                        | ~5 s connector spin-up on first request after idle                                      |
+| Lower `cpu` (e.g. `1` vs `2`)         | Lower per-request charge             | Caps per-instance concurrency at ~80 (vs ~33 with `2`) — irrelevant for preprod traffic |
+| Lower `memory` (`512Mi` vs `1Gi`)     | Lower per-request GiB·seconds        | OOM risk on Parikshan's 46-control evaluation if concurrent assessments spike           |
 
 **Recommended posture for preprod:** keep BFF and Web `min_instance_count = 1` so demos and smoke tests
 don't pay cold-start tax. Set the rest to 0. The numbers above are the absolute floor.
 
 #### Approximate monthly bill (asia-south1, Sept 2026 pricing)
 
-| Component | Before | After (full cut) | After (BFF+Web warm) |
-|---|---|---|---|
-| Cloud SQL (`db-custom-2-7680` → `db-f1-micro`) | ₹28,000 | ₹250 | ₹250 |
-| Cloud Run 6 services (idle, `min=1` × 6) | ₹6,000 | **₹0** | ₹2,000 (BFF + Web) |
-| VPC connector (`min=2`) | ₹1,300 | **₹0** | ₹130 (min=1) |
-| Artifact Registry + Secret Manager + GCS versioning | ₹500 | ₹500 | ₹500 |
-| Pay-per-request spike during `run-preprod-flow.sh` | varies | ~₹50 | ~₹50 |
-| **Total at idle** | **~₹36,000/mo** | **~₹800/mo** | **~₹2,900/mo** |
+| Component                                           | Before          | After (full cut) | After (BFF+Web warm) |
+| --------------------------------------------------- | --------------- | ---------------- | -------------------- |
+| Cloud SQL (`db-custom-2-7680` → `db-f1-micro`)      | ₹28,000         | ₹250             | ₹250                 |
+| Cloud Run 6 services (idle, `min=1` × 6)            | ₹6,000          | **₹0**           | ₹2,000 (BFF + Web)   |
+| VPC connector (`min=2`)                             | ₹1,300          | **₹0**           | ₹130 (min=1)         |
+| Artifact Registry + Secret Manager + GCS versioning | ₹500            | ₹500             | ₹500                 |
+| Pay-per-request spike during `run-preprod-flow.sh`  | varies          | ~₹50             | ~₹50                 |
+| **Total at idle**                                   | **~₹36,000/mo** | **~₹800/mo**     | **~₹2,900/mo**       |
 
 The 12–45× saving is almost entirely from `min_instance_count = 0` on Cloud Run.
 
@@ -706,35 +706,35 @@ must reach Step 14 (Ledger Verification) and return `intact: true`.
 
 ## 5. Pre-flight answers the audit will ask
 
-| Question                                                                                  | Where the evidence lives                                                                                  |
-| ----------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------- |
-| Is all data resident in `ap-south-1`?                                                     | Cloud SQL region + GCS bucket region = `asia-south1`; Cloud Run region = `asia-south1`. `terraform output` lists them. |
-| Is the evidence bucket truly WORM?                                                        | `gsutil bucketpolicyonly get gs://axiom-proof-evidence-preprod-*` + `enable_object_retention=true` in `storage.tf`. |
-| Are approval tokens HMAC-signed?                                                          | `approval_signing_key` (32-byte hex) set in Secret Manager; consumed by `services/bff/src/services/approval.ts:14`. |
-| Is the audit ledger append-only?                                                          | `0006_ledger_role_and_extras.sql` defines `append_ledger()` as `SECURITY DEFINER`; `ledger_writer` role has `INSERT` only. |
-| Is PII redacted before model egress?                                                      | `model-gateway` runs Presidio + regex before calling any provider; structured log `model_gateway.route_decision` records redaction counts. |
-| Can the planning agent mutate data?                                                       | `SudhaarAgent.can_mutate = False` (Hard Rule 2; enforced in agent-runtime source). |
-| Is there a kill switch?                                                                  | `FEATURE_KILL_SWITCH=true` env on BFF + `/v1/kill-switch/engage` route in `routes/v1.ts`.                |
+| Question                              | Where the evidence lives                                                                                                                   |
+| ------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------ |
+| Is all data resident in `ap-south-1`? | Cloud SQL region + GCS bucket region = `asia-south1`; Cloud Run region = `asia-south1`. `terraform output` lists them.                     |
+| Is the evidence bucket truly WORM?    | `gsutil bucketpolicyonly get gs://axiom-proof-evidence-preprod-*` + `enable_object_retention=true` in `storage.tf`.                        |
+| Are approval tokens HMAC-signed?      | `approval_signing_key` (32-byte hex) set in Secret Manager; consumed by `services/bff/src/services/approval.ts:14`.                        |
+| Is the audit ledger append-only?      | `0006_ledger_role_and_extras.sql` defines `append_ledger()` as `SECURITY DEFINER`; `ledger_writer` role has `INSERT` only.                 |
+| Is PII redacted before model egress?  | `model-gateway` runs Presidio + regex before calling any provider; structured log `model_gateway.route_decision` records redaction counts. |
+| Can the planning agent mutate data?   | `SudhaarAgent.can_mutate = False` (Hard Rule 2; enforced in agent-runtime source).                                                         |
+| Is there a kill switch?               | `FEATURE_KILL_SWITCH=true` env on BFF + `/v1/kill-switch/engage` route in `routes/v1.ts`.                                                  |
 
 ---
 
 ## 6. Where to look for X (quick index)
 
-| Need                                  | File / command                                                                                |
-| ------------------------------------- | --------------------------------------------------------------------------------------------- |
-| Terraform inputs                      | `infra/terraform/envs/preprod/terraform.tfvars`                                               |
-| What secrets get auto-created         | `infra/terraform/envs/preprod/secrets.tf` (`managed_secrets` map)                            |
-| What env each Cloud Run service gets  | `infra/terraform/envs/preprod/cloudrun.tf` (`env` blocks per service)                          |
-| BFF config schema                     | `packages/config/src/index.ts` (`EnvSchema` Zod object)                                        |
-| Agent-runtime config                  | `services/agent-runtime/src/axiom/config.py` (`Settings` Pydantic class)                      |
-| Model-gateway config                  | `services/model-gateway/src/model_gateway/config.py` (`Settings` Pydantic class)               |
-| Migration runner                      | `scripts/migrate-cloudsql.sh`                                                                 |
-| Image build/push                      | `scripts/build-preprod-images.sh` + `infra/docker/Dockerfile.*`                              |
-| End-to-end functional flow            | `scripts/run-preprod-flow.sh`                                                                |
-| Local Docker parity (for testing)     | `infra/docker/docker-compose.preprod.yml` + `infra/docker/environments/.env.preprod` (structure: `.env.preprod.example`) |
-| Firebase hosting config               | `firebase.json` + `apps/marketing/out` (built by `scripts/deploy-firebase-marketing.sh`)      |
-| Live logs                             | `gcloud run services logs read axiom-bff-preprod --region asia-south1 --follow`              |
-| DB & Auth Architecture Analysis       | [Section 8](#8-architectural-deep-dive-supabase-vs-cloud-sql-dual-setup--future-alternatives)  |
+| Need                                 | File / command                                                                                                           |
+| ------------------------------------ | ------------------------------------------------------------------------------------------------------------------------ |
+| Terraform inputs                     | `infra/terraform/envs/preprod/terraform.tfvars`                                                                          |
+| What secrets get auto-created        | `infra/terraform/envs/preprod/secrets.tf` (`managed_secrets` map)                                                        |
+| What env each Cloud Run service gets | `infra/terraform/envs/preprod/cloudrun.tf` (`env` blocks per service)                                                    |
+| BFF config schema                    | `packages/config/src/index.ts` (`EnvSchema` Zod object)                                                                  |
+| Agent-runtime config                 | `services/agent-runtime/src/axiom/config.py` (`Settings` Pydantic class)                                                 |
+| Model-gateway config                 | `services/model-gateway/src/model_gateway/config.py` (`Settings` Pydantic class)                                         |
+| Migration runner                     | `scripts/migrate-cloudsql.sh`                                                                                            |
+| Image build/push                     | `scripts/build-preprod-images.sh` + `infra/docker/Dockerfile.*`                                                          |
+| End-to-end functional flow           | `scripts/run-preprod-flow.sh`                                                                                            |
+| Local Docker parity (for testing)    | `infra/docker/docker-compose.preprod.yml` + `infra/docker/environments/.env.preprod` (structure: `.env.preprod.example`) |
+| Firebase hosting config              | `firebase.json` + `apps/marketing/out` (built by `scripts/deploy-firebase-marketing.sh`)                                 |
+| Live logs                            | `gcloud run services logs read axiom-bff-preprod --region asia-south1 --follow`                                          |
+| DB & Auth Architecture Analysis      | [Section 8](#8-architectural-deep-dive-supabase-vs-cloud-sql-dual-setup--future-alternatives)                            |
 
 ---
 
@@ -751,6 +751,7 @@ must reach Step 14 (Ledger Verification) and return `intact: true`.
 ### 8.1 Why Both Exist (The Transition Context)
 
 Axiom Proof is operating in a **hybrid transition state**:
+
 1. **Initial BaaS Architecture (Phases 0–1 / Local Dev)**:
    - Designed around **Supabase** as an all-in-one Backend-as-a-Service (BaaS) providing PostgreSQL, Row-Level Security (RLS), GoTrue Auth, PostgREST HTTP APIs, and Realtime WebSockets (`docs/05_Technology_Stack_Analysis.md` §5).
    - Core application packages (`@axiom/supabase`, `@axiom/ledger`, `@axiom/bff`, Next.js SSR middleware, and Python `agent-runtime`) were built directly on Supabase SDK primitives (`supabase.from()`, `supabase.rpc()`).
@@ -763,14 +764,14 @@ Axiom Proof is operating in a **hybrid transition state**:
 
 ### 8.2 Division of Responsibilities in Preprod
 
-| Capability | Component | Purpose & Implementation |
-| :--- | :--- | :--- |
+| Capability                         | Component             | Purpose & Implementation                                                                                                                                                                    |
+| :--------------------------------- | :-------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | **User Authentication & Sessions** | **Supabase (GoTrue)** | Handles user registration, login, session cookies (`@supabase/ssr`), and JWT issuance (`anon`, `authenticated`, `service_role`). Meets DPDPA residency by running in Mumbai (`ap-south-1`). |
-| **Relational Business Data** | **Cloud SQL (PG 15)** | Tenants, organizations, engagements, findings, and remediation blueprints hosted in `asia-south1`. |
-| **Cryptographic Audit Ledger** | **Cloud SQL (PG 15)** | The `audit_ledger` table and the `append_ledger()` SECURITY DEFINER function; `ledger_writer` role is INSERT-only (Hard Rule 3). |
-| **Statutory Control Library** | **Cloud SQL (PG 15)** | Immutable 46 DPDPA statutory controls and framework mappings (`controls`, `framework_controls`). |
-| **Compliance & Audit Telemetry** | **Cloud SQL (PG 15)** | `cloudsql.enable_pgaudit` flag, IAM database authentication, automated PITR, and private Serverless VPC Access. |
-| **Local Dev & CI Tests** | **Supabase Local** | Dockerized Supabase stack (`docker-compose.supabase.yml`) for local testing without cloud dependencies. |
+| **Relational Business Data**       | **Cloud SQL (PG 15)** | Tenants, organizations, engagements, findings, and remediation blueprints hosted in `asia-south1`.                                                                                          |
+| **Cryptographic Audit Ledger**     | **Cloud SQL (PG 15)** | The `audit_ledger` table and the `append_ledger()` SECURITY DEFINER function; `ledger_writer` role is INSERT-only (Hard Rule 3).                                                            |
+| **Statutory Control Library**      | **Cloud SQL (PG 15)** | Immutable 46 DPDPA statutory controls and framework mappings (`controls`, `framework_controls`).                                                                                            |
+| **Compliance & Audit Telemetry**   | **Cloud SQL (PG 15)** | `cloudsql.enable_pgaudit` flag, IAM database authentication, automated PITR, and private Serverless VPC Access.                                                                             |
+| **Local Dev & CI Tests**           | **Supabase Local**    | Dockerized Supabase stack (`docker-compose.supabase.yml`) for local testing without cloud dependencies.                                                                                     |
 
 > **Bootstrap Bridge:** Vanilla Cloud SQL instances do not have Supabase's built-in role system. `infra/supabase/migrations/0000_bootstrap_roles_and_extensions.sql` explicitly initializes `anon`, `authenticated`, `service_role`, `authenticator`, and `ledger_writer` roles plus `pgcrypto`/`uuid-ossp` extensions so the 7 sequential migrations execute identically on Cloud SQL.
 
@@ -783,52 +784,60 @@ Axiom Proof is operating in a **hybrid transition state**:
 ### 8.4 Evaluated Alternatives
 
 #### Alternative 1: Full GCP Consolidation (Retire Supabase)
-*Consolidate entirely into a single-cloud GCP footprint in Mumbai (`asia-south1`).*
+
+_Consolidate entirely into a single-cloud GCP footprint in Mumbai (`asia-south1`)._
+
 - **Database**: Retain Cloud SQL PostgreSQL 15 as the single source of truth.
 - **Data Access Layer**: Replace `@supabase/supabase-js` with a type-safe TypeScript ORM/query builder (**Drizzle ORM** or **Kysely**) with direct pooled TCP connections (via Cloud SQL Auth Proxy or PgBouncer).
 - **Auth Layer**:
-  - *Option 1A (Managed GCP)*: **Google Cloud Identity Platform / Firebase Auth** (configured with tenant custom claims; verify Mumbai data residency).
-  - *Option 1B (Self-Hosted Sovereign)*: Deploy **Keycloak** or **Ory Kratos** on Cloud Run in Mumbai backed by Cloud SQL tables.
-  - *Option 1C (App-Native)*: **Auth.js (NextAuth)** or **Lucia**, storing user and session records directly in Cloud SQL tables.
+  - _Option 1A (Managed GCP)_: **Google Cloud Identity Platform / Firebase Auth** (configured with tenant custom claims; verify Mumbai data residency).
+  - _Option 1B (Self-Hosted Sovereign)_: Deploy **Keycloak** or **Ory Kratos** on Cloud Run in Mumbai backed by Cloud SQL tables.
+  - _Option 1C (App-Native)_: **Auth.js (NextAuth)** or **Lucia**, storing user and session records directly in Cloud SQL tables.
 - **Trade-offs**:
-  - *Pros*: Single GCP VPC envelope, lowest network latency, single billing account, zero per-MAU auth pricing, no external SaaS dependencies.
-  - *Cons*: Requires refactoring client data fetching from `@supabase/supabase-js` to SQL/ORM, and rewriting auth middleware.
+  - _Pros_: Single GCP VPC envelope, lowest network latency, single billing account, zero per-MAU auth pricing, no external SaaS dependencies.
+  - _Cons_: Requires refactoring client data fetching from `@supabase/supabase-js` to SQL/ORM, and rewriting auth middleware.
 
 #### Alternative 2: Full Supabase Consolidation (Retire Cloud SQL)
-*Return to the original Phase 0–1 BaaS architecture documented in `docs/05_Technology_Stack_Analysis.md` §5.*
+
+_Return to the original Phase 0–1 BaaS architecture documented in `docs/05_Technology_Stack_Analysis.md` §5._
+
 - **Database & Auth**: Single managed **Supabase Pro/Team** project in AWS `ap-south-1` (Mumbai) handling Auth, Postgres 15, RLS, pgvector, and PostgREST.
 - **Evidence Storage**: AWS S3 with Object Lock in Compliance Mode (or GCS Bucket Lock).
 - **Trade-offs**:
-  - *Pros*: Zero refactoring needed (codebase natively expects this model); built-in Supabase Realtime for live dashboard notifications; exact parity with local dev.
-  - *Cons*: Cross-cloud latency/egress if compute stays on GCP Cloud Run; pricing scales with Monthly Active Users (MAU).
+  - _Pros_: Zero refactoring needed (codebase natively expects this model); built-in Supabase Realtime for live dashboard notifications; exact parity with local dev.
+  - _Cons_: Cross-cloud latency/egress if compute stays on GCP Cloud Run; pricing scales with Monthly Active Users (MAU).
 
 #### Alternative 3: Self-Hosted Supabase Stack on GCP (Best of Both Worlds)
-*Keep Cloud SQL as the database engine, but host the open-source Supabase stack on GCP.*
+
+_Keep Cloud SQL as the database engine, but host the open-source Supabase stack on GCP._
+
 - **Architecture**: Deploy open-source Supabase containers (**GoTrue**, **PostgREST**, **Kong**) on Cloud Run in `asia-south1`, pointing to Cloud SQL over the private VPC connector.
 - **Trade-offs**:
-  - *Pros*: 100% compatibility with existing `@supabase/supabase-js` and `@supabase/ssr` code; backed by enterprise Cloud SQL in your VPC; no per-MAU SaaS tax.
-  - *Cons*: Ongoing operational maintenance of GoTrue, PostgREST, and Kong container configurations.
+  - _Pros_: 100% compatibility with existing `@supabase/supabase-js` and `@supabase/ssr` code; backed by enterprise Cloud SQL in your VPC; no per-MAU SaaS tax.
+  - _Cons_: Ongoing operational maintenance of GoTrue, PostgREST, and Kong container configurations.
 
 #### Alternative 4: Full AWS Consolidation (Doc 06 Strategy)
-*Migrate compute and data to AWS `ap-south-1` (Mumbai).*
+
+_Migrate compute and data to AWS `ap-south-1` (Mumbai)._
+
 - **Compute**: Amazon EKS or ECS Fargate.
 - **Database**: Amazon Aurora PostgreSQL Serverless v2 or RDS PostgreSQL (with pgAudit).
 - **Auth**: Amazon Cognito or self-hosted Keycloak.
 - **Storage & Cache**: AWS S3 Object Lock (Compliance mode) + Amazon ElastiCache for Valkey.
 - **Trade-offs**:
-  - *Pros*: Eliminates all GCP/AWS cross-cloud splits; native AWS S3 Object Lock; single AWS account envelope.
-  - *Cons*: Significant migration effort to dismantle GCP Cloud Run and Terraform setups.
+  - _Pros_: Eliminates all GCP/AWS cross-cloud splits; native AWS S3 Object Lock; single AWS account envelope.
+  - _Cons_: Significant migration effort to dismantle GCP Cloud Run and Terraform setups.
 
 ### 8.5 Comparison Matrix
 
-| Evaluation Dimension | Current Hybrid (Supabase Auth + Cloud SQL) | Alt 1: Full GCP (Cloud SQL + Drizzle + Keycloak/Firebase) | Alt 2: Full Supabase (Managed Supabase Pro Mumbai) | Alt 3: Self-Hosted Supabase on GCP (Cloud Run) |
-| :--- | :--- | :--- | :--- | :--- |
-| **DPDPA Residency (India)** | ✅ Yes (Both in Mumbai) | ✅ Yes (All GCP `asia-south1`) | ✅ Yes (AWS `ap-south-1`) | ✅ Yes (All GCP `asia-south1`) |
-| **Code Refactoring** | Minimal (already wired) | Medium (replace Supabase SDK with ORM) | None (native code fit) | None (emulates Supabase API) |
-| **Network Latency** | Moderate (Cross-cloud hops) | Lowest (Zero egress; private VPC) | Moderate (Cross-cloud to Cloud Run) | Lowest (Private VPC) |
-| **Ops Burden** | Moderate (dual vendors) | Low–Moderate (GCP managed) | Lowest (managed BaaS) | High (maintain container stack) |
-| **Cost Predictability** | High DB / Variable Auth MAU | Highest (flat compute + storage) | Variable (scales with MAU) | Highest (no per-MAU fee) |
-| **Audit Posture** | Fragmented audit trail | Unified GCP CloudTrail/Audit Logs | Managed SOC2 / ISO reports | Self-managed audit posture |
+| Evaluation Dimension        | Current Hybrid (Supabase Auth + Cloud SQL) | Alt 1: Full GCP (Cloud SQL + Drizzle + Keycloak/Firebase) | Alt 2: Full Supabase (Managed Supabase Pro Mumbai) | Alt 3: Self-Hosted Supabase on GCP (Cloud Run) |
+| :-------------------------- | :----------------------------------------- | :-------------------------------------------------------- | :------------------------------------------------- | :--------------------------------------------- |
+| **DPDPA Residency (India)** | ✅ Yes (Both in Mumbai)                    | ✅ Yes (All GCP `asia-south1`)                            | ✅ Yes (AWS `ap-south-1`)                          | ✅ Yes (All GCP `asia-south1`)                 |
+| **Code Refactoring**        | Minimal (already wired)                    | Medium (replace Supabase SDK with ORM)                    | None (native code fit)                             | None (emulates Supabase API)                   |
+| **Network Latency**         | Moderate (Cross-cloud hops)                | Lowest (Zero egress; private VPC)                         | Moderate (Cross-cloud to Cloud Run)                | Lowest (Private VPC)                           |
+| **Ops Burden**              | Moderate (dual vendors)                    | Low–Moderate (GCP managed)                                | Lowest (managed BaaS)                              | High (maintain container stack)                |
+| **Cost Predictability**     | High DB / Variable Auth MAU                | Highest (flat compute + storage)                          | Variable (scales with MAU)                         | Highest (no per-MAU fee)                       |
+| **Audit Posture**           | Fragmented audit trail                     | Unified GCP CloudTrail/Audit Logs                         | Managed SOC2 / ISO reports                         | Self-managed audit posture                     |
 
 ### 8.6 Recommended Path
 

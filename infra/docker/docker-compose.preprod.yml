@@ -16,6 +16,7 @@ services:
       - LOG_LEVEL=${LOG_LEVEL:-info}
       - AWS_REGION=asia-south1
       - PII_REDACTION_ENABLED=true
+      - MODEL_GATEWAY_API_KEY=${MODEL_GATEWAY_API_KEY:-}
       - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY:-}
       - OPENAI_API_KEY=${OPENAI_API_KEY:-}
       - GEMINI_API_KEY=${GEMINI_API_KEY:-}
@@ -30,10 +31,20 @@ services:
       - LOG_LEVEL=${LOG_LEVEL:-info}
       - AWS_REGION=asia-south1
       - MODEL_GATEWAY_URL=${MODEL_GATEWAY_URL:-http://model-gateway:8001}
+      - MODEL_GATEWAY_API_KEY=${MODEL_GATEWAY_API_KEY:-}
+      - INTERNAL_TOKEN=${AGENT_RUNTIME_INTERNAL_TOKEN:-}
+      - AGENT_RUNTIME_INTERNAL_TOKEN=${AGENT_RUNTIME_INTERNAL_TOKEN:-}
+      - APPROVAL_SIGNING_KEY=${APPROVAL_SIGNING_KEY:-}
+      - SUPABASE_URL=${SUPABASE_URL:-}
+      - SUPABASE_SERVICE_KEY=${SUPABASE_SERVICE_KEY:-}
+      - SUPABASE_DB_URL=${SUPABASE_DB_URL:-}
+      - REDIS_URL=${UPSTASH_REDIS_URL:-${REDIS_URL:-}}
       - TEMPORAL_ADDRESS=${TEMPORAL_ADDRESS:-temporal:7233}
       - TEMPORAL_NAMESPACE=${TEMPORAL_NAMESPACE:-axiom-proof}
       - S3_EVIDENCE_BUCKET=${AWS_S3_EVIDENCE_BUCKET:-axiom-proof-evidence-preprod}
       - S3_ENDPOINT=${AWS_S3_ENDPOINT:-https://storage.googleapis.com}
+      - AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID:-}
+      - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY:-}
 
   bff:
     image: axiom-bff:preprod
@@ -45,11 +56,31 @@ services:
       - LOG_LEVEL=${LOG_LEVEL:-info}
       - AWS_REGION=asia-south1
       - AGENT_RUNTIME_URL=${AGENT_RUNTIME_URL:-http://agent-runtime:8000}
+      - AGENT_RUNTIME_INTERNAL_TOKEN=${AGENT_RUNTIME_INTERNAL_TOKEN:-}
       - MODEL_GATEWAY_URL=${MODEL_GATEWAY_URL:-http://model-gateway:8001}
+      - MODEL_GATEWAY_API_KEY=${MODEL_GATEWAY_API_KEY:-}
+      - APPROVAL_SIGNING_KEY=${APPROVAL_SIGNING_KEY:-}
       - TEMPORAL_ADDRESS=${TEMPORAL_ADDRESS:-temporal:7233}
       - TEMPORAL_NAMESPACE=${TEMPORAL_NAMESPACE:-axiom-proof}
+      - TEMPORAL_TLS=${TEMPORAL_TLS:-true}
+      - TEMPORAL_API_KEY=${TEMPORAL_API_KEY:-}
       - UPSTASH_REDIS_URL=${UPSTASH_REDIS_URL:-}
+      - REDIS_URL=${UPSTASH_REDIS_URL:-${REDIS_URL:-}}
+      - SUPABASE_URL=${SUPABASE_URL:-}
+      - SUPABASE_ANON_KEY=${SUPABASE_ANON_KEY:-}
+      - SUPABASE_SERVICE_KEY=${SUPABASE_SERVICE_KEY:-}
+      - SUPABASE_DB_URL=${SUPABASE_DB_URL:-}
+      - AWS_S3_EVIDENCE_BUCKET=${AWS_S3_EVIDENCE_BUCKET:-axiom-proof-evidence-preprod}
+      - AWS_S3_ENDPOINT=${AWS_S3_ENDPOINT:-https://storage.googleapis.com}
+      - AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID:-}
+      - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY:-}
       - BFF_CORS_ORIGINS=${BFF_CORS_ORIGINS:-http://localhost:3000,http://localhost:3001}
+      - RESEND_API_KEY=${RESEND_API_KEY:-}
+      - FEATURE_DRY_RUN_ENGINE=${FEATURE_DRY_RUN_ENGINE:-true}
+      - FEATURE_EXECUTION_ENGINE=${FEATURE_EXECUTION_ENGINE:-true}
+      - FEATURE_LIVE_CONNECTORS=${FEATURE_LIVE_CONNECTORS:-true}
+      - FEATURE_KILL_SWITCH=${FEATURE_KILL_SWITCH:-true}
+      - PII_REDACTION_ENABLED=${PII_REDACTION_ENABLED:-true}
 
   temporal-worker:
     image: axiom-temporal-worker:preprod
@@ -59,6 +90,7 @@ services:
       - TEMPORAL_TLS=${TEMPORAL_TLS:-true}
       - TEMPORAL_API_KEY=${TEMPORAL_API_KEY:-}
       - AGENT_RUNTIME_URL=${AGENT_RUNTIME_URL:-http://agent-runtime:8000}
+      - AGENT_RUNTIME_INTERNAL_TOKEN=${AGENT_RUNTIME_INTERNAL_TOKEN:-}
 
   web:
     image: axiom-web:preprod
@@ -66,7 +98,16 @@ services:
       - '0.0.0.0:${WEB_PORT:-3001}:3001'
     environment:
       - NODE_ENV=production
+      - ENVIRONMENT=preprod
       - BFF_PUBLIC_URL=${BFF_URL:-http://localhost:4000}
+      - NEXT_PUBLIC_BFF_URL=${BFF_URL:-http://localhost:4000}
+      - NEXT_PUBLIC_APP_URL=${NEXT_PUBLIC_APP_URL:-http://localhost:3001}
+      - SUPABASE_URL=${SUPABASE_URL:-}
+      - SUPABASE_ANON_KEY=${SUPABASE_ANON_KEY:-}
+      - SUPABASE_SERVICE_KEY=${SUPABASE_SERVICE_KEY:-}
+      - NEXT_PUBLIC_SUPABASE_URL=${NEXT_PUBLIC_SUPABASE_URL:-${SUPABASE_URL:-}}
+      - NEXT_PUBLIC_SUPABASE_ANON_KEY=${NEXT_PUBLIC_SUPABASE_ANON_KEY:-${SUPABASE_ANON_KEY:-}}
+      - AXIOM_E2E_BYPASS_AUTH=${AXIOM_E2E_BYPASS_AUTH:-false}
 
   marketing:
     image: axiom-marketing:preprod
@@ -74,4 +115,15 @@ services:
       - '0.0.0.0:${MARKETING_PORT:-3000}:3000'
     environment:
       - NODE_ENV=production
+      - ENVIRONMENT=preprod
       - BFF_PUBLIC_URL=${BFF_URL:-http://localhost:4000}
+      - NEXT_PUBLIC_BFF_URL=${BFF_URL:-http://localhost:4000}
+      - NEXT_PUBLIC_APP_URL=${NEXT_PUBLIC_APP_URL:-http://localhost:3001}
+      - NEXT_PUBLIC_MARKETING_URL=${NEXT_PUBLIC_MARKETING_URL:-http://localhost:3000}
+      - RESEND_API_KEY=${RESEND_API_KEY:-}
+      - RESEND_FROM_EMAIL=${RESEND_FROM_EMAIL:-Axiom Proof <onboarding@resend.dev>}
+      - CONTACT_RECIPIENT_EMAIL=${CONTACT_RECIPIENT_EMAIL:-vkkaruna@outlook.com}
+      - CONTACT_FALLBACK_RECIPIENT_EMAIL=${CONTACT_FALLBACK_RECIPIENT_EMAIL:-hello@axiomminds.ai}
+      - SUPABASE_URL=${SUPABASE_URL:-}
+      - SUPABASE_ANON_KEY=${SUPABASE_ANON_KEY:-}
+      - SUPABASE_SERVICE_KEY=${SUPABASE_SERVICE_KEY:-}

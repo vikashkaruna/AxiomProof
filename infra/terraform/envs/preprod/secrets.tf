@@ -14,6 +14,7 @@ locals {
     agent_runtime_internal_token = var.agent_runtime_internal_token != "" ? var.agent_runtime_internal_token : "preprod-internal-agent-token-secure"
     model_gateway_api_key = var.model_gateway_api_key != "" ? var.model_gateway_api_key : "preprod-model-gateway-api-key-secure"
     temporal_api_key = var.temporal_api_key != "" ? var.temporal_api_key : "placeholder-temporal-key"
+    resend_api_key = var.resend_api_key != "" ? var.resend_api_key : "re_placeholder_resend_api_key"
     gcs_hmac_access_key = google_storage_hmac_key.s3_compat_key.access_id
     gcs_hmac_secret_key = google_storage_hmac_key.s3_compat_key.secret
   }

@@ -107,6 +107,17 @@ const EnvSchema = z
     if (env.NODE_ENV !== 'production' || (env.ENVIRONMENT && env.ENVIRONMENT !== 'production'))
       return;
 
+    // In production, distinguish frontend web/marketing applications from backend data-plane services.
+    // Frontend apps NEVER hold approval signing keys or agent runtime tokens (Principle of Least Privilege).
+    const isFrontendApp = Boolean(
+      process.env.APP_NAME === 'marketing' ||
+      process.env.APP_NAME === 'web' ||
+      process.env.npm_package_name === '@axiom/marketing' ||
+      process.env.npm_package_name === '@axiom/web' ||
+      process.env.NEXT_RUNTIME !== undefined ||
+      process.env.NEXT_PHASE !== undefined,
+    );
+
     if (
       !env.SUPABASE_URL ||
       env.SUPABASE_URL.includes('localhost') ||
@@ -137,33 +148,36 @@ const EnvSchema = z
         message: 'Production data-plane services must run in Mumbai (ap-south-1 or asia-south1)',
       });
     }
-    if (!env.APPROVAL_SIGNING_KEY) {
-      ctx.addIssue({
-        code: z.ZodIssueCode.custom,
-        path: ['APPROVAL_SIGNING_KEY'],
-        message: 'Required in production; do not use a development signing fallback',
-      });
-    }
-    if (!env.AGENT_RUNTIME_INTERNAL_TOKEN) {
-      ctx.addIssue({
-        code: z.ZodIssueCode.custom,
-        path: ['AGENT_RUNTIME_INTERNAL_TOKEN'],
-        message: 'Required in production for BFF-to-agent authentication',
-      });
-    }
-    if (!env.AGENT_RUNTIME_URL) {
-      ctx.addIssue({
-        code: z.ZodIssueCode.custom,
-        path: ['AGENT_RUNTIME_URL'],
-        message: 'Required in production for BFF-to-agent routing',
-      });
-    }
-    if (!env.MODEL_GATEWAY_API_KEY) {
-      ctx.addIssue({
-        code: z.ZodIssueCode.custom,
-        path: ['MODEL_GATEWAY_API_KEY'],
-        message: 'Required in production for model-gateway authentication',
-      });
+
+    if (!isFrontendApp) {
+      if (!env.APPROVAL_SIGNING_KEY) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: ['APPROVAL_SIGNING_KEY'],
+          message: 'Required in production; do not use a development signing fallback',
+        });
+      }
+      if (!env.AGENT_RUNTIME_INTERNAL_TOKEN) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: ['AGENT_RUNTIME_INTERNAL_TOKEN'],
+          message: 'Required in production for BFF-to-agent authentication',
+        });
+      }
+      if (!env.AGENT_RUNTIME_URL) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: ['AGENT_RUNTIME_URL'],
+          message: 'Required in production for BFF-to-agent routing',
+        });
+      }
+      if (!env.MODEL_GATEWAY_API_KEY) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: ['MODEL_GATEWAY_API_KEY'],
+          message: 'Required in production for model-gateway authentication',
+        });
+      }
     }
   });
 

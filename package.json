@@ -41,7 +41,12 @@
     "preprod:deploy": "./scripts/deploy-preprod-gcp.sh",
     "preprod:flow": "./scripts/run-preprod-flow.sh",
     "preprod:migrate": "./scripts/migrate-cloudsql.sh",
-    "marketing:deploy:firebase": "./scripts/deploy-firebase-marketing.sh"
+    "marketing:deploy:firebase": "./scripts/deploy-firebase-marketing.sh",
+    "env:verify": "./scripts/sync-env.sh preprod verify",
+    "env:verify:all": "./scripts/sync-env.sh preprod verify && ./scripts/sync-env.sh staging verify && ./scripts/sync-env.sh local verify && ./scripts/sync-env.sh production verify",
+    "env:tf": "./scripts/sync-env.sh preprod terraform",
+    "env:secrets": "./scripts/sync-env.sh preprod secrets",
+    "env:sync": "./scripts/sync-env.sh preprod all"
   },
   "devDependencies": {
     "@types/node": "^26.5.1",

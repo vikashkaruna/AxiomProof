@@ -80,8 +80,19 @@ for entry in "${SERVICES[@]}"; do
     fi
   fi
 
+  BUILD_ARGS=()
+  if [ "$SVC_NAME" = "marketing" ]; then
+    WEB_URL="${NEXT_PUBLIC_APP_URL:-https://axiom-web-preprod-7zb7qphjbq-el.a.run.app}"
+    BFF_URL="${NEXT_PUBLIC_BFF_URL:-https://axiom-bff-preprod-7zb7qphjbq-el.a.run.app}"
+    BUILD_ARGS+=(--build-arg "NEXT_PUBLIC_APP_URL=${WEB_URL}" --build-arg "NEXT_PUBLIC_BFF_URL=${BFF_URL}")
+  elif [ "$SVC_NAME" = "web" ]; then
+    WEB_URL="${NEXT_PUBLIC_APP_URL:-https://axiom-web-preprod-7zb7qphjbq-el.a.run.app}"
+    BFF_URL="${NEXT_PUBLIC_BFF_URL:-https://axiom-bff-preprod-7zb7qphjbq-el.a.run.app}"
+    BUILD_ARGS+=(--build-arg "NEXT_PUBLIC_APP_URL=${WEB_URL}" --build-arg "NEXT_PUBLIC_BFF_URL=${BFF_URL}")
+  fi
+
   echo -e "\n▶ Building [${SVC_NAME}] using ${DOCKERFILE} (platform: linux/amd64)..."
-  docker build --platform linux/amd64 --provenance=false -f "${DOCKERFILE}" -t "${LOCAL_TAG}" -t "${IMAGE_URI}" .
+  docker build --platform linux/amd64 --provenance=false "${BUILD_ARGS[@]}" -f "${DOCKERFILE}" -t "${LOCAL_TAG}" -t "${IMAGE_URI}" .
 
   if [ "${PUSH_IMAGES:-false}" = "true" ] || [ "${1:-}" != "" ]; then
     echo "  Pushing ${IMAGE_URI}..."

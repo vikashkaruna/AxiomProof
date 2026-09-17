@@ -148,6 +148,15 @@ resource "google_cloud_run_v2_service" "bff" {
           }
         }
       }
+      env {
+        name = "RESEND_API_KEY"
+        value_source {
+          secret_key_ref {
+            secret  = google_secret_manager_secret.secret["resend_api_key"].secret_id
+            version = "latest"
+          }
+        }
+      }
 
       startup_probe {
         http_get {
@@ -569,8 +578,57 @@ resource "google_cloud_run_v2_service" "marketing" {
         value = "production"
       }
       env {
+        name  = "ENVIRONMENT"
+        value = var.environment
+      }
+      env {
+        name  = "NEXT_TELEMETRY_DISABLED"
+        value = "1"
+      }
+      env {
         name  = "BFF_PUBLIC_URL"
         value = google_cloud_run_v2_service.bff.uri
+      }
+      env {
+        name  = "NEXT_PUBLIC_BFF_URL"
+        value = google_cloud_run_v2_service.bff.uri
+      }
+      env {
+        name  = "NEXT_PUBLIC_APP_URL"
+        value = google_cloud_run_v2_service.web.uri
+      }
+      env {
+        name  = "APP_URL"
+        value = google_cloud_run_v2_service.web.uri
+      }
+      env {
+        name  = "NEXT_PUBLIC_SUPABASE_URL"
+        value = "https://preprod-supabase.axiomminds.ai"
+      }
+      env {
+        name  = "NEXT_PUBLIC_SUPABASE_ANON_KEY"
+        value = "preprod-anon-key-placeholder-length-over-forty-chars"
+      }
+      env {
+        name  = "SUPABASE_URL"
+        value = "https://preprod-supabase.axiomminds.ai"
+      }
+      env {
+        name  = "SUPABASE_SERVICE_KEY"
+        value = "preprod-service-key-placeholder-length-over-forty-chars"
+      }
+      env {
+        name = "RESEND_API_KEY"
+        value_source {
+          secret_key_ref {
+            secret  = google_secret_manager_secret.secret["resend_api_key"].secret_id
+            version = "latest"
+          }
+        }
+      }
+      env {
+        name  = "CONTACT_RECIPIENT_EMAIL"
+        value = var.contact_recipient_email
       }
 
       startup_probe {
@@ -585,5 +643,5 @@ resource "google_cloud_run_v2_service" "marketing" {
     }
   }
 
-  depends_on = [google_cloud_run_v2_service.bff]
+  depends_on = [google_cloud_run_v2_service.bff, google_cloud_run_v2_service.web]
 }

@@ -441,14 +441,15 @@ To run the progressive, dependency-aware deployment pipeline end-to-end:
 #### Progressive Phase Execution
 
 You can target or resume from specific phases:
-- `prep`     : Verify tools, credentials, and enable 8 required GCP APIs.
-- `base`     : VPC, regional subnet, private VPC peering, serverless connector, IAM, GCS vault, and Artifact Registry.
-- `db`       : Cloud SQL PostgreSQL (with automatic state self-healing) and Secret Manager synchronization.
-- `images`   : Build & push container images (intelligent skip if already present).
+
+- `prep` : Verify tools, credentials, and enable 8 required GCP APIs.
+- `base` : VPC, regional subnet, private VPC peering, serverless connector, IAM, GCS vault, and Artifact Registry.
+- `db` : Cloud SQL PostgreSQL (with automatic state self-healing) and Secret Manager synchronization.
+- `images` : Build & push container images (intelligent skip if already present).
 - `services` : Cloud Run v2 microservices deployment and unauthenticated public IAM policy bindings.
-- `migrate`  : Cloud SQL schema migrations and statutory control library seeding.
+- `migrate` : Cloud SQL schema migrations and statutory control library seeding.
 - `firebase` : Google Firebase static hosting for the marketing site.
-- `verify`   : Health and readiness verification probes.
+- `verify` : Health and readiness verification probes.
 
 ```bash
 # Run only a specific phase:
@@ -474,4 +475,3 @@ To safely tear down preprod GCP infrastructure in reverse dependency order:
 # Dry-run teardown plan:
 ./scripts/teardown-preprod-gcp.sh --dry-run
 ```
-
