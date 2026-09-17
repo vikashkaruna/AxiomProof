@@ -4,6 +4,9 @@
 
 resource "random_id" "db_suffix" {
   byte_length = 4
+  keepers = {
+    version = var.cloud_sql_instance_version
+  }
 }
 
 resource "random_password" "db_password" {

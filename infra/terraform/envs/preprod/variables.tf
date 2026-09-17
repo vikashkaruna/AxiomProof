@@ -19,19 +19,25 @@ variable "environment" {
 variable "cloud_sql_tier" {
   description = "Compute tier for Cloud SQL PostgreSQL instance"
   type        = string
-  default     = "db-custom-2-7680" # 2 vCPU, 7.5GB RAM; can use db-f1-micro for cost saving
+  default     =  "db-f1-micro"  # "db-custom-2-7680" # 2 vCPU, 7.5GB RAM; can use db-f1-micro for cost saving
 }
 
 variable "cloud_sql_disk_size_gb" {
   description = "Disk size in GB for Cloud SQL instance"
   type        = number
-  default     = 20
+  default     = 10      # 20
+}
+
+variable "cloud_sql_instance_version" {
+  description = "Token/version used to force regeneration of the Cloud SQL instance name suffix"
+  type        = string
+  default     = "v1"
 }
 
 variable "retention_days" {
   description = "Evidence vault retention duration in days (WORM Compliance lock)"
   type        = number
-  default     = 2555 # 7 years statutory requirement under DPDPA
+  default     = 7 # 2555 days = 7 years statutory requirement under DPDPA, for testing we can use 7 days
 }
 
 # Upstash Redis
@@ -46,7 +52,7 @@ variable "upstash_redis_url" {
 variable "temporal_address" {
   description = "Temporal Cloud host address on GCP"
   type        = string
-  default     = "axiom-proof.tmprl.cloud:7233"
+  default     = "axiom-proof.dkxyc.tmprl.cloud:7233"
 }
 
 variable "temporal_namespace" {

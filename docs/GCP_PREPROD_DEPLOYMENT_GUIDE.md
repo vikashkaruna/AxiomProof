@@ -421,11 +421,57 @@ Expected response:
 
 ---
 
-## 11. One-Command Full Preprod Deployment
+## 11. Progressive Preprod Deployment & Teardown
 
-To run the full deployment pipeline end-to-end:
+### 11.1 Full Deployment Pipeline
+
+To run the progressive, dependency-aware deployment pipeline end-to-end:
 
 ```bash
-# Full deployment orchestration launcher
+# Full deployment orchestration launcher (automatically loads .env.preprod)
 ./scripts/deploy-preprod-gcp.sh "axiom-proof" "asia-south1"
+
+# Skip container image builds when Artifact Registry images already exist:
+./scripts/deploy-preprod-gcp.sh "axiom-proof" "asia-south1" --skip-build
+
+# Dry-run plan without mutating any infrastructure:
+./scripts/deploy-preprod-gcp.sh "axiom-proof" "asia-south1" --dry-run
 ```
+
+#### Progressive Phase Execution
+
+You can target or resume from specific phases:
+- `prep`     : Verify tools, credentials, and enable 8 required GCP APIs.
+- `base`     : VPC, regional subnet, private VPC peering, serverless connector, IAM, GCS vault, and Artifact Registry.
+- `db`       : Cloud SQL PostgreSQL (with automatic state self-healing) and Secret Manager synchronization.
+- `images`   : Build & push container images (intelligent skip if already present).
+- `services` : Cloud Run v2 microservices deployment and unauthenticated public IAM policy bindings.
+- `migrate`  : Cloud SQL schema migrations and statutory control library seeding.
+- `firebase` : Google Firebase static hosting for the marketing site.
+- `verify`   : Health and readiness verification probes.
+
+```bash
+# Run only a specific phase:
+./scripts/deploy-preprod-gcp.sh --phase db
+
+# Resume pipeline from a specific phase onward:
+./scripts/deploy-preprod-gcp.sh --from-phase services
+```
+
+---
+
+### 11.2 Infrastructure Teardown & Freshstart
+
+To safely tear down preprod GCP infrastructure in reverse dependency order:
+
+```bash
+# Interactive teardown (prompts for confirmation, automatically backs up session state):
+./scripts/teardown-preprod-gcp.sh
+
+# Non-interactive complete teardown and reset state for a clean freshstart:
+./scripts/teardown-preprod-gcp.sh --force --reset-state
+
+# Dry-run teardown plan:
+./scripts/teardown-preprod-gcp.sh --dry-run
+```
+

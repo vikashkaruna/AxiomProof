@@ -40,7 +40,7 @@ the Supabase URLs are hardcoded to a domain that doesn't resolve.
 | ----------------------------- | -------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------- |
 | **Terraform variables**       | `infra/terraform/envs/preprod/terraform.tfvars`                       | 8 sensitive values → Secret Manager → Cloud Run env                                              |
 | **Terraform resource wiring** | `infra/terraform/envs/preprod/{main,cloudrun,cloudsql,storage,iam,secrets,artifact_registry}.tf` | Resources provisioned in GCP                                                              |
-| **Local compose / CI overlay** | `infra/docker/environments/.env.preprod` + `.env.preprod.example`   | Optional — used only when running `docker compose -f docker-compose.preprod.yml …` on a workstation for parity testing |
+| **Preprod Environment Config** | `infra/docker/environments/.env.preprod` (or root `.env.preprod`)    | **Automatically read by `deploy-preprod-gcp.sh` and `teardown-preprod-gcp.sh`**; maps to `TF_VAR_*` without manual copying |
 | **BFF runtime schema**        | `packages/config/src/index.ts`                                       | Zod validation — every key the BFF requires at boot                                              |
 | **Agent-runtime config**      | `services/agent-runtime/src/axiom/config.py`                         | Pydantic `Settings` — agent runtime boot validation                                              |
 | **Model-gateway config**      | `services/model-gateway/src/model_gateway/config.py`                 | Pydantic `Settings` — provider keys, cache backend, region gate                                  |
@@ -48,13 +48,29 @@ the Supabase URLs are hardcoded to a domain that doesn't resolve.
 | **Database migrations**       | `infra/supabase/migrations/0000..0007_*.sql`                         | Append-only SQL applied to Cloud SQL                                                              |
 | **Control library seed**      | `packages/control-library/src/controls.ts` + `scripts/build-controls-json.mjs` | 46 DPDPA statutory controls seeded via `pnpm seed:controls`                                 |
 
+### Automated Deployment & Teardown Orchestration
+
+The deployment tooling provides a progressive, dependency-aware pipeline with automated state healing:
+
+- **Launch Deployment Pipeline (`./scripts/deploy-preprod-gcp.sh`)**:
+  - Automatically loads `.env.preprod` from `infra/docker/environments/.env.preprod` or `./.env.preprod` and exports `TF_VAR_*` variables.
+  - Automatically verifies Cloud SQL state in GCP. If a Cloud SQL instance was deleted outside Terraform, it auto-heals the state by pruning orphaned child resources (`google_sql_database`, `google_sql_user`, `random_id.db_suffix`), preventing GCP 403 API lockouts and name reservation conflicts.
+  - Executes 8 progressive phases: `prep` → `base` → `db` → `images` → `services` → `migrate` → `firebase` → `verify`.
+  - Supports `--phase <name>`, `--from-phase <name>`, `--skip-build`, `--force-build`, `--skip-migrate`, `--dry-run`, and `--heal-state`.
+
+- **Infrastructure Teardown & Freshstart (`./scripts/teardown-preprod-gcp.sh`)**:
+  - Deletes resources in reverse dependency hierarchy: `services` → `secrets` → `db` → `base` → `storage` → `images` → `network`.
+  - Automatically takes a timestamped session backup of `terraform.tfstate` before mutating (`terraform.tfstate.session-backup.<timestamp>`).
+  - Pass `--reset-state` to archive the state file and reset the directory for a 100% clean fresh start.
+  - Supports `--phase <name>`, `--dry-run`, `--force` (`-y`), and `--delete-images`.
+
 ### Files that have **placeholders** today and need real values
 
 | File                                                                 | Problem                                                                                          |
 | -------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------ |
 | `infra/terraform/envs/preprod/terraform.tfvars`                      | Identical to `.example`. All 8 sensitive fields are `sk-ant-api03-…`, `your-temporal-api-key`, etc.|
-| `infra/docker/environments/.env.preprod`                            | Identical to `.example`. Only relevant for local parity testing.                                 |
-| `infra/docker/environments/.env.preprod.example`                    | NEW template with all placeholders marked and cross-references to the checklist steps. Use this as the canonical structure for your real `.env.preprod`. |
+| `infra/docker/environments/.env.preprod`                            | Central preprod configuration. Contains verified values; automatically read by deployment scripts. |
+| `infra/docker/environments/.env.preprod.example`                    | Template with all placeholders marked and cross-references to the checklist steps.               |
 | `infra/terraform/envs/preprod/cloudrun.tf` (lines 76–85, 217–230)    | `SUPABASE_URL=https://preprod-supabase.axiomminds.ai` and `*_KEY=preprod-…-placeholder…` are **hardcoded** into the Cloud Run env blocks. |
 | `infra/terraform/envs/preprod/cloudrun.tf` (BFF, lines 38–161)        | Missing `BFF_CORS_ORIGINS`, `BFF_PUBLIC_URL`, `MODEL_GATEWAY_API_KEY`, `RESEND_API_KEY`, `CONTACT_RECIPIENT_EMAIL`. |
 | `infra/terraform/envs/preprod/cloudrun.tf` (Web, lines 167–245)      | Missing `NEXT_PUBLIC_APP_URL`, `NEXT_PUBLIC_MARKETING_URL`.                                      |
@@ -146,7 +162,15 @@ This is the **biggest gap**. `cloudrun.tf` hardcodes
 `preprod-service-key-placeholder-length-over-forty-chars`). That domain doesn't
 resolve, so every authenticated request 401s.
 
-You have two options. **Pick one.**
+> **Why both Supabase and Cloud SQL exist here:**
+> Axiom Proof uses a **hybrid architecture** in preprod. Cloud SQL for PostgreSQL 15
+> in `asia-south1` serves as the core relational datastore and immutable audit ledger
+> (via `append_ledger()`), while Supabase provides the Identity Provider (GoTrue Auth,
+> `@supabase/ssr` session cookies, and JWT issuance). Both reside in Mumbai to satisfy
+> DPDPA data residency requirements. *(See [Section 8](#8-architectural-deep-dive-supabase-vs-cloud-sql-dual-setup--future-alternatives)
+> below for the complete architectural analysis, trade-offs, and consolidation alternatives).*
+
+You have two options for preprod. **Pick one.**
 
 #### Option A — Managed Supabase (fastest)
 
@@ -710,6 +734,7 @@ must reach Step 14 (Ledger Verification) and return `intact: true`.
 | Local Docker parity (for testing)     | `infra/docker/docker-compose.preprod.yml` + `infra/docker/environments/.env.preprod` (structure: `.env.preprod.example`) |
 | Firebase hosting config               | `firebase.json` + `apps/marketing/out` (built by `scripts/deploy-firebase-marketing.sh`)      |
 | Live logs                             | `gcloud run services logs read axiom-bff-preprod --region asia-south1 --follow`              |
+| DB & Auth Architecture Analysis       | [Section 8](#8-architectural-deep-dive-supabase-vs-cloud-sql-dual-setup--future-alternatives)  |
 
 ---
 
@@ -718,6 +743,100 @@ must reach Step 14 (Ledger Verification) and return `intact: true`.
 - **Production hardening** (S3 Object Lock, mTLS between services, MFA enforcement). That is documented in `docs/07_SECURITY_REVIEW.md` and is intentionally out of scope for preprod.
 - **Kubernetes / Helm templates.** `infra/helm/axiom-proof/` is the legacy AWS EKS path; GCP preprod runs on Cloud Run only. Per `Axiom-Proof_Readiness_Matrix.md` §1.3, the Helm `marketing` and `temporal-worker` Deployment templates are still missing.
 - **Custom domain mapping** (`app.axiomminds.ai`). Today preprod serves on `*.run.app`. To attach the custom domain you need to add a `google_cloud_run_domain_mapping` resource and validate ownership in Search Console.
+
+---
+
+## 8. Architectural Deep-Dive: Supabase vs. Cloud SQL Dual Setup & Future Alternatives
+
+### 8.1 Why Both Exist (The Transition Context)
+
+Axiom Proof is operating in a **hybrid transition state**:
+1. **Initial BaaS Architecture (Phases 0–1 / Local Dev)**:
+   - Designed around **Supabase** as an all-in-one Backend-as-a-Service (BaaS) providing PostgreSQL, Row-Level Security (RLS), GoTrue Auth, PostgREST HTTP APIs, and Realtime WebSockets (`docs/05_Technology_Stack_Analysis.md` §5).
+   - Core application packages (`@axiom/supabase`, `@axiom/ledger`, `@axiom/bff`, Next.js SSR middleware, and Python `agent-runtime`) were built directly on Supabase SDK primitives (`supabase.from()`, `supabase.rpc()`).
+2. **GCP Preproduction Deployment (Phase 2)**:
+   - Compute workloads were migrated to **Google Cloud Platform (GCP)** in Mumbai (`asia-south1`), decomposed into independent Cloud Run microservices.
+   - For enterprise data management within GCP, **Cloud SQL for PostgreSQL 15** was provisioned inside the VPC (`axiom-preprod-vpc`) to serve as the high-availability relational datastore.
+3. **The Current Division**:
+   - **Cloud SQL** acts as the primary relational database, statutory control library, and cryptographic append-only audit ledger (`audit_ledger`).
+   - **Supabase** acts as the Identity Provider (GoTrue Auth) for user sessions and JWT issuance, as well as the local dev emulator.
+
+### 8.2 Division of Responsibilities in Preprod
+
+| Capability | Component | Purpose & Implementation |
+| :--- | :--- | :--- |
+| **User Authentication & Sessions** | **Supabase (GoTrue)** | Handles user registration, login, session cookies (`@supabase/ssr`), and JWT issuance (`anon`, `authenticated`, `service_role`). Meets DPDPA residency by running in Mumbai (`ap-south-1`). |
+| **Relational Business Data** | **Cloud SQL (PG 15)** | Tenants, organizations, engagements, findings, and remediation blueprints hosted in `asia-south1`. |
+| **Cryptographic Audit Ledger** | **Cloud SQL (PG 15)** | The `audit_ledger` table and the `append_ledger()` SECURITY DEFINER function; `ledger_writer` role is INSERT-only (Hard Rule 3). |
+| **Statutory Control Library** | **Cloud SQL (PG 15)** | Immutable 46 DPDPA statutory controls and framework mappings (`controls`, `framework_controls`). |
+| **Compliance & Audit Telemetry** | **Cloud SQL (PG 15)** | `cloudsql.enable_pgaudit` flag, IAM database authentication, automated PITR, and private Serverless VPC Access. |
+| **Local Dev & CI Tests** | **Supabase Local** | Dockerized Supabase stack (`docker-compose.supabase.yml`) for local testing without cloud dependencies. |
+
+> **Bootstrap Bridge:** Vanilla Cloud SQL instances do not have Supabase's built-in role system. `infra/supabase/migrations/0000_bootstrap_roles_and_extensions.sql` explicitly initializes `anon`, `authenticated`, `service_role`, `authenticator`, and `ledger_writer` roles plus `pgcrypto`/`uuid-ossp` extensions so the 7 sequential migrations execute identically on Cloud SQL.
+
+### 8.3 Architectural Tensions of the Current Setup
+
+1. **Client Protocol Mismatch**: Application code in `@axiom/ledger` and `@axiom/bff` calls `createSupabaseAdmin()` and invokes PostgREST RPCs (`supabase.rpc('append_ledger')`), while Cloud SQL is standard PostgreSQL accessed over port 5432 (`SUPABASE_DB_URL`).
+2. **Dual Identity & Credential Management**: Operators must configure and rotate credentials for both Cloud SQL (`axiom_admin` password) and Supabase (`SUPABASE_URL`, `SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_KEY`).
+3. **Cross-Cloud Latency**: When using Managed Supabase (AWS `ap-south-1`) alongside Cloud Run and Cloud SQL (GCP `asia-south1`), auth session validations cross CSP boundaries over the public internet.
+
+### 8.4 Evaluated Alternatives
+
+#### Alternative 1: Full GCP Consolidation (Retire Supabase)
+*Consolidate entirely into a single-cloud GCP footprint in Mumbai (`asia-south1`).*
+- **Database**: Retain Cloud SQL PostgreSQL 15 as the single source of truth.
+- **Data Access Layer**: Replace `@supabase/supabase-js` with a type-safe TypeScript ORM/query builder (**Drizzle ORM** or **Kysely**) with direct pooled TCP connections (via Cloud SQL Auth Proxy or PgBouncer).
+- **Auth Layer**:
+  - *Option 1A (Managed GCP)*: **Google Cloud Identity Platform / Firebase Auth** (configured with tenant custom claims; verify Mumbai data residency).
+  - *Option 1B (Self-Hosted Sovereign)*: Deploy **Keycloak** or **Ory Kratos** on Cloud Run in Mumbai backed by Cloud SQL tables.
+  - *Option 1C (App-Native)*: **Auth.js (NextAuth)** or **Lucia**, storing user and session records directly in Cloud SQL tables.
+- **Trade-offs**:
+  - *Pros*: Single GCP VPC envelope, lowest network latency, single billing account, zero per-MAU auth pricing, no external SaaS dependencies.
+  - *Cons*: Requires refactoring client data fetching from `@supabase/supabase-js` to SQL/ORM, and rewriting auth middleware.
+
+#### Alternative 2: Full Supabase Consolidation (Retire Cloud SQL)
+*Return to the original Phase 0–1 BaaS architecture documented in `docs/05_Technology_Stack_Analysis.md` §5.*
+- **Database & Auth**: Single managed **Supabase Pro/Team** project in AWS `ap-south-1` (Mumbai) handling Auth, Postgres 15, RLS, pgvector, and PostgREST.
+- **Evidence Storage**: AWS S3 with Object Lock in Compliance Mode (or GCS Bucket Lock).
+- **Trade-offs**:
+  - *Pros*: Zero refactoring needed (codebase natively expects this model); built-in Supabase Realtime for live dashboard notifications; exact parity with local dev.
+  - *Cons*: Cross-cloud latency/egress if compute stays on GCP Cloud Run; pricing scales with Monthly Active Users (MAU).
+
+#### Alternative 3: Self-Hosted Supabase Stack on GCP (Best of Both Worlds)
+*Keep Cloud SQL as the database engine, but host the open-source Supabase stack on GCP.*
+- **Architecture**: Deploy open-source Supabase containers (**GoTrue**, **PostgREST**, **Kong**) on Cloud Run in `asia-south1`, pointing to Cloud SQL over the private VPC connector.
+- **Trade-offs**:
+  - *Pros*: 100% compatibility with existing `@supabase/supabase-js` and `@supabase/ssr` code; backed by enterprise Cloud SQL in your VPC; no per-MAU SaaS tax.
+  - *Cons*: Ongoing operational maintenance of GoTrue, PostgREST, and Kong container configurations.
+
+#### Alternative 4: Full AWS Consolidation (Doc 06 Strategy)
+*Migrate compute and data to AWS `ap-south-1` (Mumbai).*
+- **Compute**: Amazon EKS or ECS Fargate.
+- **Database**: Amazon Aurora PostgreSQL Serverless v2 or RDS PostgreSQL (with pgAudit).
+- **Auth**: Amazon Cognito or self-hosted Keycloak.
+- **Storage & Cache**: AWS S3 Object Lock (Compliance mode) + Amazon ElastiCache for Valkey.
+- **Trade-offs**:
+  - *Pros*: Eliminates all GCP/AWS cross-cloud splits; native AWS S3 Object Lock; single AWS account envelope.
+  - *Cons*: Significant migration effort to dismantle GCP Cloud Run and Terraform setups.
+
+### 8.5 Comparison Matrix
+
+| Evaluation Dimension | Current Hybrid (Supabase Auth + Cloud SQL) | Alt 1: Full GCP (Cloud SQL + Drizzle + Keycloak/Firebase) | Alt 2: Full Supabase (Managed Supabase Pro Mumbai) | Alt 3: Self-Hosted Supabase on GCP (Cloud Run) |
+| :--- | :--- | :--- | :--- | :--- |
+| **DPDPA Residency (India)** | ✅ Yes (Both in Mumbai) | ✅ Yes (All GCP `asia-south1`) | ✅ Yes (AWS `ap-south-1`) | ✅ Yes (All GCP `asia-south1`) |
+| **Code Refactoring** | Minimal (already wired) | Medium (replace Supabase SDK with ORM) | None (native code fit) | None (emulates Supabase API) |
+| **Network Latency** | Moderate (Cross-cloud hops) | Lowest (Zero egress; private VPC) | Moderate (Cross-cloud to Cloud Run) | Lowest (Private VPC) |
+| **Ops Burden** | Moderate (dual vendors) | Low–Moderate (GCP managed) | Lowest (managed BaaS) | High (maintain container stack) |
+| **Cost Predictability** | High DB / Variable Auth MAU | Highest (flat compute + storage) | Variable (scales with MAU) | Highest (no per-MAU fee) |
+| **Audit Posture** | Fragmented audit trail | Unified GCP CloudTrail/Audit Logs | Managed SOC2 / ISO reports | Self-managed audit posture |
+
+### 8.6 Recommended Path
+
+1. **Short Term (Preprod Validation)**:
+   - Complete preprod following **Step 2.5 Option A**: provision a managed Supabase project in Mumbai for Auth/JWT issuance, while keeping all business tables and the audit ledger in Cloud SQL. This unblocks E2E smoke tests immediately without code refactoring.
+2. **Long Term (Production Strategy)**:
+   - **If committed to GCP**: Adopt **Alternative 1** (Drizzle ORM directly over Cloud SQL + Keycloak or Google Identity Platform). Consolidating onto native GCP eliminates cross-cloud latency and avoids per-MAU auth cost escalations as customer volume scales.
+   - **If prioritizing developer velocity & BaaS simplicity**: Adopt **Alternative 2** (Managed Supabase Pro in Mumbai for both Auth and DB) and co-locate compute on AWS EKS or keep Cloud Run with regional peering.
 
 ---
 

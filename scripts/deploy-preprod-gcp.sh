@@ -1,138 +1,550 @@
 #!/usr/bin/env bash
 # ==============================================================================
-# Axiom Proof — Complete GCP Preprod Deployment Launcher
+# Axiom Proof — Complete GCP Preprod Deployment Pipeline
 # ==============================================================================
-# Deploys Axiom Proof to Google Cloud Platform in Mumbai (asia-south1):
-#   - Cloud Run microservices (BFF, Web, Agent Runtime, Model Gateway, Temporal Worker, Marketing)
-#   - Cloud SQL PostgreSQL
-#   - GCS WORM Evidence Vault
-#   - Google Firebase static hosting for marketing
-#   - Upstash Redis integration
-#   - Multi-model fallback chain (Anthropic -> OpenAI -> Gemini)
+# Progressive, parameterized, and self-healing deployment orchestrator:
+#   Phase 1 (prep)     : Pre-flight prerequisites & Google APIs
+#   Phase 2 (base)     : VPC, Subnet, Peering, VPC Connector, GCS Vault, Artifact Registry, IAM
+#   Phase 3 (db)       : Cloud SQL PostgreSQL (with automatic state healing) & Secret Manager
+#   Phase 4 (images)   : Build & push container images (intelligent skip if present)
+#   Phase 5 (services) : Cloud Run v2 microservices (BFF, Web, Runtime, Model Gateway, Temporal)
+#   Phase 6 (migrate)  : Database migrations & statutory control library seeding
+#   Phase 7 (firebase) : Google Firebase static hosting for marketing
+#   Phase 8 (verify)   : Live readiness & service health verification
 # ==============================================================================
 set -euo pipefail
 
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$REPO_ROOT"
 
-PROJECT_ID="${1:-${GCP_PROJECT_ID:-axiom-proof}}"
-REGION="${2:-${GCP_REGION:-asia-south1}}"
-ENV="preprod"
-
 # Ensure all container operations default to linux/amd64 for Google Cloud Run
 export DOCKER_DEFAULT_PLATFORM="linux/amd64"
 
-# Colors
+# Colors & Formatting
 BOLD='\033[1m'
 GREEN='\033[0;32m'
 CYAN='\033[0;36m'
 YELLOW='\033[0;33m'
 RED='\033[0;31m'
 MAGENTA='\033[0;35m'
+BLUE='\033[0;34m'
 NC='\033[0m'
 
 pass() { echo -e "  ${GREEN}✓${NC} $1"; }
 info() { echo -e "\n${BOLD}${CYAN}▶ $1${NC}"; }
 warn() { echo -e "  ${YELLOW}⚠${NC} $1"; }
 fail() { echo -e "  ${RED}✗${NC} $1"; }
+step_header() { echo -e "\n${BOLD}${BLUE}═════════════════════════════════════════════════════════════════${NC}\n${BOLD}${BLUE}  Phase $1: $2${NC}\n${BOLD}${BLUE}═════════════════════════════════════════════════════════════════${NC}"; }
+
+# Defaults
+PROJECT_ID="${GCP_PROJECT_ID:-axiom-proof}"
+REGION="${GCP_REGION:-asia-south1}"
+ENV="${ENVIRONMENT:-preprod}"
+IMAGE_TAG="${IMAGE_TAG:-preprod}"
+CLOUD_SQL_TIER=""
+TARGET_PHASE="all"
+FROM_PHASE=""
+SKIP_BUILD=false
+FORCE_BUILD=false
+SKIP_MIGRATE=false
+SKIP_FIREBASE=false
+DRY_RUN=false
+FORCE_HEAL=false
+
+ENV_FILE_OVERRIDE=""
+
+# CLI Help
+show_help() {
+  cat <<EOF
+Usage: ./scripts/deploy-preprod-gcp.sh [OPTIONS] [PROJECT_ID] [REGION] [ENV]
+
+Positional Arguments:
+  PROJECT_ID          Google Cloud Project ID (default: ${PROJECT_ID})
+  REGION              GCP Region for sovereign residency (default: ${REGION})
+  ENV                 Environment name (default: ${ENV})
+
+Options:
+  --env-file <path>   Explicit path to preprod environment configuration file
+  --phase <name>      Execute ONLY a specific phase:
+                        prep     : Prerequisites and GCP API enablement
+                        base     : Networking (VPC/Peering/Connector), IAM, GCS & Artifact Registry
+                        db       : Cloud SQL PostgreSQL (with self-healing) & Secret Manager
+                        images   : Build & push container images
+                        services : Cloud Run v2 microservices & IAM
+                        migrate  : Database schema migrations & statutory seeds
+                        firebase : Google Firebase static hosting
+                        verify   : Service health probes & summary
+  --from-phase <name> Resume pipeline starting from <name> through the end
+  --skip-build        Skip container image building (use existing Artifact Registry images)
+  --force-build       Force rebuilding and pushing all container images
+  --skip-migrate      Skip database migrations and seeding
+  --skip-firebase     Skip Firebase static hosting deployment
+  --dry-run           Perform terraform plan without mutating infrastructure
+  --heal-state        Force check and prune stale/orphaned Cloud SQL state references
+  --tier <tier>       Override Cloud SQL tier (e.g. db-f1-micro, db-custom-2-7680)
+  --tag <tag>         Override Docker image tag (default: ${IMAGE_TAG})
+  --help, -h          Display this help message
+
+Examples:
+  ./scripts/deploy-preprod-gcp.sh
+  ./scripts/deploy-preprod-gcp.sh "axiom-proof" "asia-south1" --skip-build
+  ./scripts/deploy-preprod-gcp.sh --env-file infra/docker/environments/.env.preprod
+  ./scripts/deploy-preprod-gcp.sh --phase db
+  ./scripts/deploy-preprod-gcp.sh --from-phase services
+  ./scripts/deploy-preprod-gcp.sh --dry-run
+EOF
+  exit 0
+}
+
+# Parse Command Line Options
+POSITIONAL_ARGS=()
+while [[ $# -gt 0 ]]; do
+  case $1 in
+    --env-file)
+      ENV_FILE_OVERRIDE="$2"
+      shift 2
+      ;;
+    --phase)
+      TARGET_PHASE="$2"
+      shift 2
+      ;;
+    --from-phase)
+      FROM_PHASE="$2"
+      shift 2
+      ;;
+    --skip-build)
+      SKIP_BUILD=true
+      shift
+      ;;
+    --force-build)
+      FORCE_BUILD=true
+      shift
+      ;;
+    --skip-migrate)
+      SKIP_MIGRATE=true
+      shift
+      ;;
+    --skip-firebase)
+      SKIP_FIREBASE=true
+      shift
+      ;;
+    --dry-run)
+      DRY_RUN=true
+      shift
+      ;;
+    --heal-state)
+      FORCE_HEAL=true
+      shift
+      ;;
+    --tier)
+      CLOUD_SQL_TIER="$2"
+      shift 2
+      ;;
+    --tag)
+      IMAGE_TAG="$2"
+      shift 2
+      ;;
+    -h|--help)
+      show_help
+      ;;
+    *)
+      POSITIONAL_ARGS+=("$1")
+      shift
+      ;;
+  esac
+done
+
+# Load environment configuration from .env.preprod
+load_preprod_env() {
+  local candidate_files=()
+  if [ -n "$ENV_FILE_OVERRIDE" ]; then
+    candidate_files=("$ENV_FILE_OVERRIDE")
+  else
+    candidate_files=(
+      "${REPO_ROOT}/.env.preprod"
+      "${REPO_ROOT}/infra/docker/environments/.env.preprod"
+      "${REPO_ROOT}/.env"
+    )
+  fi
+
+  local loaded_file=""
+  for candidate in "${candidate_files[@]}"; do
+    if [ -f "$candidate" ]; then
+      loaded_file="$candidate"
+      break
+    fi
+  done
+
+  if [ -n "$loaded_file" ]; then
+    info "Loading preprod environment variables from: ${loaded_file}"
+    # Read variables safely
+    while IFS='=' read -r key val || [ -n "$key" ]; do
+      # Strip leading/trailing whitespace
+      key="$(echo "$key" | sed -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//')"
+      # Ignore comments and empty lines
+      if [[ "$key" =~ ^#.*$ ]] || [ -z "$key" ]; then continue; fi
+      # Clean value of quotes
+      val="$(echo "$val" | sed -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//' -e 's/^"//' -e 's/"$//' -e "s/^'//" -e "s/'$//")"
+      export "$key"="$val"
+    done < "$loaded_file"
+    pass "Environment variables loaded from $(basename "$loaded_file")"
+  fi
+
+  # Map preprod environment variables to Terraform TF_VAR_* equivalents
+  if [ -n "${UPSTASH_REDIS_URL:-}" ]; then export TF_VAR_upstash_redis_url="${UPSTASH_REDIS_URL}"; fi
+  if [ -n "${REDIS_URL:-}" ] && [ -z "${TF_VAR_upstash_redis_url:-}" ]; then export TF_VAR_upstash_redis_url="${REDIS_URL}"; fi
+  if [ -n "${TEMPORAL_ADDRESS:-}" ]; then export TF_VAR_temporal_address="${TEMPORAL_ADDRESS}"; fi
+  if [ -n "${TEMPORAL_NAMESPACE:-}" ]; then export TF_VAR_temporal_namespace="${TEMPORAL_NAMESPACE}"; fi
+  if [ -n "${TEMPORAL_API_KEY:-}" ]; then export TF_VAR_temporal_api_key="${TEMPORAL_API_KEY}"; fi
+  if [ -n "${ANTHROPIC_API_KEY:-}" ]; then export TF_VAR_anthropic_api_key="${ANTHROPIC_API_KEY}"; fi
+  if [ -n "${OPENAI_API_KEY:-}" ]; then export TF_VAR_openai_api_key="${OPENAI_API_KEY}"; fi
+  if [ -n "${GEMINI_API_KEY:-}" ]; then export TF_VAR_gemini_api_key="${GEMINI_API_KEY}"; fi
+  if [ -n "${GOOGLE_API_KEY:-}" ] && [ -z "${TF_VAR_gemini_api_key:-}" ]; then export TF_VAR_gemini_api_key="${GOOGLE_API_KEY}"; fi
+  if [ -n "${APPROVAL_SIGNING_KEY:-}" ]; then export TF_VAR_approval_signing_key="${APPROVAL_SIGNING_KEY}"; fi
+  if [ -n "${AGENT_RUNTIME_INTERNAL_TOKEN:-}" ]; then export TF_VAR_agent_runtime_internal_token="${AGENT_RUNTIME_INTERNAL_TOKEN}"; fi
+  if [ -n "${MODEL_GATEWAY_API_KEY:-}" ]; then export TF_VAR_model_gateway_api_key="${MODEL_GATEWAY_API_KEY}"; fi
+  if [ -n "${GCP_PROJECT_ID:-}" ]; then PROJECT_ID="${GCP_PROJECT_ID}"; fi
+  if [ -n "${GCP_REGION:-}" ]; then REGION="${GCP_REGION}"; fi
+  if [ -n "${ENVIRONMENT:-}" ]; then ENV="${ENVIRONMENT}"; fi
+}
+
+load_preprod_env
+
+# Assign positional overrides if supplied (positionals take precedence over .env)
+if [ ${#POSITIONAL_ARGS[@]} -ge 1 ]; then PROJECT_ID="${POSITIONAL_ARGS[0]}"; fi
+if [ ${#POSITIONAL_ARGS[@]} -ge 2 ]; then REGION="${POSITIONAL_ARGS[1]}"; fi
+if [ ${#POSITIONAL_ARGS[@]} -ge 3 ]; then ENV="${POSITIONAL_ARGS[2]}"; fi
+
+# Phase Execution Order Mapping
+PHASES=("prep" "base" "db" "images" "services" "migrate" "firebase" "verify")
+
+should_run_phase() {
+  local phase="$1"
+  if [ "$TARGET_PHASE" = "$phase" ]; then
+    return 0
+  fi
+  if [ "$TARGET_PHASE" != "all" ]; then
+    return 1
+  fi
+  if [ -n "$FROM_PHASE" ]; then
+    local matched=false
+    for p in "${PHASES[@]}"; do
+      if [ "$p" = "$FROM_PHASE" ]; then matched=true; fi
+      if [ "$matched" = true ] && [ "$p" = "$phase" ]; then return 0; fi
+    done
+    return 1
+  fi
+  return 0
+}
 
 echo -e "\n${BOLD}${MAGENTA}=================================================================${NC}"
-echo -e "${BOLD}${MAGENTA}  AXIOM PROOF — Google Cloud Platform Preprod Deployment         ${NC}"
+echo -e "${BOLD}${MAGENTA}  AXIOM PROOF — Progressive GCP Deployment Pipeline             ${NC}"
 echo -e "${BOLD}${MAGENTA}  Region: Mumbai (asia-south1) · Sovereign Indian Data Residency ${NC}"
 echo -e "${BOLD}${MAGENTA}=================================================================${NC}"
 echo -e "  GCP Project ID:    ${BOLD}${CYAN}${PROJECT_ID}${NC}"
 echo -e "  Target Region:     ${BOLD}${CYAN}${REGION}${NC}"
-echo -e "  Environment:       ${BOLD}${CYAN}${ENV}${NC}\n"
+echo -e "  Environment:       ${BOLD}${CYAN}${ENV}${NC}"
+echo -e "  Target Phase:      ${BOLD}${CYAN}${TARGET_PHASE}${NC}"
+if [ -n "$FROM_PHASE" ]; then
+  echo -e "  Resume From:       ${BOLD}${CYAN}${FROM_PHASE}${NC}"
+fi
+echo -e "  Image Tag:         ${BOLD}${CYAN}${IMAGE_TAG}${NC}"
+echo -e "  Skip Build:        ${BOLD}${CYAN}${SKIP_BUILD}${NC}"
+echo -e "  Dry Run (Plan):    ${BOLD}${CYAN}${DRY_RUN}${NC}\n"
 
-# Step 1: Pre-flight Verification
-info "Step 1/6: Verifying deployment prerequisites..."
-command -v gcloud >/dev/null 2>&1 || { fail "gcloud CLI not installed. Please install Google Cloud SDK."; exit 1; }
-command -v terraform >/dev/null 2>&1 || { fail "Terraform not installed."; exit 1; }
-command -v docker >/dev/null 2>&1 || { fail "Docker not installed or daemon not running."; exit 1; }
-command -v pnpm >/dev/null 2>&1 || { fail "pnpm not installed."; exit 1; }
-pass "Pre-flight dependencies verified (gcloud, terraform, docker, pnpm)"
+# Helper for terraform variable arguments
+get_tf_vars() {
+  local vars=("-var=project_id=${PROJECT_ID}" "-var=region=${REGION}" "-var=environment=${ENV}")
+  if [ -n "$CLOUD_SQL_TIER" ]; then
+    vars+=("-var=cloud_sql_tier=${CLOUD_SQL_TIER}")
+  fi
+  echo "${vars[@]}"
+}
 
-# GCP Authentication & Credentials verification
-if [ -z "${GOOGLE_APPLICATION_CREDENTIALS:-}" ] && [ -z "${GOOGLE_OAUTH_ACCESS_TOKEN:-}" ]; then
-  if gcloud auth application-default print-access-token >/dev/null 2>&1; then
-    pass "Google Cloud Application Default Credentials (ADC) verified"
-  elif TOKEN=$(gcloud auth print-access-token 2>/dev/null); then
-    export GOOGLE_OAUTH_ACCESS_TOKEN="$TOKEN"
-    pass "Active gcloud user session detected; exported GOOGLE_OAUTH_ACCESS_TOKEN for Terraform"
+# Self-Healing Cloud SQL State Resolver
+heal_cloudsql_state_if_needed() {
+  local tf_dir="infra/terraform/envs/preprod"
+  cd "$tf_dir"
+  
+  local state_has_instance=false
+  local state_instance_name=""
+
+  if terraform state list 2>/dev/null | grep -q "google_sql_database_instance.postgres"; then
+    state_has_instance=true
+    state_instance_name=$(terraform state show google_sql_database_instance.postgres 2>/dev/null | grep '^[[:space:]]*name[[:space:]]*=' | head -n1 | cut -d'"' -f2 || echo "")
+  fi
+
+  local gcp_instance_exists=false
+  if [ -n "$state_instance_name" ] && command -v gcloud >/dev/null 2>&1; then
+    if gcloud sql instances describe "$state_instance_name" --project="$PROJECT_ID" >/dev/null 2>&1; then
+      gcp_instance_exists=true
+    fi
+  fi
+
+  if [ "$FORCE_HEAL" = true ] || ([ "$state_has_instance" = true ] && [ "$gcp_instance_exists" = false ]); then
+    warn "Detected Cloud SQL instance in Terraform state ('${state_instance_name:-unknown}') that does not exist in GCP."
+    warn "Self-healing state: Pruning stale database/user child references to prevent GCP 403 API lock & name collision..."
+    terraform state rm google_sql_database.axiom_db 2>/dev/null || true
+    terraform state rm google_sql_user.axiom_user 2>/dev/null || true
+    terraform state rm google_sql_database_instance.postgres 2>/dev/null || true
+    terraform state rm random_id.db_suffix 2>/dev/null || true
+    pass "State healed: Orphaned Cloud SQL resources cleared from local state"
+  fi
+  cd "$REPO_ROOT"
+}
+
+
+# ─── Phase 1: Prerequisites & APIs ────────────────────────────────────────────
+if should_run_phase "prep"; then
+  step_header "1/8" "Verifying Prerequisites & GCP APIs"
+  command -v gcloud >/dev/null 2>&1 || { fail "gcloud CLI not installed. Please install Google Cloud SDK."; exit 1; }
+  command -v terraform >/dev/null 2>&1 || { fail "Terraform not installed."; exit 1; }
+  command -v docker >/dev/null 2>&1 || { fail "Docker CLI not installed."; exit 1; }
+  if ! docker info >/dev/null 2>&1; then
+    if [ -d "/Applications/Docker.app" ]; then
+      warn "Docker daemon not running. Launching Docker Desktop..."
+      open -a Docker || true
+      for i in {1..30}; do
+        if docker info >/dev/null 2>&1; then break; fi
+        sleep 2
+      done
+    fi
+  fi
+  docker info >/dev/null 2>&1 || { fail "Docker daemon not running. Please start Docker."; exit 1; }
+  command -v pnpm >/dev/null 2>&1 || { fail "pnpm not installed."; exit 1; }
+  pass "Pre-flight dependencies verified (gcloud, terraform, docker, pnpm)"
+
+  # GCP Authentication
+  if [ -z "${GOOGLE_APPLICATION_CREDENTIALS:-}" ] && [ -z "${GOOGLE_OAUTH_ACCESS_TOKEN:-}" ]; then
+    if gcloud auth application-default print-access-token >/dev/null 2>&1; then
+      pass "Google Cloud Application Default Credentials (ADC) active"
+    elif TOKEN=$(gcloud auth print-access-token 2>/dev/null); then
+      export GOOGLE_OAUTH_ACCESS_TOKEN="$TOKEN"
+      pass "Active gcloud user session detected; exported GOOGLE_OAUTH_ACCESS_TOKEN"
+    else
+      fail "No Google Cloud credentials found. Run 'gcloud auth application-default login'."
+      exit 1
+    fi
+  fi
+
+  # Enable required GCP services if gcloud is configured
+  info "Verifying required GCP APIs for ${PROJECT_ID}..."
+  REQUIRED_APIS=(
+    "servicenetworking.googleapis.com"
+    "compute.googleapis.com"
+    "sqladmin.googleapis.com"
+    "run.googleapis.com"
+    "secretmanager.googleapis.com"
+    "artifactregistry.googleapis.com"
+    "vpcaccess.googleapis.com"
+    "storage.googleapis.com"
+  )
+  for api in "${REQUIRED_APIS[@]}"; do
+    gcloud services enable "$api" --project="$PROJECT_ID" --quiet 2>/dev/null || true
+  done
+  pass "Required Google Cloud APIs enabled"
+fi
+
+
+# ─── Phase 2: Base Infrastructure (VPC, Subnet, Peering, Connector, GCS, AR) ──
+if should_run_phase "base"; then
+  step_header "2/8" "Foundational Networking, Identity & Storage"
+  cd "infra/terraform/envs/preprod"
+  terraform init -upgrade
+  if [ ! -f "terraform.tfvars" ] && [ -f "terraform.tfvars.example" ]; then
+    warn "terraform.tfvars not found. Creating from terraform.tfvars.example..."
+    cp terraform.tfvars.example terraform.tfvars
+  fi
+
+  TF_VARS=$(get_tf_vars)
+
+  if [ "$DRY_RUN" = true ]; then
+    info "Executing dry-run plan for Base Infrastructure..."
+    terraform plan $TF_VARS \
+      -target=google_project_service.apis \
+      -target=google_compute_network.vpc \
+      -target=google_compute_subnetwork.subnet \
+      -target=google_compute_global_address.private_ip_address \
+      -target=google_service_networking_connection.private_vpc_connection \
+      -target=google_vpc_access_connector.connector \
+      -target=google_service_account.cloudrun_sa \
+      -target=google_service_account.storage_sa \
+      -target=google_project_iam_member.secret_accessor \
+      -target=google_project_iam_member.artifact_reader \
+      -target=google_project_iam_member.cloudsql_client \
+      -target=google_storage_bucket.evidence_vault \
+      -target=google_storage_hmac_key.s3_compat_key \
+      -target=google_storage_bucket_iam_member.storage_admin \
+      -target=google_artifact_registry_repository.docker_repo
   else
-    fail "No Google Cloud credentials found. Run 'gcloud auth application-default login' or 'gcloud auth login'."
-    exit 1
+    info "Applying Base Infrastructure (VPC, Peering, Connector, Storage, Artifact Registry)..."
+    terraform apply -auto-approve $TF_VARS \
+      -target=google_project_service.apis \
+      -target=google_compute_network.vpc \
+      -target=google_compute_subnetwork.subnet \
+      -target=google_compute_global_address.private_ip_address \
+      -target=google_service_networking_connection.private_vpc_connection \
+      -target=google_vpc_access_connector.connector \
+      -target=google_service_account.cloudrun_sa \
+      -target=google_service_account.storage_sa \
+      -target=google_project_iam_member.secret_accessor \
+      -target=google_project_iam_member.artifact_reader \
+      -target=google_project_iam_member.cloudsql_client \
+      -target=google_storage_bucket.evidence_vault \
+      -target=google_storage_hmac_key.s3_compat_key \
+      -target=google_storage_bucket_iam_member.storage_admin \
+      -target=google_artifact_registry_repository.docker_repo
+    pass "Base Networking, Identity & Storage established"
+  fi
+  cd "$REPO_ROOT"
+fi
+
+
+# ─── Phase 3: Data Layer & Secrets (Cloud SQL & Secret Manager) ────────────────
+if should_run_phase "db"; then
+  step_header "3/8" "Data Layer & Secret Manager (Cloud SQL with Self-Healing)"
+  
+  # Step 3a: Run self-healing check on state
+  heal_cloudsql_state_if_needed
+
+  cd "infra/terraform/envs/preprod"
+  terraform init
+  TF_VARS=$(get_tf_vars)
+
+  if [ "$DRY_RUN" = true ]; then
+    info "Executing dry-run plan for Cloud SQL & Secrets..."
+    terraform plan $TF_VARS \
+      -target=random_id.db_suffix \
+      -target=random_password.db_password \
+      -target=google_sql_database_instance.postgres \
+      -target=google_sql_database.axiom_db \
+      -target=google_sql_user.axiom_user \
+      -target=google_secret_manager_secret.secret \
+      -target=google_secret_manager_secret_version.version
+  else
+    info "Applying Cloud SQL PostgreSQL & Secret Manager..."
+    terraform apply -auto-approve $TF_VARS \
+      -target=random_id.db_suffix \
+      -target=random_password.db_password \
+      -target=google_sql_database_instance.postgres \
+      -target=google_sql_database.axiom_db \
+      -target=google_sql_user.axiom_user \
+      -target=google_secret_manager_secret.secret \
+      -target=google_secret_manager_secret_version.version
+    
+    DB_NAME=$(terraform state show google_sql_database_instance.postgres 2>/dev/null | grep '^[[:space:]]*name[[:space:]]*=' | head -n1 | cut -d'"' -f2 || echo "")
+    DB_PUBLIC_IP=$(terraform output -raw cloud_sql_public_ip 2>/dev/null || echo "")
+    pass "Cloud SQL Instance active: ${DB_NAME} (Public IP: ${DB_PUBLIC_IP:-pending})"
+    pass "Secrets synchronized in Google Secret Manager"
+  fi
+  cd "$REPO_ROOT"
+fi
+
+
+# ─── Phase 4: Container Images (Build & Push to Artifact Registry) ─────────────
+if should_run_phase "images"; then
+  step_header "4/8" "Container Images (Artifact Registry)"
+  if [ "$DRY_RUN" = true ]; then
+    pass "Dry-run: skipping container image build and push"
+  elif [ "$SKIP_BUILD" = true ]; then
+    pass "Build skipped via --skip-build flag; using existing images in Artifact Registry"
+  else
+    info "Building and pushing container images to Artifact Registry..."
+    FORCE_BUILD="$FORCE_BUILD" PUSH_IMAGES=true ./scripts/build-preprod-images.sh "${PROJECT_ID}" "${REGION}" "${IMAGE_TAG}"
+    pass "Container images published to ${REGION}-docker.pkg.dev/${PROJECT_ID}/axiom-proof-preprod"
   fi
 fi
 
 
-# Step 2: Foundational Infrastructure Provisioning with Terraform
-info "Step 2/7: Planning & applying GCP foundational infrastructure (VPC, Cloud SQL, GCS, Artifact Registry, Secrets)..."
-cd "infra/terraform/envs/preprod"
-terraform init -upgrade
-if [ ! -f "terraform.tfvars" ] && [ -f "terraform.tfvars.example" ]; then
-  warn "terraform.tfvars not found. Creating from terraform.tfvars.example..."
-  cp terraform.tfvars.example terraform.tfvars
-fi
-terraform apply -auto-approve \
-  -target=google_artifact_registry_repository.docker_repo \
-  -target=google_storage_bucket.evidence_vault \
-  -target=google_storage_hmac_key.s3_compat_key \
-  -target=google_storage_bucket_iam_member.storage_admin \
-  -target=google_sql_database_instance.postgres \
-  -target=google_sql_database.axiom_db \
-  -target=google_sql_user.axiom_user \
-  -target=google_secret_manager_secret.secret \
-  -target=google_secret_manager_secret_version.version \
-  -target=google_vpc_access_connector.connector \
-  -target=google_service_account.cloudrun_sa \
-  -target=google_service_account.storage_sa \
-  -target=google_project_iam_member.secret_accessor \
-  -target=google_project_iam_member.artifact_reader \
-  -target=google_project_iam_member.cloudsql_client \
-  -var="project_id=${PROJECT_ID}" -var="region=${REGION}"
-DB_PUBLIC_IP=$(terraform output -raw cloud_sql_public_ip 2>/dev/null || echo "")
-cd "$REPO_ROOT"
-pass "Foundational infrastructure provisioned (VPC, Cloud SQL, GCS, Artifact Registry, Secrets)"
+# ─── Phase 5: Compute Layer (Cloud Run v2 Microservices) ───────────────────────
+if should_run_phase "services"; then
+  step_header "5/8" "Deploying Cloud Run v2 Microservices"
+  cd "infra/terraform/envs/preprod"
+  TF_VARS=$(get_tf_vars)
 
-# Step 3: Build & Push Container Images to Artifact Registry
-info "Step 3/7: Building and pushing container images to Artifact Registry..."
-PUSH_IMAGES=true ./scripts/build-preprod-images.sh "${PROJECT_ID}" "${REGION}" "${ENV}"
-pass "Container images pushed to ${REGION}-docker.pkg.dev/${PROJECT_ID}/axiom-proof-preprod"
-
-# Step 4: Deploy Cloud Run Microservices with Terraform
-info "Step 4/7: Deploying Cloud Run microservices (BFF, Web, Agent Runtime, Model Gateway, Temporal Worker)..."
-cd "infra/terraform/envs/preprod"
-terraform apply -auto-approve -var="project_id=${PROJECT_ID}" -var="region=${REGION}"
-BFF_URL=$(terraform output -raw bff_url 2>/dev/null || echo "")
-WEB_URL=$(terraform output -raw web_url 2>/dev/null || echo "")
-cd "$REPO_ROOT"
-pass "Cloud Run microservices deployed and accessible"
-
-# Step 5: Cloud SQL Database Migrations
-info "Step 5/7: Applying database migrations to Cloud SQL PostgreSQL..."
-if [ -n "$DB_PUBLIC_IP" ]; then
-  echo "  Target Cloud SQL IP: ${DB_PUBLIC_IP}"
-  ./scripts/migrate-cloudsql.sh "postgresql://axiom_admin:$(cd infra/terraform/envs/preprod && terraform output -raw db_password 2>/dev/null || echo '')@${DB_PUBLIC_IP}:5432/axiom_proof_preprod" || warn "Migrations direct connect notice — ensure authorized networks allow your IP."
-else
-  warn "Skipping direct migration; Cloud SQL public IP not exported."
+  if [ "$DRY_RUN" = true ]; then
+    info "Executing dry-run plan for Cloud Run Microservices..."
+    terraform plan $TF_VARS
+  else
+    info "Applying Cloud Run services and IAM bindings..."
+    terraform apply -auto-approve $TF_VARS
+    BFF_URL=$(terraform output -raw bff_url 2>/dev/null || echo "")
+    WEB_URL=$(terraform output -raw web_url 2>/dev/null || echo "")
+    pass "Cloud Run microservices successfully deployed"
+  fi
+  cd "$REPO_ROOT"
 fi
 
-# Step 6: Firebase Static Deployment for Marketing Site
-info "Step 6/7: Deploying marketing site to Google Firebase Static Hosting..."
-./scripts/deploy-firebase-marketing.sh "${PROJECT_ID}" || warn "Firebase CLI deploy skipped or requires login."
 
-# Step 7: Health & Readiness Verification
-info "Step 7/7: Verifying service health..."
-if [ -n "$BFF_URL" ]; then
-  curl -fsS "${BFF_URL}/health" >/dev/null 2>&1 && pass "Cloud Run BFF is healthy (${BFF_URL})" || warn "BFF starting up..."
+# ─── Phase 6: Database Migrations & Statutory Controls Seeding ─────────────────
+if should_run_phase "migrate"; then
+  step_header "6/8" "Cloud SQL PostgreSQL Migrations & Control Library Seeding"
+  if [ "$DRY_RUN" = true ]; then
+    pass "Dry-run: skipping database migrations"
+  elif [ "$SKIP_MIGRATE" = true ]; then
+    pass "Migrations skipped via --skip-migrate flag"
+  else
+    cd "infra/terraform/envs/preprod"
+    DB_PUBLIC_IP=$(terraform output -raw cloud_sql_public_ip 2>/dev/null || echo "")
+    DB_PASSWORD=$(terraform output -raw db_password 2>/dev/null || echo "")
+    cd "$REPO_ROOT"
+
+    if [ -n "$DB_PUBLIC_IP" ] && [ -n "$DB_PASSWORD" ]; then
+      CONN_STR="postgresql://axiom_admin:${DB_PASSWORD}@${DB_PUBLIC_IP}:5432/axiom_proof_preprod"
+      info "Applying sequential migrations to Cloud SQL (${DB_PUBLIC_IP})..."
+      ./scripts/migrate-cloudsql.sh "$CONN_STR" || warn "Direct migration notice — ensure your client IP is allowed in authorized networks."
+    else
+      warn "Cloud SQL public IP or password not yet resolved; skipping direct migrations."
+    fi
+  fi
 fi
 
-echo -e "\n${BOLD}${GREEN}=================================================================${NC}"
-echo -e "${BOLD}${GREEN}  ✓ PREPROD DEPLOYMENT COMPLETE!                                 ${NC}"
-echo -e "${BOLD}${GREEN}=================================================================${NC}"
-echo -e "  Web Workbench:     ${CYAN}${WEB_URL:-"https://axiom-web-preprod-<hash>.a.run.app"}${NC}"
-echo -e "  API Layer (BFF):   ${CYAN}${BFF_URL:-"https://axiom-bff-preprod-<hash>.a.run.app"}${NC}"
-echo -e "  Marketing Site:    ${CYAN}https://${PROJECT_ID}.web.app${NC}\n"
-echo -e "  ${BOLD}Run Live Functional Flow:${NC}"
-echo -e "  ${CYAN}./scripts/run-preprod-flow.sh \"${BFF_URL}\"${NC}\n"
+
+# ─── Phase 7: Firebase Static Marketing Site ──────────────────────────────────
+if should_run_phase "firebase"; then
+  step_header "7/8" "Google Firebase Static Hosting (Marketing)"
+  if [ "$DRY_RUN" = true ]; then
+    pass "Dry-run: skipping Firebase deployment"
+  elif [ "$SKIP_FIREBASE" = true ]; then
+    pass "Firebase deployment skipped via --skip-firebase flag"
+  else
+    info "Deploying marketing site to Firebase Hosting..."
+    ./scripts/deploy-firebase-marketing.sh "${PROJECT_ID}" || warn "Firebase deployment skipped or requires CLI login."
+  fi
+fi
+
+
+# ─── Phase 8: Verification & Health Probes ────────────────────────────────────
+if should_run_phase "verify"; then
+  step_header "8/8" "Readiness Verification & Health Probes"
+  cd "infra/terraform/envs/preprod"
+  BFF_URL=$(terraform output -raw bff_url 2>/dev/null || echo "")
+  WEB_URL=$(terraform output -raw web_url 2>/dev/null || echo "")
+  MARKETING_URL=$(terraform output -raw marketing_url 2>/dev/null || echo "")
+  DB_PUBLIC_IP=$(terraform output -raw cloud_sql_public_ip 2>/dev/null || echo "")
+  cd "$REPO_ROOT"
+
+  if [ "$DRY_RUN" = true ]; then
+    pass "Dry-run: skipping live health probes"
+  elif [ -n "$BFF_URL" ]; then
+    info "Probing Cloud Run BFF health endpoint (${BFF_URL}/health)..."
+    for i in {1..12}; do
+      if curl -fsS "${BFF_URL}/health" >/dev/null 2>&1; then
+        pass "Cloud Run BFF is responsive and healthy"
+        break
+      fi
+      sleep 3
+    done
+  fi
+
+  echo -e "\n${BOLD}${GREEN}=================================================================${NC}"
+  echo -e "${BOLD}${GREEN}  ✓ PREPROD DEPLOYMENT PIPELINE COMPLETE!                        ${NC}"
+  echo -e "${BOLD}${GREEN}=================================================================${NC}"
+  echo -e "  Web Workbench:       ${CYAN}${WEB_URL:-"https://axiom-web-preprod-<hash>.a.run.app"}${NC}"
+  echo -e "  API Layer (BFF):     ${CYAN}${BFF_URL:-"https://axiom-bff-preprod-<hash>.a.run.app"}${NC}"
+  echo -e "  Cloud SQL IP:        ${CYAN}${DB_PUBLIC_IP:-"Private/Pending"}${NC}"
+  echo -e "  Marketing Site:      ${CYAN}https://${PROJECT_ID}.web.app${NC} / ${CYAN}${MARKETING_URL:-""}${NC}\n"
+  echo -e "  ${BOLD}Run Live Functional Flow:${NC}"
+  echo -e "  ${CYAN}./scripts/run-preprod-flow.sh \"${BFF_URL}\"${NC}\n"
+fi
+

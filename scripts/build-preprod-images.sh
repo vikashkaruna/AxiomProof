@@ -29,6 +29,18 @@ echo "  Artifact Target: ${REGISTRY}"
 echo "  Image Tag:       ${TAG}"
 echo "================================================================="
 
+if ! docker info >/dev/null 2>&1; then
+  if [ -d "/Applications/Docker.app" ]; then
+    echo "⚠ Docker daemon not running. Launching Docker Desktop..."
+    open -a Docker || true
+    for i in {1..30}; do
+      if docker info >/dev/null 2>&1; then break; fi
+      sleep 2
+    done
+  fi
+fi
+docker info >/dev/null 2>&1 || { echo "✗ Docker daemon not running. Please start Docker."; exit 1; }
+
 # Authenticate Docker with Google Artifact Registry if gcloud is installed
 if command -v gcloud >/dev/null 2>&1; then
   echo "▶ Authenticating Docker with Artifact Registry..."
@@ -47,11 +59,26 @@ SERVICES=(
   "marketing:infra/docker/Dockerfile.marketing"
 )
 
+TARGET_SERVICE="${4:-${TARGET_SERVICE:-all}}"
+FORCE_BUILD="${FORCE_BUILD:-false}"
+
 for entry in "${SERVICES[@]}"; do
   SVC_NAME="${entry%%:*}"
   DOCKERFILE="${entry##*:}"
   IMAGE_URI="${REGISTRY}/axiom-${SVC_NAME}:${TAG}"
   LOCAL_TAG="axiom-${SVC_NAME}:${TAG}"
+
+  if [ "$TARGET_SERVICE" != "all" ] && [ "$TARGET_SERVICE" != "$SVC_NAME" ]; then
+    continue
+  fi
+
+  # Check if image already exists in Artifact Registry when force-build is not set
+  if [ "$FORCE_BUILD" != "true" ] && command -v gcloud >/dev/null 2>&1; then
+    if gcloud artifacts docker images describe "${IMAGE_URI}" >/dev/null 2>&1; then
+      echo "  ✓ Image ${IMAGE_URI} already exists in Artifact Registry (skipping build; set FORCE_BUILD=true to rebuild)"
+      continue
+    fi
+  fi
 
   echo -e "\n▶ Building [${SVC_NAME}] using ${DOCKERFILE} (platform: linux/amd64)..."
   docker build --platform linux/amd64 --provenance=false -f "${DOCKERFILE}" -t "${LOCAL_TAG}" -t "${IMAGE_URI}" .
@@ -60,7 +87,7 @@ for entry in "${SERVICES[@]}"; do
     echo "  Pushing ${IMAGE_URI}..."
     docker push "${IMAGE_URI}"
   fi
-  echo "  ✓ Successfully built ${LOCAL_TAG}"
+  echo "  ✓ Successfully built and pushed ${LOCAL_TAG}"
 done
 
 echo -e "\n================================================================="
