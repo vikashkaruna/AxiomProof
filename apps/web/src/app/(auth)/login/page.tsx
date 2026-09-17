@@ -23,10 +23,14 @@ export default async function LoginPage({
   const cookieStore = await cookies();
   const isLoggedOut = cookieStore.get('axiom_e2e_logged_out')?.value === 'true';
 
-  const supabase = await createSupabaseServerClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  let user = null;
+  try {
+    const supabase = await createSupabaseServerClient();
+    const { data } = await supabase.auth.getUser();
+    user = data?.user ?? null;
+  } catch {
+    user = null;
+  }
 
   if (
     user &&

@@ -59,6 +59,17 @@ values (
 )
 on conflict (id) do nothing;
 
+insert into auth.identities (id, user_id, identity_data, provider, provider_id, last_sign_in_at, created_at, updated_at)
+values (
+  '00000000-0000-0000-0000-000000000001',
+  '00000000-0000-0000-0000-000000000001',
+  '{"sub":"00000000-0000-0000-0000-000000000001","email":"founder@axiomminds.ai"}'::jsonb,
+  'email',
+  'founder@axiomminds.ai',
+  now(), now(), now()
+)
+on conflict (provider, id) do nothing;
+
 insert into public.users (id, email, full_name, is_axiom_internal)
 values (
   '00000000-0000-0000-0000-000000000001',

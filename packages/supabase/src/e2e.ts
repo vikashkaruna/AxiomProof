@@ -174,16 +174,9 @@ function createQuery(table: string): QueryBuilder {
 
 export function isE2EBypassEnabled(): boolean {
   return (
-    (process.env.NODE_ENV !== 'production' ||
-      process.env.ENVIRONMENT === 'development' ||
-      process.env.ENVIRONMENT === 'local' ||
-      process.env.ENVIRONMENT === 'preprod' ||
-      process.env.ENVIRONMENT === 'staging') &&
-    (process.env.AXIOM_E2E_BYPASS_AUTH === 'true' ||
-      !process.env.SUPABASE_URL ||
-      process.env.SUPABASE_URL.includes('preprod-supabase.axiomminds.ai') ||
-      process.env.SUPABASE_URL.includes('localhost') ||
-      process.env.SUPABASE_URL.includes('127.0.0.1'))
+    process.env.NODE_ENV === 'test' ||
+    ((process.env.NODE_ENV === 'development' || process.env.ENVIRONMENT === 'local') &&
+      process.env.AXIOM_E2E_BYPASS_AUTH === 'true')
   );
 }
 

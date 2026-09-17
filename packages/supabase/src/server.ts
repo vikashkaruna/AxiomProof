@@ -21,8 +21,8 @@ export async function createSupabaseServerClient() {
   if (
     !authCookie &&
     !isLoggedOut &&
-    (cookieStore.get('axiom_e2e_bypass')?.value === 'true' ||
-      process.env.AXIOM_E2E_BYPASS_AUTH === 'true')
+    process.env.NODE_ENV === 'test' &&
+    process.env.AXIOM_E2E_BYPASS_AUTH === 'true'
   ) {
     return createE2ESupabaseClient(userEmail);
   }

@@ -18,9 +18,9 @@ async function forward(request: NextRequest, context: RouteContext) {
 
     if (
       user ||
-      process.env.AXIOM_E2E_BYPASS_AUTH === 'true' ||
-      request.headers.get('x-e2e-bypass-auth') === 'true' ||
-      request.cookies.get('axiom_e2e_bypass')?.value === 'true'
+      (process.env.NODE_ENV === 'test' &&
+        (process.env.AXIOM_E2E_BYPASS_AUTH === 'true' ||
+          request.headers.get('x-e2e-bypass-auth') === 'true'))
     ) {
       accessToken = 'test-access-token';
     }

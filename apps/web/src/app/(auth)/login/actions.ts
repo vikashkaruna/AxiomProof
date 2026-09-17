@@ -34,42 +34,21 @@ export async function loginAction(formData: FormData) {
     authError = err?.message || 'fetch failed';
   }
 
-  // Handle environment where Supabase network connection is unreachable (e.g. preprod/staging without external Supabase)
+  // Handle authentication failure — strictly disallow any bypass or mock session
   if (!authenticatedUser) {
-    const isNetworkOrPlaceholderFailure =
-      !authError ||
-      authError.includes('fetch failed') ||
-      authError.includes('ENOTFOUND') ||
-      authError.includes('ECONNREFUSED');
+    const isNetworkOrServiceFailure =
+      authError?.includes('fetch failed') ||
+      authError?.includes('ENOTFOUND') ||
+      authError?.includes('ECONNREFUSED') ||
+      authError?.includes('500') ||
+      authError?.includes('502') ||
+      authError?.includes('503');
 
-    if (isNetworkOrPlaceholderFailure) {
-      // In preprod/staging, establish a sovereign authenticated session if valid credentials were submitted
-      if (email && password.length >= 8) {
-        cookieStore.set('axiom_e2e_bypass', 'true', {
-          path: '/',
-          httpOnly: false,
-          sameSite: 'lax',
-          secure: process.env.NODE_ENV === 'production',
-          maxAge: 60 * 60 * 24 * 7,
-        });
-        cookieStore.set('axiom_user_email', email, {
-          path: '/',
-          httpOnly: false,
-          sameSite: 'lax',
-          secure: process.env.NODE_ENV === 'production',
-          maxAge: 60 * 60 * 24 * 7,
-        });
-        cookieStore.delete('axiom_e2e_logged_out');
-        authenticatedUser = {
-          id: '00000000-0000-0000-0000-000000000001',
-          email,
-        };
-      } else {
-        redirect(`/login?error=${encodeURIComponent('Invalid email or password.')}`);
-      }
-    } else {
-      redirect(`/login?error=${encodeURIComponent(authError || 'Authentication failed')}`);
-    }
+    const errorMessage = isNetworkOrServiceFailure
+      ? 'Authentication service is unreachable or unconfigured. Please check database and auth service connectivity.'
+      : authError || 'Invalid email or password.';
+
+    redirect(`/login?error=${encodeURIComponent(errorMessage)}`);
   }
 
   if (authenticatedUser) {
@@ -153,32 +132,20 @@ export async function signupAction(formData: FormData) {
   }
 
   if (!signupUser) {
-    const isNetworkOrPlaceholderFailure =
+    const isNetworkOrServiceFailure =
       !signupError ||
       signupError.includes('fetch failed') ||
       signupError.includes('ENOTFOUND') ||
-      signupError.includes('ECONNREFUSED');
+      signupError.includes('ECONNREFUSED') ||
+      signupError.includes('500') ||
+      signupError.includes('502') ||
+      signupError.includes('503');
 
-    if (isNetworkOrPlaceholderFailure) {
-      cookieStore.set('axiom_e2e_bypass', 'true', {
-        path: '/',
-        httpOnly: false,
-        sameSite: 'lax',
-        secure: process.env.NODE_ENV === 'production',
-        maxAge: 60 * 60 * 24 * 7,
-      });
-      cookieStore.set('axiom_user_email', email, {
-        path: '/',
-        httpOnly: false,
-        sameSite: 'lax',
-        secure: process.env.NODE_ENV === 'production',
-        maxAge: 60 * 60 * 24 * 7,
-      });
-      cookieStore.delete('axiom_e2e_logged_out');
-      redirect('/dashboard');
-    } else {
-      redirect(`/login?mode=signup&error=${encodeURIComponent(signupError || 'Signup failed')}`);
-    }
+    const errorMessage = isNetworkOrServiceFailure
+      ? 'Authentication service is unreachable or unconfigured. Please check database and auth service connectivity.'
+      : signupError || 'Signup failed. Please check your information and try again.';
+
+    redirect(`/login?mode=signup&error=${encodeURIComponent(errorMessage)}`);
   }
 
   // Mirror to public.users and ensure membership in default tenant

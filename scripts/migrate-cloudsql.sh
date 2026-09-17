@@ -77,9 +77,16 @@ for sql_file in $(ls "${MIGRATIONS_DIR}"/*.sql | sort); do
   echo "  ✓ Applied $(basename "$sql_file")"
 done
 
-# 3. Seed statutory control library & baseline
+# 3. Seed statutory control library, users & platform baseline
 echo "▶ Seeding statutory DPDPA control library & baseline..."
 SUPABASE_DB_URL="$DB_URL" pnpm seed:controls || true
+
+echo "▶ Seeding standard authenticated users & tenant memberships..."
+run_psql "$DB_URL" "infra/supabase/seed-users.sql" >/dev/null 2>&1 || {
+  echo "  Notice: Retrying user seed with verbose output..."
+  run_psql "$DB_URL" "infra/supabase/seed-users.sql" || true
+}
+SUPABASE_DB_URL="$DB_URL" pnpm seed:users || true
 SUPABASE_DB_URL="$DB_URL" pnpm tsx scripts/seed-platform-baseline.ts || true
 
 echo "================================================================="
