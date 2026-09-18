@@ -2,8 +2,8 @@
  * Resolves the appropriate Workbench Web App URL dynamically across all environments:
  * - Preprod Cloud Run: automatically transforms axiom-marketing-preprod-* -> axiom-web-preprod-*
  * - Generic Cloud Run: transforms *-marketing-* -> *-web-*
- * - Production: axiomminds.ai / www.axiomminds.ai -> https://app.axiomminds.ai
- * - Staging: staging.axiomminds.ai -> https://app-staging.axiomminds.ai
+ * - Production: axiomproof.ai / www.axiomproof.ai -> https://app.axiomproof.ai
+ * - Staging: staging.axiomproof.ai -> https://app-staging.axiomproof.ai
  * - Localhost: http://localhost:3001
  * - Honors NEXT_PUBLIC_APP_URL / APP_URL if explicitly configured with a non-localhost target.
  */

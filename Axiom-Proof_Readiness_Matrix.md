@@ -85,8 +85,8 @@ flowchart TB
 
     %% Client Layer
     subgraph CLIENT_LAYER ["1. Client & Ingress Layer (Next.js 14)"]
-        WEB["Product Workbench Web App<br/>(app.axiomminds.ai :3001)"]:::clientStyle
-        MKT["Public Site & Gap Scan<br/>(axiomminds.ai :3000)"]:::clientStyle
+        WEB["Product Workbench Web App<br/>(app.axiomproof.ai :3001)"]:::clientStyle
+        MKT["Public Site & Gap Scan<br/>(axiomproof.ai :3000)"]:::clientStyle
     end
 
     %% BFF Layer
@@ -402,7 +402,7 @@ gantt
 | `TEMPORAL_API_KEY`                | Temporal Workers  | Staging / Prod | **CRITICAL** | `""`                                | Temporal Cloud API Key                                     |
 | `REDACT_PII`                      | Model Gateway     | All            | No           | `true`                              | Must remain `true` in all environments                     |
 | `AXIOM_E2E_BYPASS_AUTH`           | Web               | Local Only     | No           | `true`                              | **MUST BE `false` IN STAGING & PRODUCTION**                |
-| `BFF_CORS_ORIGINS`                | BFF               | Staging / Prod | No           | `http://localhost:3000,...`         | `https://axiomminds.ai,https://app.axiomminds.ai`          |
+| `BFF_CORS_ORIGINS`                | BFF               | Staging / Prod | No           | `http://localhost:3000,...`         | `https://axiomproof.ai,https://app.axiomproof.ai,https://axiomminds.ai` |
 
 ---
 

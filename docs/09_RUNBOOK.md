@@ -53,7 +53,7 @@ posture, see [`07_SECURITY_REVIEW.md`](./07_SECURITY_REVIEW.md).
 # Confirm. The action is recorded in the audit ledger.
 
 # Or via the BFF API
-curl -X POST https://app.axiomminds.ai/api/bff/v1/kill-switch/engage \
+curl -X POST https://app.axiomproof.ai/api/bff/v1/kill-switch/engage \
   -H "Authorization: Bearer $FOUNDER_TOKEN" \
   -H "X-Tenant-Id: $TENANT_ID" \
   -H "Content-Type: application/json" \
@@ -66,7 +66,7 @@ The kill switch can only be released by a user with the `founder` or
 `owner` role:
 
 ```bash
-curl -X POST https://app.axiomminds.ai/api/bff/v1/kill-switch/release \
+curl -X POST https://app.axiomproof.ai/api/bff/v1/kill-switch/release \
   -H "Authorization: Bearer $FOUNDER_TOKEN" \
   -H "X-Tenant-Id: $TENANT_ID"
 ```

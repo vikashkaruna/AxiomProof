@@ -30,7 +30,7 @@ $timestamp = [int][double]::Parse((Get-Date -UFormat %s))
 $randSuffix = (-join ((65..90) + (97..122) | Get-Random -Count 4 | ForEach-Object {[char]$_}))
 
 if (-not $OrgName) { $OrgName = "Bharat FinTech Sovereign $($timestamp.ToString().Substring($timestamp.ToString().Length - 4))" }
-$userEmail = "officer_$($timestamp)_$($randSuffix)@compliance.axiomminds.ai"
+$userEmail = "officer_$($timestamp)_$($randSuffix)@compliance.axiomproof.ai"
 $userPass = "AxiomProofLive2026!#$($timestamp.ToString().Substring($timestamp.ToString().Length - 4))"
 $userName = "Chief Compliance Officer ($($randSuffix))"
 $correlationId = "corr-flow-$timestamp"

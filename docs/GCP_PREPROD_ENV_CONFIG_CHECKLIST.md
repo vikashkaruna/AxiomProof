@@ -752,7 +752,7 @@ must reach Step 14 (Ledger Verification) and return `intact: true`.
 
 - **Production hardening** (S3 Object Lock, mTLS between services, MFA enforcement). That is documented in `docs/07_SECURITY_REVIEW.md` and is intentionally out of scope for preprod.
 - **Kubernetes / Helm templates.** `infra/helm/axiom-proof/` is the legacy AWS EKS path; GCP preprod runs on Cloud Run only. Per `Axiom-Proof_Readiness_Matrix.md` §1.3, the Helm `marketing` and `temporal-worker` Deployment templates are still missing.
-- **Custom domain mapping** (`app.axiomminds.ai`). Today preprod serves on `*.run.app`. To attach the custom domain you need to add a `google_cloud_run_domain_mapping` resource and validate ownership in Search Console.
+- **Custom domain mapping** (`app.axiomproof.ai` / `preprod-app.axiomproof.ai`). Today preprod serves on `*.run.app`. To attach the custom domain you need to add a `google_cloud_run_domain_mapping` resource and validate ownership in Search Console.
 
 ---
 

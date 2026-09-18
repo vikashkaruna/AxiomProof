@@ -58,7 +58,7 @@ Naming constraints for a bootstrapped company: must be trademark-clearable in Cl
 > ### ✅ **Recommended product name: `Axiom Proof`**
 >
 > **Full brand lockup:** _Axiom Proof — by Axiom Minds_
-> **Primary URL:** `https://axiomminds.ai/proof` (Phase 0) → `https://proof.axiomminds.ai` (Phase 2+)
+> **Primary URL:** `https://axiomproof.ai` (Workbench: `https://app.axiomproof.ai` · Corporate: `https://axiomminds.ai`)
 > **Tagline:** _"Agents do the work. You approve. The proof is automatic."_
 
 **Why this wins:**

@@ -25,7 +25,7 @@ test.describe('Security headers', () => {
   });
 
   test('the marketing site applies the security headers', async ({ request }) => {
-    const res = await request.get(`${marketingUrl}/`, { headers: { host: 'axiomminds.ai' } });
+    const res = await request.get(`${marketingUrl}/`, { headers: { host: 'axiomproof.ai' } });
     expect(res.status()).toBeLessThan(500);
     const headers = res.headers();
     expect(headers['x-frame-options']).toBe('DENY');

@@ -8,8 +8,9 @@ comprehensive [`README.md`](./README.md).
 ## Project identity
 
 - **Product:** Axiom Proof — agentic DPDPA compliance platform
+- **Product Domain:** https://axiomproof.ai (Workbench: https://app.axiomproof.ai)
 - **Company:** Axiom Minds Private Limited
-- **Domain:** https://axiomminds.ai
+- **Company Domain:** https://axiomminds.ai
 - **Tagline:** "Agents do the work. You approve. The proof is automatic."
 
 ## Hard rules (read these first)

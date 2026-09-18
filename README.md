@@ -3,8 +3,9 @@
 > Agents do the work. You approve. The proof is automatic.
 
 Axiom Proof is the **agentic DPDPA compliance platform** from
-[Axiom Minds Private Limited](https://axiomminds.ai). AI agents
-discover your personal data, assess your gaps against the
+[Axiom Minds Private Limited](https://axiomminds.ai). Product & Workbench:
+[axiomproof.ai](https://axiomproof.ai) / [app.axiomproof.ai](https://app.axiomproof.ai).
+AI agents discover your personal data, assess your gaps against the
 DPDP Act 2023 + Rules 2025, propose typed remediation plans — and
 **only after you approve**, execute them. Every action is sealed
 into a verifiable, hash-chained audit trail.
