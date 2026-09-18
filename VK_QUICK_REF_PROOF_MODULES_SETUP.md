@@ -145,10 +145,10 @@ APPROVAL_SIGNING_KEY=<at-least-32-character-development-secret>
 AGENT_RUNTIME_INTERNAL_TOKEN=<development-internal-token>
 MODEL_GATEWAY_API_KEY=<development-model-key>
 
-AWS_REGION=ap-south-1
-AWS_S3_EVIDENCE_BUCKET=axiom-proof-evidence-local
-AWS_ACCESS_KEY_ID=test
-AWS_SECRET_ACCESS_KEY=test
+AXIOM_REGION=ap-south-1
+AXIOM_EVIDENCE_BUCKET=axiom-proof-evidence-local
+AXIOM_STORAGE_ACCESS_KEY_ID=test
+AXIOM_STORAGE_SECRET_ACCESS_KEY=test
 
 FEATURE_DRY_RUN_ENGINE=true
 FEATURE_EXECUTION_ENGINE=true
@@ -393,7 +393,7 @@ FEATURE_KILL_SWITCH=true
 AXIOM_E2E_BYPASS_AUTH=false
 ```
 
-The current application variable names are `SUPABASE_DB_URL`, `AWS_S3_EVIDENCE_BUCKET`, and `TEMPORAL_ADDRESS`. Older documentation may use `DATABASE_URL`, `EVIDENCE_VAULT_BUCKET`, or `TEMPORAL_HOST_PORT`; use the names consumed by the current services.
+The canonical application variable names are `SUPABASE_DB_URL`, `AXIOM_EVIDENCE_BUCKET`, `AXIOM_REGION`, and `TEMPORAL_ADDRESS` (with backwards compatibility for `AWS_S3_EVIDENCE_BUCKET` and `AWS_REGION`). Older documentation may use `DATABASE_URL`, `EVIDENCE_VAULT_BUCKET`, or `TEMPORAL_HOST_PORT`; use the names consumed by the current services.
 
 ## 11. Production deployment sequence
 

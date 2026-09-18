@@ -148,27 +148,30 @@ Environment templates live in `infra/docker/environments/`:
 
 ### 4.1 Master Environment Variable Reference
 
-| Variable Name                   | Module              | Required In  | Description / Default                                                                            |
-| :------------------------------ | :------------------ | :----------- | :----------------------------------------------------------------------------------------------- |
-| `ENVIRONMENT`                   | All                 | All          | Deployment tier: `local`, `development`, `staging`, `preprod`, `production`.                     |
-| `NODE_ENV`                      | Web, Marketing, BFF | All          | Node runtime mode: `development` or `production`.                                                |
-| `PORT`                          | All                 | All          | Service bind port (`3000`, `3001`, `4000`, `8000`, `8001`).                                      |
-| `NEXT_PUBLIC_APP_URL`           | Web                 | All          | Public Web Workbench URL (`http://localhost:3001` or `https://app.axiomminds.ai`).               |
-| `NEXT_PUBLIC_MARKETING_URL`     | Web, Marketing      | All          | Public marketing website URL (`http://localhost:3000` or `https://axiomminds.ai`).               |
-| `NEXT_PUBLIC_SUPABASE_URL`      | Web, Marketing      | All          | Supabase HTTP gateway (`http://localhost:55321` or Supabase project URL).                        |
-| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Web, Marketing      | All          | Supabase public anon token.                                                                      |
-| `SUPABASE_SERVICE_KEY`          | BFF, Worker         | All          | Supabase service-role key (SECURITY DEFINER operations).                                         |
-| `DATABASE_URL`                  | BFF                 | Staging/Prod | Postgres connection string for direct pooled SQL execution.                                      |
-| `BFF_URL`                       | Web, Marketing      | All          | BFF API internal base URL (`http://localhost:4000` or `http://bff:4000`).                        |
-| `AGENT_RUNTIME_URL`             | BFF, Workers        | All          | Agent runtime FastAPI URL (`http://localhost:8000` or `http://agent-runtime:8000`).              |
-| `MODEL_GATEWAY_URL`             | Agents, BFF         | All          | Model Gateway FastAPI URL (`http://localhost:8001` or `http://model-gateway:8001`).              |
-| `APPROVAL_SIGNING_KEY`          | BFF, Runtime        | All          | 32-byte hex key for HMAC-SHA256 signing of human approval tokens.                                |
-| `LEDGER_ENCRYPTION_KEY`         | Ledger, BFF         | Staging/Prod | 32-byte hex key for encrypting sensitive fields in append-only audit ledger.                     |
-| `AWS_REGION`                    | All                 | All          | Must always be `ap-south-1` for DPDPA data residency compliance.                                 |
-| `EVIDENCE_VAULT_BUCKET`         | Evidence, BFF       | All          | S3 bucket name configured with Compliance Object Lock.                                           |
-| `TEMPORAL_HOST_PORT`            | Worker, BFF         | All          | Temporal frontend host:port (`localhost:7233` or Temporal Cloud endpoint).                       |
-| `TEMPORAL_NAMESPACE`            | Worker, BFF         | All          | Temporal namespace (`default` or `axiom-proof`).                                                 |
-| `AXIOM_E2E_BYPASS_AUTH`         | Web, Supabase       | Local Only   | Bypasses Supabase auth session during automated test execution. Must be `false` in staging/prod. |
+| Variable Name                     | Module              | Required In  | Description / Default                                                                            |
+| :-------------------------------- | :------------------ | :----------- | :----------------------------------------------------------------------------------------------- |
+| `ENVIRONMENT`                     | All                 | All          | Deployment tier: `local`, `development`, `staging`, `preprod`, `production`.                     |
+| `NODE_ENV`                        | Web, Marketing, BFF | All          | Node runtime mode: `development` or `production`.                                                |
+| `PORT`                            | All                 | All          | Service bind port (`3000`, `3001`, `4000`, `8000`, `8001`).                                      |
+| `NEXT_PUBLIC_APP_URL`             | Web                 | All          | Public Web Workbench URL (`http://localhost:3001` or `https://app.axiomminds.ai`).               |
+| `NEXT_PUBLIC_MARKETING_URL`       | Web, Marketing      | All          | Public marketing website URL (`http://localhost:3000` or `https://axiomminds.ai`).               |
+| `NEXT_PUBLIC_SUPABASE_URL`        | Web, Marketing      | All          | Supabase HTTP gateway (`http://localhost:55321` or Supabase project URL).                        |
+| `NEXT_PUBLIC_SUPABASE_ANON_KEY`   | Web, Marketing      | All          | Supabase public anon token.                                                                      |
+| `SUPABASE_SERVICE_KEY`            | BFF, Worker         | All          | Supabase service-role key (SECURITY DEFINER operations).                                         |
+| `DATABASE_URL`                    | BFF                 | Staging/Prod | Postgres connection string for direct pooled SQL execution.                                      |
+| `BFF_URL`                         | Web, Marketing      | All          | BFF API internal base URL (`http://localhost:4000` or `http://bff:4000`).                        |
+| `AGENT_RUNTIME_URL`               | BFF, Workers        | All          | Agent runtime FastAPI URL (`http://localhost:8000` or `http://agent-runtime:8000`).              |
+| `MODEL_GATEWAY_URL`               | Agents, BFF         | All          | Model Gateway FastAPI URL (`http://localhost:8001` or `http://model-gateway:8001`).              |
+| `APPROVAL_SIGNING_KEY`            | BFF, Runtime        | All          | 32-byte hex key for HMAC-SHA256 signing of human approval tokens.                                |
+| `LEDGER_ENCRYPTION_KEY`           | Ledger, BFF         | Staging/Prod | 32-byte hex key for encrypting sensitive fields in append-only audit ledger.                     |
+| `AXIOM_REGION`                    | All                 | All          | Sovereign region (`ap-south-1` or `asia-south1`) for DPDPA data residency compliance.            |
+| `AXIOM_EVIDENCE_BUCKET`           | Evidence, BFF       | All          | Sovereign WORM bucket name configured with Compliance Object Lock.                               |
+| `AXIOM_STORAGE_ENDPOINT`          | Evidence, BFF       | All          | S3-compatible storage endpoint URL (e.g. `https://storage.googleapis.com` or MinIO).             |
+| `AXIOM_STORAGE_ACCESS_KEY_ID`     | Evidence, BFF       | All          | Storage credentials / GCS HMAC access key.                                                       |
+| `AXIOM_STORAGE_SECRET_ACCESS_KEY` | Evidence, BFF       | All          | Storage credentials / GCS HMAC secret key.                                                       |
+| `TEMPORAL_HOST_PORT`              | Worker, BFF         | All          | Temporal frontend host:port (`localhost:7233` or Temporal Cloud endpoint).                       |
+| `TEMPORAL_NAMESPACE`              | Worker, BFF         | All          | Temporal namespace (`default` or `axiom-proof`).                                                 |
+| `AXIOM_E2E_BYPASS_AUTH`           | Web, Supabase       | Local Only   | Bypasses Supabase auth session during automated test execution. Must be `false` in staging/prod. |
 
 ---
 

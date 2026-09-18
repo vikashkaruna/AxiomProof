@@ -83,7 +83,7 @@ class SaakshiAgent(BaseAgent[SaakshiInput, SaakshiOutput]):
             filename=input.filename,
         )
 
-        bucket = self.settings.s3_evidence_bucket
+        bucket = self.settings.axiom_evidence_bucket
         # Use the provided evidence vault, or instantiate one with our settings
         vault: EvidenceVault = deps.get("evidence") or self.evidence
 

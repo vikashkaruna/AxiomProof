@@ -19,13 +19,13 @@ variable "environment" {
 variable "cloud_sql_tier" {
   description = "Compute tier for Cloud SQL PostgreSQL instance"
   type        = string
-  default     =  "db-f1-micro"  # "db-custom-2-7680" # 2 vCPU, 7.5GB RAM; can use db-f1-micro for cost saving
+  default     = "db-f1-micro" # "db-custom-2-7680" # 2 vCPU, 7.5GB RAM; can use db-f1-micro for cost saving
 }
 
 variable "cloud_sql_disk_size_gb" {
   description = "Disk size in GB for Cloud SQL instance"
   type        = number
-  default     = 10      # 20
+  default     = 10 # 20
 }
 
 variable "cloud_sql_instance_version" {

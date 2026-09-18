@@ -38,7 +38,7 @@ resource "google_storage_bucket" "evidence_vault" {
       age = var.retention_days + 30
     }
     action {
-      type = "SetStorageClass"
+      type          = "SetStorageClass"
       storage_class = "ARCHIVE"
     }
   }

@@ -31,7 +31,7 @@ resource "google_sql_database_instance" "postgres" {
       ipv4_enabled                                  = true # Public IP for dev/CI tool migrations
       private_network                               = google_compute_network.vpc.id
       enable_private_path_for_google_cloud_services = true
-      
+
       authorized_networks {
         name  = "all-authorized-clients"
         value = "0.0.0.0/0" # In preprod; can be restricted to office/VPN CIDRs

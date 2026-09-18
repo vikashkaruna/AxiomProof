@@ -21,8 +21,8 @@ resource "google_cloud_run_v2_service" "bff" {
     }
 
     scaling {
-      min_instance_count = 0  # 1
-      max_instance_count = 2  # 10
+      min_instance_count = 0 # 1
+      max_instance_count = 2 # 10
     }
 
     containers {
@@ -30,8 +30,8 @@ resource "google_cloud_run_v2_service" "bff" {
 
       resources {
         limits = {
-          cpu    = "1"        # "2"
-          memory = "1Gi"      # "2Gi"
+          cpu    = "1"   # "2"
+          memory = "1Gi" # "2Gi"
         }
       }
 
@@ -46,6 +46,10 @@ resource "google_cloud_run_v2_service" "bff" {
       env {
         name  = "ENVIRONMENT"
         value = var.environment
+      }
+      env {
+        name  = "AXIOM_REGION"
+        value = var.region
       }
       env {
         name  = "AWS_REGION"
@@ -66,6 +70,14 @@ resource "google_cloud_run_v2_service" "bff" {
       env {
         name  = "BFF_CORS_ORIGINS"
         value = "https://axiom-marketing-${var.environment}-${data.google_project.project.number}.${var.region}.run.app,https://axiom-web-${var.environment}-${data.google_project.project.number}.${var.region}.run.app,http://localhost:3000,http://localhost:3001"
+      }
+      env {
+        name  = "AXIOM_EVIDENCE_BUCKET"
+        value = google_storage_bucket.evidence_vault.name
+      }
+      env {
+        name  = "AXIOM_STORAGE_ENDPOINT"
+        value = "https://storage.googleapis.com"
       }
       env {
         name  = "AWS_S3_EVIDENCE_BUCKET"
@@ -135,6 +147,24 @@ resource "google_cloud_run_v2_service" "bff" {
         }
       }
       env {
+        name = "AXIOM_STORAGE_ACCESS_KEY_ID"
+        value_source {
+          secret_key_ref {
+            secret  = google_secret_manager_secret.secret["gcs_hmac_access_key"].secret_id
+            version = "latest"
+          }
+        }
+      }
+      env {
+        name = "AXIOM_STORAGE_SECRET_ACCESS_KEY"
+        value_source {
+          secret_key_ref {
+            secret  = google_secret_manager_secret.secret["gcs_hmac_secret_key"].secret_id
+            version = "latest"
+          }
+        }
+      }
+      env {
         name = "AWS_ACCESS_KEY_ID"
         value_source {
           secret_key_ref {
@@ -187,8 +217,8 @@ resource "google_cloud_run_v2_service" "web" {
     service_account = google_service_account.cloudrun_sa.email
 
     scaling {
-      min_instance_count = 0    # 1
-      max_instance_count = 2    # 10
+      min_instance_count = 0 # 1
+      max_instance_count = 2 # 10
     }
 
     containers {
@@ -196,8 +226,8 @@ resource "google_cloud_run_v2_service" "web" {
 
       resources {
         limits = {
-          cpu    = "1"        # "2"
-          memory = "1Gi"      # "2Gi"
+          cpu    = "1"   # "2"
+          memory = "1Gi" # "2Gi"
         }
       }
 
@@ -267,8 +297,8 @@ resource "google_cloud_run_v2_service" "agent_runtime" {
     service_account = google_service_account.cloudrun_sa.email
 
     scaling {
-      min_instance_count = 0      # 1
-      max_instance_count = 2      # 5
+      min_instance_count = 0 # 1
+      max_instance_count = 2 # 5
     }
 
     containers {
@@ -276,8 +306,8 @@ resource "google_cloud_run_v2_service" "agent_runtime" {
 
       resources {
         limits = {
-          cpu    = "1"          # "2"
-          memory = "2Gi"        # "4Gi"
+          cpu    = "1"   # "2"
+          memory = "2Gi" # "4Gi"
         }
       }
 
@@ -294,12 +324,24 @@ resource "google_cloud_run_v2_service" "agent_runtime" {
         value = "info"
       }
       env {
+        name  = "AXIOM_REGION"
+        value = var.region
+      }
+      env {
         name  = "AWS_REGION"
         value = var.region
       }
       env {
         name  = "MODEL_GATEWAY_URL"
         value = google_cloud_run_v2_service.model_gateway.uri
+      }
+      env {
+        name  = "AXIOM_EVIDENCE_BUCKET"
+        value = google_storage_bucket.evidence_vault.name
+      }
+      env {
+        name  = "AXIOM_STORAGE_ENDPOINT"
+        value = "https://storage.googleapis.com"
       }
       env {
         name  = "S3_EVIDENCE_BUCKET"
@@ -334,6 +376,24 @@ resource "google_cloud_run_v2_service" "agent_runtime" {
         value_source {
           secret_key_ref {
             secret  = google_secret_manager_secret.secret["model_gateway_api_key"].secret_id
+            version = "latest"
+          }
+        }
+      }
+      env {
+        name = "AXIOM_STORAGE_ACCESS_KEY_ID"
+        value_source {
+          secret_key_ref {
+            secret  = google_secret_manager_secret.secret["gcs_hmac_access_key"].secret_id
+            version = "latest"
+          }
+        }
+      }
+      env {
+        name = "AXIOM_STORAGE_SECRET_ACCESS_KEY"
+        value_source {
+          secret_key_ref {
+            secret  = google_secret_manager_secret.secret["gcs_hmac_secret_key"].secret_id
             version = "latest"
           }
         }
@@ -382,8 +442,8 @@ resource "google_cloud_run_v2_service" "model_gateway" {
     service_account = google_service_account.cloudrun_sa.email
 
     scaling {
-      min_instance_count = 0      # 1
-      max_instance_count = 2      # 5
+      min_instance_count = 0 # 1
+      max_instance_count = 2 # 5
     }
 
     containers {
@@ -391,8 +451,8 @@ resource "google_cloud_run_v2_service" "model_gateway" {
 
       resources {
         limits = {
-          cpu    = "1"        # "2"
-          memory = "2Gi"      # "4Gi"
+          cpu    = "1"   # "2"
+          memory = "2Gi" # "4Gi"
         }
       }
 
@@ -407,6 +467,10 @@ resource "google_cloud_run_v2_service" "model_gateway" {
       env {
         name  = "LOG_LEVEL"
         value = "info"
+      }
+      env {
+        name  = "AXIOM_REGION"
+        value = var.region
       }
       env {
         name  = "AWS_REGION"
@@ -489,8 +553,8 @@ resource "google_cloud_run_v2_service" "temporal_worker" {
     service_account = google_service_account.cloudrun_sa.email
 
     scaling {
-      min_instance_count = 0      # 1
-      max_instance_count = 2      # 3
+      min_instance_count = 0 # 1
+      max_instance_count = 2 # 3
     }
 
     containers {
@@ -498,8 +562,8 @@ resource "google_cloud_run_v2_service" "temporal_worker" {
 
       resources {
         limits = {
-          cpu    = "1"           # "1"
-          memory = "1Gi"          # "2Gi"
+          cpu    = "1"   # "1"
+          memory = "1Gi" # "2Gi"
         }
       }
 
@@ -559,8 +623,8 @@ resource "google_cloud_run_v2_service" "marketing" {
     service_account = google_service_account.cloudrun_sa.email
 
     scaling {
-      min_instance_count = 0      # 1
-      max_instance_count = 2      # 5
+      min_instance_count = 0 # 1
+      max_instance_count = 2 # 5
     }
 
     containers {
@@ -568,8 +632,8 @@ resource "google_cloud_run_v2_service" "marketing" {
 
       resources {
         limits = {
-          cpu    = "1"        # "1"
-          memory = "512Mi"      # "1Gi"      
+          cpu    = "1"     # "1"
+          memory = "512Mi" # "1Gi"      
         }
       }
 

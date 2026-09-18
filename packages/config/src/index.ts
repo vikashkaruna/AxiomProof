@@ -28,12 +28,24 @@ const EnvSchema = z
       ),
     SUPABASE_DB_URL: z.string().url().optional(),
 
-    // AWS / S3
+    // Cloud-Agnostic Storage & Evidence Vault (GCS / AWS S3 / MinIO / On-Prem)
+    AXIOM_REGION: z.string().default('ap-south-1'),
+    AXIOM_EVIDENCE_BUCKET: z.string().default('axiom-proof-evidence'),
+    AXIOM_STORAGE_ENDPOINT: z.string().url().optional(), // for GCS, MinIO, Ceph, etc.
+    AXIOM_STORAGE_ACCESS_KEY_ID: z.string().optional(),
+    AXIOM_STORAGE_SECRET_ACCESS_KEY: z.string().optional(),
+    AXIOM_PROJECT_ID: z.string().optional(),
+    AXIOM_PROJECT_NUMBER: z.string().optional(),
+
+    // Legacy / Backward Compatibility Aliases (AWS & GCP)
     AWS_REGION: z.string().default('ap-south-1'),
     AWS_ACCESS_KEY_ID: z.string().optional(),
     AWS_SECRET_ACCESS_KEY: z.string().optional(),
     AWS_S3_EVIDENCE_BUCKET: z.string().default('axiom-proof-evidence'),
-    AWS_S3_ENDPOINT: z.string().url().optional(), // for MinIO etc
+    AWS_S3_ENDPOINT: z.string().url().optional(),
+    GCP_REGION: z.string().optional(),
+    GCP_PROJECT_ID: z.string().optional(),
+    GCP_PROJECT_NUMBER: z.string().optional(),
 
     // Temporal
     TEMPORAL_ADDRESS: z.string().default('ap-south-1.aws.api.temporal.io:7233'),
@@ -141,10 +153,11 @@ const EnvSchema = z
         message: 'Valid production SUPABASE_SERVICE_KEY is required',
       });
     }
-    if (env.AWS_REGION !== 'ap-south-1' && env.AWS_REGION !== 'asia-south1') {
+    const effectiveRegion = env.AXIOM_REGION || env.AWS_REGION;
+    if (effectiveRegion !== 'ap-south-1' && effectiveRegion !== 'asia-south1') {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
-        path: ['AWS_REGION'],
+        path: ['AXIOM_REGION'],
         message: 'Production data-plane services must run in Mumbai (ap-south-1 or asia-south1)',
       });
     }
@@ -185,9 +198,62 @@ export type Env = z.infer<typeof EnvSchema>;
 
 let cached: Env | null = null;
 
+function normalizeEnv(source: NodeJS.ProcessEnv = process.env): Record<string, unknown> {
+  const norm: Record<string, unknown> = { ...source };
+
+  const region = norm.AXIOM_REGION || norm.AWS_REGION || norm.GCP_REGION || 'ap-south-1';
+  norm.AXIOM_REGION = region;
+  norm.AWS_REGION = region;
+
+  const bucket =
+    norm.AXIOM_EVIDENCE_BUCKET ||
+    norm.AWS_S3_EVIDENCE_BUCKET ||
+    norm.S3_EVIDENCE_BUCKET ||
+    'axiom-proof-evidence';
+  norm.AXIOM_EVIDENCE_BUCKET = bucket;
+  norm.AWS_S3_EVIDENCE_BUCKET = bucket;
+
+  const endpoint = norm.AXIOM_STORAGE_ENDPOINT || norm.AWS_S3_ENDPOINT || norm.S3_ENDPOINT;
+  if (endpoint !== undefined && endpoint !== '') {
+    norm.AXIOM_STORAGE_ENDPOINT = endpoint;
+    norm.AWS_S3_ENDPOINT = endpoint;
+  }
+
+  const accessKey =
+    norm.AXIOM_STORAGE_ACCESS_KEY_ID || norm.AXIOM_ACCESS_KEY_ID || norm.AWS_ACCESS_KEY_ID;
+  if (accessKey !== undefined && accessKey !== '') {
+    norm.AXIOM_STORAGE_ACCESS_KEY_ID = accessKey;
+    norm.AWS_ACCESS_KEY_ID = accessKey;
+  }
+
+  const secretKey =
+    norm.AXIOM_STORAGE_SECRET_ACCESS_KEY ||
+    norm.AXIOM_SECRET_ACCESS_KEY ||
+    norm.AWS_SECRET_ACCESS_KEY;
+  if (secretKey !== undefined && secretKey !== '') {
+    norm.AXIOM_STORAGE_SECRET_ACCESS_KEY = secretKey;
+    norm.AWS_SECRET_ACCESS_KEY = secretKey;
+  }
+
+  const projectId = norm.AXIOM_PROJECT_ID || norm.GCP_PROJECT_ID;
+  if (projectId !== undefined && projectId !== '') {
+    norm.AXIOM_PROJECT_ID = projectId;
+    norm.GCP_PROJECT_ID = projectId;
+  }
+
+  const projectNumber = norm.AXIOM_PROJECT_NUMBER || norm.GCP_PROJECT_NUMBER;
+  if (projectNumber !== undefined && projectNumber !== '') {
+    norm.AXIOM_PROJECT_NUMBER = projectNumber;
+    norm.GCP_PROJECT_NUMBER = projectNumber;
+  }
+
+  return norm;
+}
+
 export function loadEnv(source: NodeJS.ProcessEnv = process.env): Env {
   if (cached) return cached;
-  const parsed = EnvSchema.safeParse(source);
+  const normalized = normalizeEnv(source);
+  const parsed = EnvSchema.safeParse(normalized);
   if (!parsed.success) {
     const issues = parsed.error.issues
       .map((i) => `  - ${i.path.join('.')}: ${i.message}`)

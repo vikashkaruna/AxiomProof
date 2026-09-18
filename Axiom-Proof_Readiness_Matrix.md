@@ -379,27 +379,30 @@ gantt
 
 ## 7. Configuration & Secrets Reference
 
-| Variable Name                  | Component         | Tier Required  | Sensitive?   | Default / Example Value             | Production Recommendation                                  |
-| :----------------------------- | :---------------- | :------------- | :----------- | :---------------------------------- | :--------------------------------------------------------- |
-| `ENVIRONMENT`                  | All               | All            | No           | `local`                             | Set to `production` (enforces strict boot checks)          |
-| `NODE_ENV`                     | Web, Mkt, BFF     | All            | No           | `development`                       | Set to `production`                                        |
-| `AWS_REGION`                   | All               | All            | No           | `ap-south-1`                        | Must remain `ap-south-1` (residency locked)                |
-| `SUPABASE_URL`                 | Web, BFF, Runtime | All            | No           | `http://host.docker.internal:55321` | Managed Supabase URL (`https://<proj>.supabase.co`)        |
-| `NEXT_PUBLIC_SUPABASE_URL`     | Web, Marketing    | All            | No           | `http://127.0.0.1:55321`            | Publicly resolvable Supabase URL                           |
-| `SUPABASE_ANON_KEY`            | Web, Mkt, BFF     | All            | Yes (Client) | `eyJhbGci...` (dev JWT)             | Production Supabase Publishable Anon Key                   |
-| `SUPABASE_SERVICE_KEY`         | BFF, Runtime      | Staging / Prod | **CRITICAL** | `eyJhbGci...` (dev JWT)             | Injected via AWS Secrets Manager                           |
-| `APPROVAL_SIGNING_KEY`         | BFF, Runtime      | Staging / Prod | **CRITICAL** | `dev-signing-secret...`             | 256-bit random secret; rotate quarterly                    |
-| `AGENT_RUNTIME_INTERNAL_TOKEN` | BFF, Runtime      | Staging / Prod | **CRITICAL** | `dev-agent-runtime-token...`        | Injected via External Secrets Operator                     |
-| `MODEL_GATEWAY_API_KEY`        | Runtime, Gateway  | Staging / Prod | **CRITICAL** | `dev-model-gateway-key...`          | Injected via External Secrets Operator                     |
-| `MODEL_GATEWAY_URL`            | Runtime, BFF      | All            | No           | `http://model-gateway:8001`         | In-cluster Service DNS (`http://axiom-model-gateway:8001`) |
-| `AGENT_RUNTIME_URL`            | BFF, Web          | All            | No           | `http://agent-runtime:8000`         | In-cluster Service DNS (`http://axiom-agent-runtime:8000`) |
-| `AWS_S3_EVIDENCE_BUCKET`       | Saakshi, BFF      | Staging / Prod | No           | `axiom-proof-evidence-local`        | `axiom-proof-evidence-prod-ap-south-1`                     |
-| `TEMPORAL_ADDRESS`             | BFF, Runtime      | Staging / Prod | No           | `temporal:7233`                     | Temporal Cloud Endpoint in `ap-south-1`                    |
-| `TEMPORAL_NAMESPACE`           | BFF, Runtime      | All            | No           | `axiom-proof`                       | Production namespace                                       |
-| `TEMPORAL_API_KEY`             | Temporal Workers  | Staging / Prod | **CRITICAL** | `""`                                | Temporal Cloud API Key                                     |
-| `REDACT_PII`                   | Model Gateway     | All            | No           | `true`                              | Must remain `true` in all environments                     |
-| `AXIOM_E2E_BYPASS_AUTH`        | Web               | Local Only     | No           | `true`                              | **MUST BE `false` IN STAGING & PRODUCTION**                |
-| `BFF_CORS_ORIGINS`             | BFF               | Staging / Prod | No           | `http://localhost:3000,...`         | `https://axiomminds.ai,https://app.axiomminds.ai`          |
+| Variable Name                     | Component         | Tier Required  | Sensitive?   | Default / Example Value             | Production Recommendation                                  |
+| :-------------------------------- | :---------------- | :------------- | :----------- | :---------------------------------- | :--------------------------------------------------------- |
+| `ENVIRONMENT`                     | All               | All            | No           | `local`                             | Set to `production` (enforces strict boot checks)          |
+| `NODE_ENV`                        | Web, Mkt, BFF     | All            | No           | `development`                       | Set to `production`                                        |
+| `AXIOM_REGION`                    | All               | All            | No           | `ap-south-1`                        | Sovereign Mumbai region (`ap-south-1` or `asia-south1`)    |
+| `SUPABASE_URL`                    | Web, BFF, Runtime | All            | No           | `http://host.docker.internal:55321` | Managed Supabase URL (`https://<proj>.supabase.co`)        |
+| `NEXT_PUBLIC_SUPABASE_URL`        | Web, Marketing    | All            | No           | `http://127.0.0.1:55321`            | Publicly resolvable Supabase URL                           |
+| `SUPABASE_ANON_KEY`               | Web, Mkt, BFF     | All            | Yes (Client) | `eyJhbGci...` (dev JWT)             | Production Supabase Publishable Anon Key                   |
+| `SUPABASE_SERVICE_KEY`            | BFF, Runtime      | Staging / Prod | **CRITICAL** | `eyJhbGci...` (dev JWT)             | Injected via AWS Secrets Manager                           |
+| `APPROVAL_SIGNING_KEY`            | BFF, Runtime      | Staging / Prod | **CRITICAL** | `dev-signing-secret...`             | 256-bit random secret; rotate quarterly                    |
+| `AGENT_RUNTIME_INTERNAL_TOKEN`    | BFF, Runtime      | Staging / Prod | **CRITICAL** | `dev-agent-runtime-token...`        | Injected via External Secrets Operator                     |
+| `MODEL_GATEWAY_API_KEY`           | Runtime, Gateway  | Staging / Prod | **CRITICAL** | `dev-model-gateway-key...`          | Injected via External Secrets Operator                     |
+| `MODEL_GATEWAY_URL`               | Runtime, BFF      | All            | No           | `http://model-gateway:8001`         | In-cluster Service DNS (`http://axiom-model-gateway:8001`) |
+| `AGENT_RUNTIME_URL`               | BFF, Web          | All            | No           | `http://agent-runtime:8000`         | In-cluster Service DNS (`http://axiom-agent-runtime:8000`) |
+| `AXIOM_EVIDENCE_BUCKET`           | Saakshi, BFF      | Staging / Prod | No           | `axiom-proof-evidence-local`        | `axiom-proof-evidence-prod`                                |
+| `AXIOM_STORAGE_ENDPOINT`          | Saakshi, BFF      | Staging / Prod | No           | `""` (or GCS endpoint)              | Storage endpoint (e.g. `https://storage.googleapis.com`)   |
+| `AXIOM_STORAGE_ACCESS_KEY_ID`     | Saakshi, BFF      | Staging / Prod | Yes          | `""`                                | HMAC or S3 Access Key ID                                   |
+| `AXIOM_STORAGE_SECRET_ACCESS_KEY` | Saakshi, BFF      | Staging / Prod | **CRITICAL** | `""`                                | HMAC or S3 Secret Access Key                               |
+| `TEMPORAL_ADDRESS`                | BFF, Runtime      | Staging / Prod | No           | `temporal:7233`                     | Temporal Cloud Endpoint in `ap-south-1`                    |
+| `TEMPORAL_NAMESPACE`              | BFF, Runtime      | All            | No           | `axiom-proof`                       | Production namespace                                       |
+| `TEMPORAL_API_KEY`                | Temporal Workers  | Staging / Prod | **CRITICAL** | `""`                                | Temporal Cloud API Key                                     |
+| `REDACT_PII`                      | Model Gateway     | All            | No           | `true`                              | Must remain `true` in all environments                     |
+| `AXIOM_E2E_BYPASS_AUTH`           | Web               | Local Only     | No           | `true`                              | **MUST BE `false` IN STAGING & PRODUCTION**                |
+| `BFF_CORS_ORIGINS`                | BFF               | Staging / Prod | No           | `http://localhost:3000,...`         | `https://axiomminds.ai,https://app.axiomminds.ai`          |
 
 ---
 

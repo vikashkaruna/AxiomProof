@@ -56,6 +56,50 @@ describe('loadEnv', () => {
     });
     expect(envStaging.ENVIRONMENT).toBe('staging');
   });
+
+  it('resolves primary AXIOM_* storage variables and mirrors to legacy AWS_* aliases', () => {
+    resetEnvCache();
+    const env = loadEnv({
+      AXIOM_REGION: 'asia-south1',
+      AXIOM_EVIDENCE_BUCKET: 'custom-evidence-bucket',
+      AXIOM_STORAGE_ENDPOINT: 'https://storage.googleapis.com',
+      AXIOM_STORAGE_ACCESS_KEY_ID: 'GOOG12345',
+      AXIOM_STORAGE_SECRET_ACCESS_KEY: 'secret12345',
+      AXIOM_PROJECT_ID: 'axiom-proof-preprod',
+    });
+
+    expect(env.AXIOM_REGION).toBe('asia-south1');
+    expect(env.AWS_REGION).toBe('asia-south1');
+    expect(env.AXIOM_EVIDENCE_BUCKET).toBe('custom-evidence-bucket');
+    expect(env.AWS_S3_EVIDENCE_BUCKET).toBe('custom-evidence-bucket');
+    expect(env.AXIOM_STORAGE_ENDPOINT).toBe('https://storage.googleapis.com');
+    expect(env.AWS_S3_ENDPOINT).toBe('https://storage.googleapis.com');
+    expect(env.AXIOM_STORAGE_ACCESS_KEY_ID).toBe('GOOG12345');
+    expect(env.AWS_ACCESS_KEY_ID).toBe('GOOG12345');
+    expect(env.AXIOM_STORAGE_SECRET_ACCESS_KEY).toBe('secret12345');
+    expect(env.AWS_SECRET_ACCESS_KEY).toBe('secret12345');
+    expect(env.AXIOM_PROJECT_ID).toBe('axiom-proof-preprod');
+    expect(env.GCP_PROJECT_ID).toBe('axiom-proof-preprod');
+  });
+
+  it('accepts legacy AWS_* variables and mirrors them to AXIOM_* variables', () => {
+    resetEnvCache();
+    const env = loadEnv({
+      AWS_REGION: 'ap-south-1',
+      AWS_S3_EVIDENCE_BUCKET: 'legacy-bucket',
+      AWS_S3_ENDPOINT: 'https://storage.googleapis.com',
+      AWS_ACCESS_KEY_ID: 'AWS123',
+      AWS_SECRET_ACCESS_KEY: 'AWSSEC123',
+      GCP_PROJECT_ID: 'legacy-gcp-project',
+    });
+
+    expect(env.AXIOM_REGION).toBe('ap-south-1');
+    expect(env.AXIOM_EVIDENCE_BUCKET).toBe('legacy-bucket');
+    expect(env.AXIOM_STORAGE_ENDPOINT).toBe('https://storage.googleapis.com');
+    expect(env.AXIOM_STORAGE_ACCESS_KEY_ID).toBe('AWS123');
+    expect(env.AXIOM_STORAGE_SECRET_ACCESS_KEY).toBe('AWSSEC123');
+    expect(env.AXIOM_PROJECT_ID).toBe('legacy-gcp-project');
+  });
 });
 
 describe('BRAND', () => {

@@ -7,7 +7,7 @@ import os
 from functools import lru_cache
 from typing import Literal
 
-from pydantic import Field, model_validator
+from pydantic import AliasChoices, Field, model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -43,12 +43,72 @@ class Settings(BaseSettings):
     )
     supabase_db_url: str | None = None
 
-    # ─── AWS / S3 ───────────────────────────────────────────────────
-    aws_region: str = "ap-south-1"
-    aws_access_key_id: str | None = None
-    aws_secret_access_key: str | None = None
-    s3_evidence_bucket: str = "axiom-proof-evidence"
-    s3_endpoint: str | None = None  # for MinIO / R2 in dev
+    # ─── Cloud-Agnostic Storage & Evidence Vault ───────────────────
+    axiom_region: str = Field(
+        default="ap-south-1",
+        validation_alias=AliasChoices("AXIOM_REGION", "AWS_REGION", "GCP_REGION"),
+        description="Regional data residency (ap-south-1 or asia-south1)",
+    )
+    axiom_storage_access_key_id: str | None = Field(
+        default=None,
+        validation_alias=AliasChoices(
+            "AXIOM_STORAGE_ACCESS_KEY_ID", "AXIOM_ACCESS_KEY_ID", "AWS_ACCESS_KEY_ID"
+        ),
+        description="Access key for S3 / GCS HMAC / MinIO",
+    )
+    axiom_storage_secret_access_key: str | None = Field(
+        default=None,
+        validation_alias=AliasChoices(
+            "AXIOM_STORAGE_SECRET_ACCESS_KEY", "AXIOM_SECRET_ACCESS_KEY", "AWS_SECRET_ACCESS_KEY"
+        ),
+        description="Secret key for S3 / GCS HMAC / MinIO",
+    )
+    axiom_evidence_bucket: str = Field(
+        default="axiom-proof-evidence",
+        validation_alias=AliasChoices(
+            "AXIOM_EVIDENCE_BUCKET",
+            "AXIOM_STORAGE_BUCKET",
+            "S3_EVIDENCE_BUCKET",
+            "AWS_S3_EVIDENCE_BUCKET",
+        ),
+        description="Sovereign WORM evidence vault bucket name",
+    )
+    axiom_storage_endpoint: str | None = Field(
+        default=None,
+        validation_alias=AliasChoices(
+            "AXIOM_STORAGE_ENDPOINT", "S3_ENDPOINT", "AWS_S3_ENDPOINT"
+        ),
+        description="S3-compatible storage endpoint URL (GCS, MinIO, etc.)",
+    )
+    axiom_project_id: str | None = Field(
+        default=None,
+        validation_alias=AliasChoices("AXIOM_PROJECT_ID", "GCP_PROJECT_ID"),
+    )
+    axiom_project_number: str | None = Field(
+        default=None,
+        validation_alias=AliasChoices("AXIOM_PROJECT_NUMBER", "GCP_PROJECT_NUMBER"),
+    )
+
+    # ─── Backward Compatibility Properties ────────────────────────
+    @property
+    def aws_region(self) -> str:
+        return self.axiom_region
+
+    @property
+    def aws_access_key_id(self) -> str | None:
+        return self.axiom_storage_access_key_id
+
+    @property
+    def aws_secret_access_key(self) -> str | None:
+        return self.axiom_storage_secret_access_key
+
+    @property
+    def s3_evidence_bucket(self) -> str:
+        return self.axiom_evidence_bucket
+
+    @property
+    def s3_endpoint(self) -> str | None:
+        return self.axiom_storage_endpoint
 
     # ─── Model Gateway ─────────────────────────────────────────────
     # Internal: the gateway is self-hosted on the same EKS cluster.
@@ -88,7 +148,7 @@ class Settings(BaseSettings):
                 raise ValueError("Valid production SUPABASE_URL is required")
             if not self.supabase_service_key or self.supabase_service_key.startswith("eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS1kZW1v"):
                 raise ValueError("Valid production SUPABASE_SERVICE_KEY is required")
-            if self.aws_region not in ("ap-south-1", "asia-south1"):
+            if self.axiom_region not in ("ap-south-1", "asia-south1"):
                 raise ValueError("Production data-plane services must run in Mumbai (ap-south-1 or asia-south1)")
             if not self.internal_token:
                 raise ValueError("INTERNAL_TOKEN is required in production")

@@ -59,16 +59,21 @@ class EvidenceVault:
     def __init__(self, settings: Settings | None = None):
         s = settings or get_settings()
         self._settings = s
-        self._is_gcs = bool(s.s3_endpoint and "storage.googleapis.com" in s.s3_endpoint)
+        endpoint = s.axiom_storage_endpoint or s.s3_endpoint
+        self._is_gcs = bool(endpoint and "storage.googleapis.com" in endpoint)
+        region = s.axiom_region or s.aws_region
+        access_key = s.axiom_storage_access_key_id or s.aws_access_key_id
+        secret_key = s.axiom_storage_secret_access_key or s.aws_secret_access_key
+
         kwargs: dict[str, Any] = {
-            "region_name": s.aws_region,
+            "region_name": region,
             "config": Config(signature_version="s3v4"),
         }
-        if s.aws_access_key_id and s.aws_secret_access_key:
-            kwargs["aws_access_key_id"] = s.aws_access_key_id
-            kwargs["aws_secret_access_key"] = s.aws_secret_access_key
-        if s.s3_endpoint:
-            kwargs["endpoint_url"] = s.s3_endpoint
+        if access_key and secret_key:
+            kwargs["aws_access_key_id"] = access_key
+            kwargs["aws_secret_access_key"] = secret_key
+        if endpoint:
+            kwargs["endpoint_url"] = endpoint
         self._s3 = boto3.client("s3", **kwargs)
 
     def seal(self, input: SealInput) -> SealedEvidence:

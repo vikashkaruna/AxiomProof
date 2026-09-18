@@ -231,7 +231,7 @@ To satisfy **Hard Rule 4** and statutory DPDPA auditability requirements (Sectio
    - Authentication is backed by a dedicated GCP Service Account (`axiom-preprod-storage-sa`) with a generated HMAC key pair (`google_storage_hmac_key`).
    - HMAC credentials are automatically deposited into Google Secret Manager and mounted into `axiom-bff` and `axiom-agent-runtime`.
 3. **Multi-Cloud Client Layer (`@axiom/evidence` & `axiom.evidence_client`)**:
-   - When `S3_ENDPOINT` points to `storage.googleapis.com`, the runtime automatically targets GCS S3 interoperability.
+   - When `AXIOM_STORAGE_ENDPOINT` (or legacy `S3_ENDPOINT`) points to `storage.googleapis.com`, the runtime automatically targets GCS S3 interoperability.
    - Immutability is enforced natively by the GCS bucket retention lock without sending unsupported AWS-specific request headers (`x-amz-object-lock-*`), providing seamless portability between AWS S3 Object Lock and Google Cloud Storage Bucket Lock.
 
 ---
