@@ -743,6 +743,7 @@ must reach Step 14 (Ledger Verification) and return `intact: true`.
 | Local Docker parity (for testing)    | `infra/docker/docker-compose.preprod.yml` + `infra/docker/environments/.env.preprod` (structure: `.env.preprod.example`) |
 | Firebase hosting config              | `firebase.json` + `apps/marketing/out` (built by `scripts/deploy-firebase-marketing.sh`)                                 |
 | Live logs                            | `gcloud run services logs read axiom-bff-preprod --region asia-south1 --follow`                                          |
+| Evidence Storage Credentials (HMAC)  | `docs/GCP_PREPROD_DEPLOYMENT_GUIDE.md` (Step 3.5) + `terraform output -raw gcs_hmac_secret`                              |
 | DB & Auth Architecture Analysis      | [Section 8](#8-architectural-deep-dive-supabase-vs-cloud-sql-dual-setup--future-alternatives)                            |
 
 ---

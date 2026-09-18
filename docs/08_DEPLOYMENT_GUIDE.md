@@ -173,6 +173,65 @@ Environment templates live in `infra/docker/environments/`:
 | `TEMPORAL_NAMESPACE`              | Worker, BFF         | All          | Temporal namespace (`default` or `axiom-proof`).                                                 |
 | `AXIOM_E2E_BYPASS_AUTH`           | Web, Supabase       | Local Only   | Bypasses Supabase auth session during automated test execution. Must be `false` in staging/prod. |
 
+### 4.1 Getting and Updating Evidence Storage Credentials (`AXIOM_STORAGE_ACCESS_KEY_ID` & `AXIOM_STORAGE_SECRET_ACCESS_KEY`)
+
+The Evidence Vault client (`@axiom/evidence` and `axiom.evidence_client`) seals immutable audit evidence to S3-compatible object storage across clouds and on-prem deployments.
+
+#### A. Google Cloud Platform (Preprod & Prod)
+
+In GCP, access is provided via Google Cloud Storage S3-interoperability HMAC keys attached to the storage service account (`axiom-<env>-storage-sa`).
+
+- **How to GET the values**:
+  - From Terraform outputs:
+    ```bash
+    cd infra/terraform/envs/preprod
+    terraform output -raw gcs_hmac_access_id
+    terraform output -raw gcs_hmac_secret
+    ```
+  - From Google Secret Manager:
+    ```bash
+    gcloud secrets versions access latest --secret="axiom-preprod-gcs-hmac-access-key" --project="axiom-proof"
+    gcloud secrets versions access latest --secret="axiom-preprod-gcs-hmac-secret-key" --project="axiom-proof"
+    ```
+  - Using the `gcloud storage hmac` CLI:
+    ```bash
+    gcloud storage hmac list --service-account=axiom-preprod-storage-sa@axiom-proof.iam.gserviceaccount.com --project=axiom-proof
+    ```
+- **How to UPDATE the values**:
+  - In `.env.preprod`: Set `AXIOM_STORAGE_ACCESS_KEY_ID=<access_id>` and `AXIOM_STORAGE_SECRET_ACCESS_KEY=<secret>`.
+  - In Cloud Run: **No manual update required.** `cloudrun.tf` dynamically mounts both keys from Secret Manager.
+  - To rotate: Run `terraform taint google_storage_hmac_key.s3_compat_key && terraform apply`.
+
+#### B. Local Development & On-Premise (MinIO)
+
+In local and on-premise environments, MinIO provides S3-compatible storage with default development credentials.
+
+- **How to GET the values**:
+  - Pre-configured defaults in `docker-compose.yml`:
+    - `AXIOM_STORAGE_ACCESS_KEY_ID=minioadmin`
+    - `AXIOM_STORAGE_SECRET_ACCESS_KEY=minioadmin`
+    - `AXIOM_STORAGE_ENDPOINT=http://localhost:9000` (or `http://minio:9000` inside Docker)
+  - Custom MinIO setup: Navigate to MinIO Console (`http://localhost:9001`) > **Identity > Service Accounts / Access Keys** to create or view keys.
+- **How to UPDATE the values**:
+  - Edit `.env.local` or `.env.staging` (or `.env.onprem`) with the desired Access Key and Secret.
+
+#### C. Amazon Web Services (AWS S3)
+
+In AWS deployments, standard IAM User or Role credentials with S3 Object Lock permissions are used.
+
+- **How to GET the values**:
+  - Generate an IAM access key pair:
+    ```bash
+    aws iam create-access-key --user-name axiom-evidence-vault-sa
+    ```
+- **How to UPDATE the values**:
+  - In `.env.production`:
+    ```dotenv
+    AXIOM_STORAGE_ENDPOINT=https://s3.ap-south-1.amazonaws.com
+    AXIOM_STORAGE_ACCESS_KEY_ID=AKIA...
+    AXIOM_STORAGE_SECRET_ACCESS_KEY=...
+    ```
+
 ---
 
 ## 5. Deployment Procedures by Environment

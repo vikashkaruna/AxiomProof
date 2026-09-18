@@ -234,6 +234,77 @@ To satisfy **Hard Rule 4** and statutory DPDPA auditability requirements (Sectio
    - When `AXIOM_STORAGE_ENDPOINT` (or legacy `S3_ENDPOINT`) points to `storage.googleapis.com`, the runtime automatically targets GCS S3 interoperability.
    - Immutability is enforced natively by the GCS bucket retention lock without sending unsupported AWS-specific request headers (`x-amz-object-lock-*`), providing seamless portability between AWS S3 Object Lock and Google Cloud Storage Bucket Lock.
 
+### Step 3.5: Managing Evidence Storage Credentials (`AXIOM_STORAGE_ACCESS_KEY_ID` & `AXIOM_STORAGE_SECRET_ACCESS_KEY`)
+
+The Evidence Vault client (`@axiom/evidence` and `axiom.evidence_client`) connects to the GCS S3-compatible XML API via an HMAC key pair assigned to the `axiom-preprod-storage-sa` Service Account.
+
+#### How to GET the Values
+
+1. **Directly from Terraform Outputs (Recommended)**:
+   The preprod Terraform configuration automatically provisions the HMAC key pair and outputs both identifiers:
+
+   ```bash
+   cd infra/terraform/envs/preprod
+
+   # Retrieve the Access Key ID (GOOG1E...)
+   terraform output -raw gcs_hmac_access_id
+
+   # Retrieve the Secret Key (sensitive output)
+   terraform output -raw gcs_hmac_secret
+   ```
+
+2. **From Google Secret Manager**:
+   Terraform automatically deposits these into Secret Manager:
+
+   ```bash
+   # Retrieve Access Key ID
+   gcloud secrets versions access latest --secret="axiom-preprod-gcs-hmac-access-key" --project="axiom-proof"
+
+   # Retrieve Secret Access Key
+   gcloud secrets versions access latest --secret="axiom-preprod-gcs-hmac-secret-key" --project="axiom-proof"
+   ```
+
+3. **Using `gcloud storage hmac` CLI**:
+   ```bash
+   # List active HMAC keys for the storage service account
+   gcloud storage hmac list \
+     --service-account=axiom-preprod-storage-sa@axiom-proof.iam.gserviceaccount.com \
+     --project=axiom-proof
+
+   # Generate a new HMAC key pair (Secret is only displayed once upon creation):
+   gcloud storage hmac create \
+     axiom-preprod-storage-sa@axiom-proof.iam.gserviceaccount.com \
+     --project=axiom-proof
+   ```
+
+#### How to UPDATE the Values
+
+1. **In Local `.env.preprod` (for local CLI / migration / test runs targeting preprod)**:
+   Update `.env.preprod` with the retrieved values:
+
+   ```dotenv
+   AXIOM_STORAGE_ENDPOINT=https://storage.googleapis.com
+   AXIOM_STORAGE_ACCESS_KEY_ID=<value from terraform output -raw gcs_hmac_access_id>
+   AXIOM_STORAGE_SECRET_ACCESS_KEY=<value from terraform output -raw gcs_hmac_secret>
+   ```
+
+2. **In Cloud Run Deployments (Zero Manual Action Required)**:
+   Cloud Run services (`bff`, `agent_runtime`, `model_gateway`) automatically mount these variables directly from Google Secret Manager (`cloudrun.tf` mounts `axiom-preprod-gcs-hmac-access-key` and `axiom-preprod-gcs-hmac-secret-key`). When Terraform applies, Cloud Run resolves the latest secret version dynamically.
+
+3. **Rotating the HMAC Key**:
+   To rotate the HMAC credentials safely:
+   ```bash
+   cd infra/terraform/envs/preprod
+
+   # Taint the existing HMAC key to trigger generation of a new one
+   terraform taint google_storage_hmac_key.s3_compat_key
+
+   # Apply to recreate key and update Secret Manager versions
+   terraform apply -target=google_storage_hmac_key.s3_compat_key \
+                   -target=google_secret_manager_secret_version.version[\"gcs_hmac_access_key\"] \
+                   -target=google_secret_manager_secret_version.version[\"gcs_hmac_secret_key\"]
+   ```
+
 ---
 
 ## 4. Cloud SQL PostgreSQL Database Migrations & Seeding
