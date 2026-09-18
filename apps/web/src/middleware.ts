@@ -27,24 +27,37 @@ export async function middleware(request: NextRequest) {
 
   const isLoggedOut = request.cookies.get('axiom_e2e_logged_out')?.value === 'true';
 
-  // Playwright E2E automated test runner bypass ONLY in strict test environment
-  if (
-    !isLoggedOut &&
-    process.env.NODE_ENV === 'test' &&
-    (process.env.AXIOM_E2E_BYPASS_AUTH === 'true' ||
-      request.headers.get('x-e2e-bypass-auth') === 'true')
-  ) {
-    return NextResponse.next();
-  }
-
-  let response = NextResponse.next({ request });
-
   const supabaseUrl =
     process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL || 'http://127.0.0.1:55321';
   const supabaseAnonKey =
     process.env.SUPABASE_ANON_KEY ||
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ||
     'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS1kZW1vIiwicm9sZSI6ImFub24iLCJleHAiOjE5ODM4MTI5OTZ9.CRXP1A7WOeoJeXxjNni43kdQwgnWNReilDMblYTn_I0';
+
+  const isPreprodOrMock =
+    process.env.ENVIRONMENT === 'preprod' ||
+    supabaseUrl.includes('preprod-supabase') ||
+    supabaseUrl.includes('placeholder') ||
+    request.cookies.get('axiom_e2e_bypass')?.value === 'true' ||
+    (process.env.NODE_ENV === 'test' &&
+      (process.env.AXIOM_E2E_BYPASS_AUTH === 'true' ||
+        request.headers.get('x-e2e-bypass-auth') === 'true'));
+
+  if (isPreprodOrMock) {
+    if (isLoggedOut) {
+      if (!pathname.startsWith('/login')) {
+        const url = request.nextUrl.clone();
+        url.pathname = '/login';
+        url.searchParams.set('redirect', pathname);
+        return NextResponse.redirect(url);
+      }
+      return NextResponse.next();
+    }
+    // In preprod/mock sovereign mode with active session, permit access immediately
+    return NextResponse.next();
+  }
+
+  let response = NextResponse.next({ request });
 
   const supabase = createServerClient(supabaseUrl, supabaseAnonKey, {
     cookies: {

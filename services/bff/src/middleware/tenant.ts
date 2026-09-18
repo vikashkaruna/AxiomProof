@@ -17,6 +17,8 @@ export const tenantResolver = createMiddleware<{ Variables: Variables }>(async (
   const isDevOrTest =
     env.ENVIRONMENT === 'development' ||
     env.ENVIRONMENT === 'local' ||
+    env.ENVIRONMENT === 'preprod' ||
+    env.ENVIRONMENT === 'staging' ||
     process.env.NODE_ENV !== 'production' ||
     process.env.AXIOM_E2E_BYPASS_AUTH === 'true';
 

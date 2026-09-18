@@ -107,7 +107,7 @@ for entry in "${SERVICES[@]}"; do
   fi
 
   echo -e "\n▶ Building [${SVC_NAME}] using ${DOCKERFILE} (platform: linux/amd64)..."
-  docker build --platform linux/amd64 --provenance=false "${BUILD_ARGS[@]}" -f "${DOCKERFILE}" -t "${LOCAL_TAG}" -t "${IMAGE_URI}" .
+  docker build --platform linux/amd64 --provenance=false ${BUILD_ARGS[@]+"${BUILD_ARGS[@]}"} -f "${DOCKERFILE}" -t "${LOCAL_TAG}" -t "${IMAGE_URI}" .
 
   if [ "${PUSH_IMAGES:-false}" = "true" ] || [ "${1:-}" != "" ]; then
     echo "  Pushing ${IMAGE_URI}..."

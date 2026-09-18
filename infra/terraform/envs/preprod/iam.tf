@@ -53,3 +53,19 @@ resource "google_cloud_run_v2_service_iam_member" "bff_public" {
   role     = "roles/run.invoker"
   member   = "allUsers" # Public for API endpoints & CORS
 }
+
+resource "google_cloud_run_v2_service_iam_member" "agent_runtime_public" {
+  project  = var.project_id
+  location = var.region
+  name     = google_cloud_run_v2_service.agent_runtime.name
+  role     = "roles/run.invoker"
+  member   = "allUsers" # Internal service protected via X-Internal-Token header
+}
+
+resource "google_cloud_run_v2_service_iam_member" "model_gateway_public" {
+  project  = var.project_id
+  location = var.region
+  name     = google_cloud_run_v2_service.model_gateway.name
+  role     = "roles/run.invoker"
+  member   = "allUsers" # Internal gateway protected via bearer token
+}

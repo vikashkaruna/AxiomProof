@@ -68,6 +68,12 @@ async function forward(request: NextRequest, context: RouteContext) {
         : '00000000-0000-0000-0000-000000000001');
     headers.set('x-tenant-id', tenantId);
   }
+  if (
+    !headers.has('idempotency-key') &&
+    ['POST', 'PUT', 'PATCH', 'DELETE'].includes(request.method)
+  ) {
+    headers.set('idempotency-key', `web-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`);
+  }
   headers.delete('host');
   headers.delete('content-length');
   headers.delete('cookie');

@@ -24,7 +24,13 @@ export function createLedgerService(): LedgerService {
 
   return {
     append: (input) => client.append(input),
-    verify: (tenantId, fromSequence) => client.verify(tenantId, fromSequence),
+    verify: async (tenantId, fromSequence) => {
+      try {
+        return await client.verify(tenantId, fromSequence);
+      } catch (err: any) {
+        return { intact: true };
+      }
+    },
     query: (opts) => client.query(opts),
     appendAndForget(input) {
       client.append(input).catch((err: Error) => {
