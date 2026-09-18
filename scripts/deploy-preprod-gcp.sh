@@ -296,6 +296,42 @@ heal_cloudsql_state_if_needed() {
   cd "$REPO_ROOT"
 }
 
+# Self-Healing Secret Manager State Resolver (Prevents 409 Conflict if secrets already exist in GCP)
+heal_secret_manager_state_if_needed() {
+  local tf_dir="infra/terraform/envs/preprod"
+  cd "$tf_dir"
+
+  local secrets=(
+    "resend_api_key"
+    "db_password"
+    "db_url"
+    "upstash_redis_url"
+    "anthropic_api_key"
+    "openai_api_key"
+    "gemini_api_key"
+    "approval_signing_key"
+    "agent_runtime_internal_token"
+    "model_gateway_api_key"
+    "temporal_api_key"
+    "gcs_hmac_access_key"
+    "gcs_hmac_secret_key"
+  )
+
+  if command -v gcloud >/dev/null 2>&1; then
+    for sec_key in "${secrets[@]}"; do
+      local sec_id="axiom-${ENV}-${sec_key//_/-}"
+      if ! terraform state list 2>/dev/null | grep -q "google_secret_manager_secret\.secret\[\"${sec_key}\"\]"; then
+        if gcloud secrets describe "$sec_id" --project="$PROJECT_ID" >/dev/null 2>&1; then
+          info "Importing pre-existing secret '${sec_id}' into Terraform state to prevent 409 Conflict..."
+          terraform import "google_secret_manager_secret.secret[\"${sec_key}\"]" "projects/${PROJECT_ID}/secrets/${sec_id}" >/dev/null 2>&1 || true
+        fi
+      fi
+    done
+  fi
+
+  cd "$REPO_ROOT"
+}
+
 
 # ─── Phase 1: Prerequisites & APIs ────────────────────────────────────────────
 if should_run_phase "prep"; then
@@ -409,6 +445,7 @@ if should_run_phase "db"; then
   
   # Step 3a: Run self-healing check on state
   heal_cloudsql_state_if_needed
+  heal_secret_manager_state_if_needed
 
   cd "infra/terraform/envs/preprod"
   terraform init
