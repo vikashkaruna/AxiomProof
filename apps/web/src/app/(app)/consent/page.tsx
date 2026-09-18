@@ -51,6 +51,8 @@ export default function ConsentPage() {
     },
   ]);
 
+  const [saveSuccess, setSaveSuccess] = useState(false);
+
   const togglePurpose = (id: string) => {
     setPurposes((prev) =>
       prev.map((p) => {
@@ -60,6 +62,13 @@ export default function ConsentPage() {
         return p;
       }),
     );
+  };
+
+  const handleSavePreferences = () => {
+    setSaveSuccess(true);
+    setTimeout(() => {
+      setSaveSuccess(false);
+    }, 4500);
   };
 
   const isEn = lang === 'en';
@@ -280,12 +289,39 @@ export default function ConsentPage() {
               ))}
             </div>
 
+            {saveSuccess && (
+              <div className="rounded-lg border border-teal-300 bg-[#E5FAF7] p-2.5 text-xs text-[#0a6b61] flex items-center justify-between animate-in fade-in-0 duration-150">
+                <div className="flex items-center gap-1.5 font-semibold">
+                  <span>✓</span>
+                  <span>
+                    {isEn
+                      ? 'Consent preferences updated and written to Lekha WORM ledger.'
+                      : 'सहमति प्राथमिकताएं अद्यतन की गईं और लेखा WORM बही में दर्ज की गईं।'}
+                  </span>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setSaveSuccess(false)}
+                  className="text-xs font-bold opacity-60 hover:opacity-100 cursor-pointer p-0.5"
+                >
+                  ✕
+                </button>
+              </div>
+            )}
+
             <button
               type="button"
-              onClick={() => alert('Consent preferences updated and written to Lekha WORM ledger.')}
-              className="w-full rounded-lg bg-[#0FB5A5] py-2.5 text-center text-xs font-bold text-white shadow-xs transition-all hover:bg-[#0a8d80]"
+              onClick={handleSavePreferences}
+              className="w-full rounded-lg bg-[#0FB5A5] py-2.5 text-center text-xs font-bold text-white shadow-xs transition-all hover:bg-[#0a8d80] cursor-pointer flex items-center justify-center gap-1.5"
             >
-              {isEn ? 'Save consent preferences' : 'सहमति प्राथमिकताएं सहेजें'}
+              {saveSuccess ? (
+                <>
+                  <span>✓</span>
+                  <span>{isEn ? 'Preferences Saved & Sealed' : 'प्राथमिकताएं सहेजी गईं'}</span>
+                </>
+              ) : (
+                <span>{isEn ? 'Save consent preferences' : 'सहमति प्राथमिकताएं सहेजें'}</span>
+              )}
             </button>
             <div className="text-center font-mono text-[9.5px] text-[#8a909b]">
               every grant/withdrawal → consent ledger · Lekha

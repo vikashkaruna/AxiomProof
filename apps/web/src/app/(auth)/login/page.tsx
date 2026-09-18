@@ -88,6 +88,7 @@ export default async function LoginPage({
           )}
 
           <form action={isSignup ? signupAction : loginAction} className="mt-6 flex flex-col gap-4">
+            <input type="hidden" name="redirect" value={resolvedSearchParams.redirect || ''} />
             {isSignup && (
               <div className="flex flex-col gap-1.5">
                 <Label htmlFor="full_name" required>

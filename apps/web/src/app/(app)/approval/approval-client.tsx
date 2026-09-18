@@ -53,6 +53,22 @@ export function ApprovalConsoleClient({ initialActions }: { initialActions: Acti
   const [deferDuration, setDeferDuration] = useState('24 Hours');
   const [deferNotes, setDeferNotes] = useState<Record<string, string>>({});
 
+  // Load persisted statuses from localStorage
+  useEffect(() => {
+    try {
+      const savedStatuses = localStorage.getItem('axiom_approval_statuses');
+      if (savedStatuses) {
+        setStatuses(JSON.parse(savedStatuses));
+      }
+      const savedNotes = localStorage.getItem('axiom_defer_notes');
+      if (savedNotes) {
+        setDeferNotes(JSON.parse(savedNotes));
+      }
+    } catch {
+      // ignore
+    }
+  }, []);
+
   // Auto-dismiss outcome banner after 8 seconds
   useEffect(() => {
     if (!outcome) return;
@@ -112,6 +128,9 @@ export function ApprovalConsoleClient({ initialActions }: { initialActions: Acti
     setStatuses((prev) => {
       const next = { ...prev };
       for (const id of ids) next[id] = st;
+      try {
+        localStorage.setItem('axiom_approval_statuses', JSON.stringify(next));
+      } catch {}
       return next;
     });
   };
@@ -190,6 +209,9 @@ export function ApprovalConsoleClient({ initialActions }: { initialActions: Acti
       for (const id of deferringIds) {
         next[id] = `${deferReason} · Snoozed for ${deferDuration}`;
       }
+      try {
+        localStorage.setItem('axiom_defer_notes', JSON.stringify(next));
+      } catch {}
       return next;
     });
     setSelected({});
@@ -744,83 +766,87 @@ export function ApprovalConsoleClient({ initialActions }: { initialActions: Acti
       {/* DEFER MODAL                                                  */}
       {/* ============================================================ */}
       {deferModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 animate-in fade-in-0 duration-150 backdrop-blur-xs">
-          <div className="w-full max-w-md rounded-2xl bg-white p-6 shadow-xl border border-slate-200 space-y-4">
-            <div className="flex items-center justify-between pb-2 border-b border-slate-100">
-              <div className="flex items-center gap-2">
-                <span className="text-amber-600 text-lg">⏸</span>
-                <h3 className="text-base font-bold text-[#1E2A4A]">
-                  Defer Remediation Action ({deferringIds.length})
-                </h3>
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 animate-in fade-in-0 duration-150 backdrop-blur-xs overflow-y-auto">
+          <div className="relative w-full max-w-md rounded-2xl bg-white p-6 shadow-2xl border border-slate-200 space-y-4 my-8 max-h-[90vh] flex flex-col justify-between">
+            <div>
+              <div className="flex items-center justify-between pb-2 border-b border-slate-100">
+                <div className="flex items-center gap-2">
+                  <span className="text-amber-600 text-lg">⏸</span>
+                  <h3 className="text-base font-bold text-[#1E2A4A]">
+                    Defer Remediation Action ({deferringIds.length})
+                  </h3>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setDeferModalOpen(false)}
+                  className="text-slate-400 hover:text-slate-600 text-sm font-bold p-1 cursor-pointer"
+                >
+                  ✕
+                </button>
               </div>
-              <button
-                onClick={() => setDeferModalOpen(false)}
-                className="text-slate-400 hover:text-slate-600 text-sm font-bold"
-              >
-                ✕
-              </button>
+
+              <p className="mt-3 text-xs text-slate-600 leading-relaxed">
+                Deferring places the action in a snoozed state. It temporarily suspends automated
+                execution without rejecting the remediation finding.
+              </p>
+
+              <div className="mt-4 space-y-3">
+                <div>
+                  <label className="text-xs font-semibold text-slate-700">Deferral Reason</label>
+                  <select
+                    value={deferReason}
+                    onChange={(e) => setDeferReason(e.target.value)}
+                    className="mt-1 w-full rounded-lg border border-slate-300 bg-white p-2 text-xs text-slate-800 focus:border-teal-500 focus:outline-none"
+                  >
+                    <option value="Scheduled for off-peak maintenance window (Saturday 02:00 IST)">
+                      Scheduled for off-peak maintenance window (Saturday 02:00 IST)
+                    </option>
+                    <option value="Awaiting Data Protection Officer (DPO) legal sign-off">
+                      Awaiting Data Protection Officer (DPO) legal sign-off
+                    </option>
+                    <option value="Requires secondary blast-radius staging test">
+                      Requires secondary blast-radius staging test
+                    </option>
+                    <option value="Dependency on upstream core banking / ERP freeze">
+                      Dependency on upstream core banking / ERP freeze
+                    </option>
+                    <option value="Pending statutory filing review under DPDPA Rule 8">
+                      Pending statutory filing review under DPDPA Rule 8
+                    </option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="text-xs font-semibold text-slate-700">Deferral Duration</label>
+                  <select
+                    value={deferDuration}
+                    onChange={(e) => setDeferDuration(e.target.value)}
+                    className="mt-1 w-full rounded-lg border border-slate-300 bg-white p-2 text-xs text-slate-800 focus:border-teal-500 focus:outline-none"
+                  >
+                    <option value="24 Hours">24 Hours (Next Day Review)</option>
+                    <option value="72 Hours">72 Hours (Weekend Window)</option>
+                    <option value="7 Days">7 Days (Next Compliance Sprint)</option>
+                    <option value="Until Next Board Meeting">Until Next Board Meeting</option>
+                  </select>
+                </div>
+              </div>
             </div>
 
-            <p className="text-xs text-slate-600 leading-relaxed">
-              Deferring places the action in a snoozed state. It temporarily suspends automated
-              execution without rejecting the remediation finding.
-            </p>
-
-            <div className="space-y-3">
-              <div>
-                <label className="text-xs font-semibold text-slate-700">Deferral Reason</label>
-                <select
-                  value={deferReason}
-                  onChange={(e) => setDeferReason(e.target.value)}
-                  className="mt-1 w-full rounded-lg border border-slate-300 bg-white p-2 text-xs text-slate-800 focus:border-teal-500 focus:outline-none"
-                >
-                  <option value="Scheduled for off-peak maintenance window (Saturday 02:00 IST)">
-                    Scheduled for off-peak maintenance window (Saturday 02:00 IST)
-                  </option>
-                  <option value="Awaiting Data Protection Officer (DPO) legal sign-off">
-                    Awaiting Data Protection Officer (DPO) legal sign-off
-                  </option>
-                  <option value="Requires secondary blast-radius staging test">
-                    Requires secondary blast-radius staging test
-                  </option>
-                  <option value="Dependency on upstream core banking / ERP freeze">
-                    Dependency on upstream core banking / ERP freeze
-                  </option>
-                  <option value="Pending statutory filing review under DPDPA Rule 8">
-                    Pending statutory filing review under DPDPA Rule 8
-                  </option>
-                </select>
-              </div>
-
-              <div>
-                <label className="text-xs font-semibold text-slate-700">Deferral Duration</label>
-                <select
-                  value={deferDuration}
-                  onChange={(e) => setDeferDuration(e.target.value)}
-                  className="mt-1 w-full rounded-lg border border-slate-300 bg-white p-2 text-xs text-slate-800 focus:border-teal-500 focus:outline-none"
-                >
-                  <option value="24 Hours">24 Hours (Next Day Review)</option>
-                  <option value="72 Hours">72 Hours (Weekend Window)</option>
-                  <option value="7 Days">7 Days (Next Compliance Sprint)</option>
-                  <option value="Until Next Board Meeting">Until Next Board Meeting</option>
-                </select>
-              </div>
-            </div>
-
-            <div className="flex justify-end gap-2 pt-2 border-t border-slate-100">
+            <div className="flex items-center justify-end gap-2.5 pt-3 border-t border-slate-100 mt-2">
               <button
                 type="button"
                 onClick={() => setDeferModalOpen(false)}
-                className="rounded-lg border border-slate-200 px-4 py-2 text-xs font-semibold text-slate-600 hover:bg-slate-50"
+                className="rounded-lg border border-slate-300 bg-white px-4 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50 transition-colors cursor-pointer"
               >
                 Cancel
               </button>
               <button
                 type="button"
                 onClick={confirmDefer}
-                className="rounded-lg bg-amber-600 hover:bg-amber-700 px-4 py-2 text-xs font-bold text-white shadow-xs"
+                className="rounded-lg bg-amber-600 hover:bg-amber-700 px-4 py-2 text-xs font-bold text-white shadow-xs transition-colors cursor-pointer flex items-center gap-1.5"
               >
-                Confirm Deferral
+                <span>⏸</span>
+                <span>Confirm Deferral ({deferringIds.length})</span>
               </button>
             </div>
           </div>

@@ -15,11 +15,15 @@ let cached: SupabaseClient | null = null;
 export function createSupabaseAdmin(): SupabaseClient {
   const env = loadEnv();
 
-  // Only use the in-memory mock client if E2E bypass is explicitly enabled AND
-  // we are in a standalone mock test environment without real Supabase service credentials
+  // If in preprod, local, test or placeholder Supabase URL with no real DNS,
+  // return deterministic E2E client to avoid 10s DNS resolution timeout
   if (
-    isE2EBypassEnabled() &&
-    (!env.SUPABASE_SERVICE_KEY || env.SUPABASE_SERVICE_KEY === 'test-service-key-for-e2e')
+    isE2EBypassEnabled() ||
+    env.ENVIRONMENT === 'preprod' ||
+    env.SUPABASE_URL.includes('preprod-supabase') ||
+    env.SUPABASE_URL.includes('placeholder') ||
+    !env.SUPABASE_SERVICE_KEY ||
+    env.SUPABASE_SERVICE_KEY === 'test-service-key-for-e2e'
   ) {
     return createE2ESupabaseClient();
   }

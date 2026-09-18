@@ -11,10 +11,10 @@ export default function HomePage() {
             <AxiomLogo size="sm" theme="light" showSubtitle={true} />
           </Link>
           <nav className="flex items-center gap-2">
-            <Button variant="ghost" size="sm" asChild={false}>
+            <Button variant="ghost" size="sm" asChild>
               <Link href="/login">Sign in</Link>
             </Button>
-            <Button variant="accent" size="sm" asChild={false}>
+            <Button variant="accent" size="sm" asChild>
               <Link href="/dashboard">Open App</Link>
             </Button>
           </nav>
@@ -32,10 +32,10 @@ export default function HomePage() {
         </p>
 
         <div className="mt-10 flex flex-wrap items-center justify-center gap-3">
-          <Button variant="accent" size="lg" asChild={false}>
+          <Button variant="accent" size="lg" asChild>
             <Link href="/workbench">Open the Workbench</Link>
           </Button>
-          <Button variant="outline" size="lg" asChild={false}>
+          <Button variant="outline" size="lg" asChild>
             <Link href="/portal">Client Portal</Link>
           </Button>
         </div>

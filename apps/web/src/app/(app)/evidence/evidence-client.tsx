@@ -48,11 +48,45 @@ export function EvidenceClient({ initialEvidence, vaultStats }: EvidenceClientPr
     );
   });
 
+  const [artifactViewerOpen, setArtifactViewerOpen] = useState(false);
   const [exportFeedback, setExportFeedback] = useState<string | null>(null);
 
   const handleVerify = () => {
     setVerifiedHash(true);
     setTimeout(() => setVerifiedHash(false), 3000);
+  };
+
+  const handleDownloadArtifact = (item: EvidenceItem) => {
+    const content = {
+      artifact_id: item.id,
+      title: item.title,
+      description: item.desc,
+      evidence_type: item.type,
+      storage_uri: item.s3,
+      sha256_content_hash: item.fullHash,
+      timestamp: item.ts,
+      satisfies_controls: item.links,
+      vault_parameters: {
+        region: 'ap-south-1 (Mumbai)',
+        object_lock_mode: 'COMPLIANCE',
+        retention_years: 7,
+        tamper_evident: true,
+      },
+      sealed_evidence_payload: {
+        attestation: `Cryptographically sealed by Saakshi Agent under DPDPA 2023 §8(5).`,
+        chain_proof: `sha256:${item.fullHash}`,
+        status: 'IMMUTABLE_WORM_SEALED',
+      },
+    };
+    const blob = new Blob([JSON.stringify(content, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `axiom-evidence-${item.id}.json`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
   };
 
   const handleExportEvidencePack = () => {
@@ -80,7 +114,7 @@ export function EvidenceClient({ initialEvidence, vaultStats }: EvidenceClientPr
         demonstratesControlIds: e.links,
         byteSize: e.byteSize || 10240,
         collectorAgent: e.agent || 'saakshi',
-        wormLockDurationDays: 365,
+        wormLockDurationDays: 365 * 7,
       })),
     };
 
@@ -89,14 +123,14 @@ export function EvidenceClient({ initialEvidence, vaultStats }: EvidenceClientPr
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `axiom-evidence-pack-dpb-${new Date().toISOString().slice(0, 10)}.json`;
+    a.download = `axiom-all-evidences-combined-dossier-${new Date().toISOString().slice(0, 10)}.json`;
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
     URL.revokeObjectURL(url);
 
     setExportFeedback(
-      `Auditor evidence pack exported successfully (${evidenceList.length} WORM-sealed artifacts). Cryptographic SHA-256 seal verified.`,
+      `All ${evidenceList.length} WORM-sealed evidence artifacts combined and exported into statutory dossier with SHA-256 proof seals.`,
     );
   };
 
@@ -144,7 +178,7 @@ export function EvidenceClient({ initialEvidence, vaultStats }: EvidenceClientPr
               onClick={handleExportEvidencePack}
               className="rounded-[9px] bg-[#0FB5A5] hover:bg-[#0da294] text-white text-xs font-bold py-2.5 px-4 shadow-sm transition-all cursor-pointer flex items-center gap-1.5"
             >
-              <span>⬇</span> Export evidence pack (DPB)
+              <span>⬇</span> Download All Evidences (Combined Dossier)
             </button>
           </div>
         </div>
@@ -363,26 +397,124 @@ export function EvidenceClient({ initialEvidence, vaultStats }: EvidenceClientPr
               </div>
             )}
 
-            <div className="pt-3 border-t border-slate-100 flex gap-2">
+            <div className="pt-3 border-t border-slate-100 flex flex-wrap gap-2">
               <button
                 type="button"
                 onClick={handleVerify}
-                className="flex-1 py-2 px-3 bg-[#1E2A4A] hover:bg-[#283863] text-white rounded-md text-xs font-semibold transition-colors"
+                className="flex-1 py-2 px-3 bg-[#1E2A4A] hover:bg-[#283863] text-white rounded-md text-xs font-semibold transition-colors cursor-pointer"
               >
                 Verify hash
               </button>
-              <a
-                href={selectedItem.s3}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="py-2 px-3 bg-white border border-slate-300 hover:bg-slate-50 text-slate-700 rounded-md text-xs font-semibold transition-colors"
+              <button
+                type="button"
+                onClick={() => handleDownloadArtifact(selectedItem)}
+                className="py-2 px-3 bg-white border border-slate-300 hover:bg-slate-50 text-slate-700 rounded-md text-xs font-semibold transition-colors flex items-center gap-1 cursor-pointer"
+                title="Download JSON artifact"
               >
-                Open S3
-              </a>
+                <span>⬇</span>
+                <span>Download</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => setArtifactViewerOpen(true)}
+                className="py-2 px-3 bg-teal-50 border border-teal-300 hover:bg-teal-100 text-teal-800 rounded-md text-xs font-semibold transition-colors flex items-center gap-1 cursor-pointer"
+                title="Inspect artifact contents and cryptographic seal"
+              >
+                <span>👁</span>
+                <span>View</span>
+              </button>
             </div>
           </div>
         )}
       </div>
+
+      {/* ============================================================ */}
+      {/* 5. ARTIFACT CONTENT & WORM SEAL VIEWER MODAL                 */}
+      {/* ============================================================ */}
+      {artifactViewerOpen && selectedItem && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 animate-in fade-in-0 duration-150 backdrop-blur-xs overflow-y-auto">
+          <div className="relative w-full max-w-2xl rounded-2xl bg-white p-6 shadow-2xl border border-slate-200 space-y-4 my-8 max-h-[90vh] flex flex-col justify-between">
+            <div className="flex items-center justify-between pb-3 border-b border-slate-100">
+              <div className="flex items-center gap-2">
+                <span className="text-[#C9A227] text-lg">✦</span>
+                <h3 className="text-base font-bold text-[#1E2A4A]">
+                  Evidence Artifact: {selectedItem.id}
+                </h3>
+              </div>
+              <button
+                type="button"
+                onClick={() => setArtifactViewerOpen(false)}
+                className="text-slate-400 hover:text-slate-600 text-sm font-bold p-1 cursor-pointer"
+              >
+                ✕
+              </button>
+            </div>
+
+            <div className="space-y-3 overflow-y-auto pr-1">
+              <div>
+                <h4 className="text-sm font-semibold text-slate-900">{selectedItem.title}</h4>
+                <p className="text-xs text-slate-600 mt-1">{selectedItem.desc}</p>
+              </div>
+
+              <div className="rounded-xl border border-slate-200 bg-slate-50 p-3 space-y-2 text-xs font-mono">
+                <div className="flex justify-between">
+                  <span className="text-slate-500">Storage URI:</span>
+                  <span className="text-indigo-700 font-semibold">{selectedItem.s3}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-slate-500">Vault Location:</span>
+                  <span className="text-teal-700">AWS S3 ap-south-1 (Mumbai)</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-slate-500">WORM Lock:</span>
+                  <span className="text-emerald-700 font-semibold">Object Lock (Compliance Mode)</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-slate-500">SHA-256 Digest:</span>
+                  <span className="text-slate-800 break-all">{selectedItem.fullHash}</span>
+                </div>
+              </div>
+
+              <div>
+                <span className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider">
+                  Satisfies Controls
+                </span>
+                <div className="flex flex-wrap gap-1.5 mt-1">
+                  {selectedItem.links.map((link) => (
+                    <span
+                      key={link}
+                      className="font-mono text-xs bg-[#e6f7f5] text-[#0a8d80] px-2 py-0.5 rounded font-medium"
+                    >
+                      {link}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            <div className="flex items-center justify-end gap-2.5 pt-3 border-t border-slate-100">
+              <button
+                type="button"
+                onClick={() => setArtifactViewerOpen(false)}
+                className="rounded-lg border border-slate-300 bg-white px-4 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50 transition-colors cursor-pointer"
+              >
+                Close
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  handleDownloadArtifact(selectedItem);
+                  setArtifactViewerOpen(false);
+                }}
+                className="rounded-lg bg-[#0FB5A5] hover:bg-[#0da294] px-4 py-2 text-xs font-bold text-white shadow-xs transition-colors cursor-pointer flex items-center gap-1.5"
+              >
+                <span>⬇</span>
+                <span>Download Sealed Artifact</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

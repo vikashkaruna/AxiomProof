@@ -21,8 +21,8 @@ resource "google_cloud_run_v2_service" "bff" {
     }
 
     scaling {
-      min_instance_count = 0 # 1
-      max_instance_count = 2 # 10
+      min_instance_count = 1
+      max_instance_count = 2
     }
 
     containers {
@@ -217,8 +217,8 @@ resource "google_cloud_run_v2_service" "web" {
     service_account = google_service_account.cloudrun_sa.email
 
     scaling {
-      min_instance_count = 0 # 1
-      max_instance_count = 2 # 10
+      min_instance_count = 1
+      max_instance_count = 2
     }
 
     containers {
@@ -226,8 +226,8 @@ resource "google_cloud_run_v2_service" "web" {
 
       resources {
         limits = {
-          cpu    = "1"   # "2"
-          memory = "1Gi" # "2Gi"
+          cpu    = "2"
+          memory = "2Gi"
         }
       }
 
@@ -297,8 +297,8 @@ resource "google_cloud_run_v2_service" "agent_runtime" {
     service_account = google_service_account.cloudrun_sa.email
 
     scaling {
-      min_instance_count = 0 # 1
-      max_instance_count = 2 # 5
+      min_instance_count = 1
+      max_instance_count = 2
     }
 
     containers {

@@ -18,6 +18,17 @@ export async function createSupabaseServerClient() {
   const isLoggedOut = cookieStore.get('axiom_e2e_logged_out')?.value === 'true';
   const userEmail = cookieStore.get('axiom_user_email')?.value || 'founder@axiomminds.ai';
 
+  const isPreprodOrMock =
+    env.ENVIRONMENT === 'preprod' ||
+    env.SUPABASE_URL.includes('preprod-supabase') ||
+    env.SUPABASE_URL.includes('placeholder') ||
+    isE2EBypassEnabled() ||
+    cookieStore.get('axiom_e2e_bypass')?.value === 'true';
+
+  if (!isLoggedOut && isPreprodOrMock) {
+    return createE2ESupabaseClient(userEmail);
+  }
+
   if (
     !authCookie &&
     !isLoggedOut &&

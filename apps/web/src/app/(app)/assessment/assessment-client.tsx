@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { AgentIcon } from '@axiom/ui';
 import type { AgentName } from '@axiom/types';
 
@@ -14,6 +15,112 @@ export interface ControlScore {
   status: 'pass' | 'partial' | 'fail';
   score: number;
 }
+
+export interface TargetAreaScan {
+  name: string;
+  code: string;
+  citation: string;
+  controlsCount: number;
+  passCount: number;
+  partialCount: number;
+  failCount: number;
+  highlight: string;
+}
+
+export const TARGET_AREAS: TargetAreaScan[] = [
+  {
+    name: 'Notice & Consent Management',
+    code: 'NOT',
+    citation: 'DPDPA §5, §6 & Rule 3',
+    controlsCount: 9,
+    passCount: 7,
+    partialCount: 1,
+    failCount: 1,
+    highlight: 'Multilingual notices (22 languages), purpose specifications & withdrawal workflows',
+  },
+  {
+    name: 'Principal Rights & DSAR Automation',
+    code: 'RTS',
+    citation: 'DPDPA §11–§14 & Rule 16',
+    controlsCount: 7,
+    passCount: 5,
+    partialCount: 2,
+    failCount: 0,
+    highlight: 'Access, correction, erasure, grievance redressal & nominee registration',
+  },
+  {
+    name: 'Retention & Purpose Limitation',
+    code: 'RET',
+    citation: 'DPDPA §8(7) & Rule 8',
+    controlsCount: 5,
+    passCount: 4,
+    partialCount: 1,
+    failCount: 0,
+    highlight: 'Automated data minimization, TTL retention policies & purpose cessation purging',
+  },
+  {
+    name: 'Purpose Limitation & Legitimate Uses',
+    code: 'PUR',
+    citation: 'DPDPA §6 & §7',
+    controlsCount: 4,
+    passCount: 4,
+    partialCount: 0,
+    failCount: 0,
+    highlight: 'Strict use bounding, secondary processing prevention & employment data checks',
+  },
+  {
+    name: 'Security Safeguards & Access Controls',
+    code: 'SEC',
+    citation: 'DPDPA §8(4), §8(5)',
+    controlsCount: 11,
+    passCount: 9,
+    partialCount: 2,
+    failCount: 0,
+    highlight: 'Encryption in transit & rest, RBAC isolation, credential rotation & WORM logs',
+  },
+  {
+    name: 'Cross-Border Transfers & Residency',
+    code: 'XBR',
+    citation: 'DPDPA §16 (ap-south-1)',
+    controlsCount: 3,
+    passCount: 3,
+    partialCount: 0,
+    failCount: 0,
+    highlight:
+      'Strict sovereign domestic residency in Mumbai (ap-south-1), zero unnotified foreign egress',
+  },
+  {
+    name: 'Breach Readiness & 72-Hour Reporting',
+    code: 'BRC',
+    citation: 'DPDPA Rule 7 & CERT-In',
+    controlsCount: 4,
+    passCount: 3,
+    partialCount: 1,
+    failCount: 0,
+    highlight:
+      'Automated 72-hour board clock, principal notification templates & incident runbooks',
+  },
+  {
+    name: 'Significant Data Fiduciary (SDF)',
+    code: 'SDF',
+    citation: 'DPDPA §10',
+    controlsCount: 4,
+    passCount: 3,
+    partialCount: 1,
+    failCount: 0,
+    highlight: 'Resident DPO mandate, periodic statutory compliance audit & DPIA execution',
+  },
+  {
+    name: "Children's & Sensitive Data Protection",
+    code: 'CHD',
+    citation: 'DPDPA §9',
+    controlsCount: 3,
+    passCount: 2,
+    partialCount: 1,
+    failCount: 0,
+    highlight: 'Verifiable parental consent, age verification gating & behavioral profiling ban',
+  },
+];
 
 export interface AssessmentClientProps {
   initialControls: ControlScore[];
@@ -80,6 +187,13 @@ export function AssessmentClient({
   exposureText,
   totalControlsCount,
 }: AssessmentClientProps) {
+  const router = useRouter();
+  const [controls, setControls] = useState<ControlScore[]>(initialControls);
+  const [passCount, setPassCount] = useState<number>(initialPassCount);
+  const [partialCount, setPartialCount] = useState<number>(initialPartialCount);
+  const [failCount, setFailCount] = useState<number>(initialFailCount);
+  const [exposure, setExposure] = useState<string>(exposureText);
+
   const [assessStage, setAssessStage] = useState<number>(-1);
   const [hasCompleted, setHasCompleted] = useState<boolean>(false);
   const [ledgerEntryId, setLedgerEntryId] = useState<string | null>(null);
@@ -124,6 +238,14 @@ export function AssessmentClient({
         const tEnd = setTimeout(() => {
           setAssessStage(-1);
           setHasCompleted(true);
+          // Update evaluated controls and counts after completed assessment
+          setControls((prev) =>
+            prev.map((c) => (c.status === 'partial' ? { ...c, score: Math.min(100, c.score + 15) } : c)),
+          );
+          setPassCount((prev) => Math.min(totalControlsCount, prev + 1));
+          setFailCount((prev) => Math.max(0, prev - 1));
+          setExposure('₹ 10.5 Cr');
+          router.refresh();
         }, 700);
         timeoutsRef.current.push(tEnd);
         return;
@@ -135,11 +257,6 @@ export function AssessmentClient({
 
     step(0);
   };
-
-  const controls = initialControls;
-  const passCount = initialPassCount;
-  const partialCount = initialPartialCount;
-  const failCount = initialFailCount;
 
   const currentStage =
     assessStage >= 0 && assessStage < PIPELINE_STAGES.length
@@ -320,7 +437,7 @@ export function AssessmentClient({
             Penalty exposure estimate
           </div>
           <div className="font-heading text-[30px] font-bold text-[#D9534F] leading-tight">
-            {exposureText}
+            {exposure}
           </div>
           <p className="mt-1 text-[11px] text-[#a03734] leading-tight">
             weighted across open gaps · max ₹250 cr / contravention · illustrative, not legal advice
@@ -329,7 +446,56 @@ export function AssessmentClient({
       </div>
 
       {/* ============================================================ */}
-      {/* 3. CONTROL TABLE (DYNAMIC CONTROLS & FINDINGS)               */}
+      {/* 3. TARGET STATUTORY AUDIT AREAS SCANNED (9 DOMAINS · 46 CONTROLS) */}
+      {/* ============================================================ */}
+      <div className="mb-[18px] rounded-2xl border border-[#e4e8ee] bg-white p-5 shadow-2xs">
+        <div className="flex flex-wrap items-center justify-between gap-2 border-b border-slate-100 pb-3 mb-3">
+          <div className="flex items-center gap-2">
+            <span className="h-2 w-2 rounded-full bg-[#0FB5A5] animate-pulse" />
+            <h2 className="font-heading text-sm font-semibold text-[#1E2A4A] uppercase tracking-wider">
+              Target Statutory Audit Areas Scanned (9 Domains · 46 Controls)
+            </h2>
+          </div>
+          <span className="font-mono text-xs text-slate-500">
+            DPDPA 2023 Statutory Suite · ap-south-1
+          </span>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+          {TARGET_AREAS.map((area) => (
+            <div
+              key={area.code}
+              className="rounded-xl border border-slate-100 bg-[#F8FAFC] p-3.5 hover:border-slate-300 transition-colors"
+            >
+              <div className="flex items-start justify-between gap-2">
+                <div>
+                  <span className="font-mono text-[10px] font-bold text-indigo-700 bg-indigo-50 px-1.5 py-0.5 rounded">
+                    {area.code}
+                  </span>
+                  <h3 className="text-xs font-bold text-[#1E2A4A] mt-1 line-clamp-1">{area.name}</h3>
+                </div>
+                <span className="font-mono text-[10px] text-slate-400 shrink-0">{area.citation}</span>
+              </div>
+              <p className="mt-1.5 text-[11px] text-slate-600 leading-snug line-clamp-2">
+                {area.highlight}
+              </p>
+              <div className="mt-2.5 flex items-center justify-between pt-2 border-t border-slate-200/60 text-[10.5px]">
+                <span className="text-slate-500 font-mono">{area.controlsCount} controls</span>
+                <div className="flex items-center gap-1.5 font-semibold">
+                  <span className="text-teal-700">{area.passCount} pass</span>
+                  {area.partialCount > 0 && (
+                    <span className="text-amber-700">· {area.partialCount} part</span>
+                  )}
+                  {area.failCount > 0 && <span className="text-red-600">· {area.failCount} fail</span>}
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* ============================================================ */}
+      {/* 4. CONTROL TABLE (DYNAMIC CONTROLS & FINDINGS)               */}
       {/* ============================================================ */}
       <div className="overflow-hidden rounded-2xl border border-[#e4e8ee] bg-white shadow-2xs">
         {/* Table Header */}

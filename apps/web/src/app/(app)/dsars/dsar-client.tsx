@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { AgentIcon } from '@axiom/ui';
 
 export interface DsarItem {
@@ -32,17 +32,79 @@ export function DsarClient({ initialDsars, stats }: DsarClientProps) {
   const [dsarList, setDsarList] = useState<DsarItem[]>(initialDsars.length > 0 ? initialDsars : []);
   const [selId, setSelId] = useState<string>(dsarList[0]?.id || 'DSAR-2026-088');
 
+  // New DSAR Modal State
+  const [newModalOpen, setNewModalOpen] = useState(false);
+  const [newPrincipal, setNewPrincipal] = useState('');
+  const [newType, setNewType] = useState('Access');
+  const [newEmail, setNewEmail] = useState('');
+  const [newPhone, setNewPhone] = useState('');
+  const [newSystems, setNewSystems] = useState(3);
+  const [newNotes, setNewNotes] = useState('');
+  const [toastMessage, setToastMessage] = useState<string | null>(null);
+
+  // Sync with localStorage so stage changes persist across reloads
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem('axiom_dsar_items');
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          setDsarList(parsed);
+          setSelId(parsed[0].id);
+        }
+      }
+    } catch {}
+  }, []);
+
   const selectedDsar = dsarList.find((d) => d.id === selId) || dsarList[0];
 
   const handleAdvance = (id: string) => {
-    setDsarList((prev) =>
-      prev.map((d) => {
+    setDsarList((prev) => {
+      const next = prev.map((d) => {
         if (d.id === id && d.stage < 4) {
           return { ...d, stage: d.stage + 1 };
         }
         return d;
-      }),
-    );
+      });
+      try {
+        localStorage.setItem('axiom_dsar_items', JSON.stringify(next));
+      } catch {}
+      return next;
+    });
+  };
+
+  const handleCreateDsar = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newPrincipal.trim()) return;
+
+    const newId = `DSAR-2026-0${Math.floor(90 + Math.random() * 900)}`;
+    const created: DsarItem = {
+      id: newId,
+      principal: newPrincipal.trim(),
+      type: newType,
+      email: newEmail.trim() || undefined,
+      phone: newPhone.trim() || undefined,
+      stage: 0,
+      slaDays: 30,
+      systems: Number(newSystems) || 3,
+      receivedAt: 'Just now',
+      notes: newNotes.trim() || undefined,
+    };
+
+    const updated = [created, ...dsarList];
+    setDsarList(updated);
+    setSelId(newId);
+    try {
+      localStorage.setItem('axiom_dsar_items', JSON.stringify(updated));
+    } catch {}
+
+    setNewModalOpen(false);
+    setNewPrincipal('');
+    setNewEmail('');
+    setNewPhone('');
+    setNewNotes('');
+    setToastMessage(`DSAR ${newId} for ${created.principal} successfully logged into intake.`);
+    setTimeout(() => setToastMessage(null), 4000);
   };
 
   const currentStage = selectedDsar?.stage ?? 0;
@@ -99,14 +161,29 @@ export function DsarClient({ initialDsars, stats }: DsarClientProps) {
           <div className="flex items-center gap-2.5">
             <button
               type="button"
-              onClick={() => alert('New DSAR intake modal opens here.')}
-              className="rounded-[9px] bg-[#0FB5A5] hover:bg-[#0da294] text-white text-xs font-bold py-2.5 px-4 shadow-sm transition-all"
+              onClick={() => setNewModalOpen(true)}
+              className="rounded-[9px] bg-[#0FB5A5] hover:bg-[#0da294] text-white text-xs font-bold py-2.5 px-4 shadow-sm transition-all cursor-pointer"
             >
               + Log new DSAR
             </button>
           </div>
         </div>
       </div>
+
+      {toastMessage && (
+        <div className="flex items-center justify-between rounded-xl border border-teal-300 bg-[#E5FAF7] p-3 text-xs text-[#04322d] shadow-sm animate-in fade-in-0 duration-150">
+          <div className="flex items-center gap-2">
+            <span>✓</span>
+            <span className="font-semibold">{toastMessage}</span>
+          </div>
+          <button
+            onClick={() => setToastMessage(null)}
+            className="text-xs font-bold opacity-60 hover:opacity-100 cursor-pointer"
+          >
+            ✕
+          </button>
+        </div>
+      )}
 
       {/* ============================================================ */}
       {/* 2. OPEN REQUESTS & THIS MONTH CARDS                          */}
@@ -315,6 +392,126 @@ export function DsarClient({ initialDsars, stats }: DsarClientProps) {
           </div>
         )}
       </div>
+
+      {/* ============================================================ */}
+      {/* 4. NEW DSAR INTAKE MODAL                                     */}
+      {/* ============================================================ */}
+      {newModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 animate-in fade-in-0 duration-150 backdrop-blur-xs overflow-y-auto">
+          <div className="relative w-full max-w-md rounded-2xl bg-white p-6 shadow-2xl border border-slate-200 space-y-4 my-8 max-h-[90vh] overflow-y-auto">
+            <div className="flex items-center justify-between pb-2 border-b border-slate-100">
+              <div className="flex items-center gap-2">
+                <span className="text-[#0FB5A5] text-lg font-bold">+</span>
+                <h3 className="text-base font-bold text-[#1E2A4A]">Log New DSAR Request</h3>
+              </div>
+              <button
+                type="button"
+                onClick={() => setNewModalOpen(false)}
+                className="text-slate-400 hover:text-slate-600 text-sm font-bold p-1 cursor-pointer"
+              >
+                ✕
+              </button>
+            </div>
+
+            <p className="text-xs text-slate-600 leading-relaxed">
+              Log a statutory Data Principal Rights request under DPDPA 2023 §11–§14. Initiates the
+              30-day compliance SLA clock.
+            </p>
+
+            <form onSubmit={handleCreateDsar} className="space-y-3.5">
+              <div>
+                <label className="text-xs font-semibold text-slate-700">Data Principal Full Name *</label>
+                <input
+                  type="text"
+                  required
+                  value={newPrincipal}
+                  onChange={(e) => setNewPrincipal(e.target.value)}
+                  placeholder="e.g. Priya Sengupta"
+                  className="mt-1 w-full rounded-lg border border-slate-300 bg-white p-2 text-xs text-slate-800 focus:border-teal-500 focus:outline-none"
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="text-xs font-semibold text-slate-700">Request Type *</label>
+                  <select
+                    value={newType}
+                    onChange={(e) => setNewType(e.target.value)}
+                    className="mt-1 w-full rounded-lg border border-slate-300 bg-white p-2 text-xs text-slate-800 focus:border-teal-500 focus:outline-none"
+                  >
+                    <option value="Access">Access (§11)</option>
+                    <option value="Erasure">Erasure (§12)</option>
+                    <option value="Correction">Correction (§12)</option>
+                    <option value="Nomination">Nomination (§14)</option>
+                    <option value="Grievance">Grievance (§13)</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="text-xs font-semibold text-slate-700">Target Systems</label>
+                  <input
+                    type="number"
+                    min={1}
+                    max={20}
+                    value={newSystems}
+                    onChange={(e) => setNewSystems(Number(e.target.value))}
+                    className="mt-1 w-full rounded-lg border border-slate-300 bg-white p-2 text-xs text-slate-800 focus:border-teal-500 focus:outline-none"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="text-xs font-semibold text-slate-700">Contact Email</label>
+                <input
+                  type="email"
+                  value={newEmail}
+                  onChange={(e) => setNewEmail(e.target.value)}
+                  placeholder="priya.sengupta@example.com"
+                  className="mt-1 w-full rounded-lg border border-slate-300 bg-white p-2 text-xs text-slate-800 focus:border-teal-500 focus:outline-none"
+                />
+              </div>
+
+              <div>
+                <label className="text-xs font-semibold text-slate-700">Mobile Phone (e-KYC / OTP)</label>
+                <input
+                  type="tel"
+                  value={newPhone}
+                  onChange={(e) => setNewPhone(e.target.value)}
+                  placeholder="+91 98765 43210"
+                  className="mt-1 w-full rounded-lg border border-slate-300 bg-white p-2 text-xs text-slate-800 focus:border-teal-500 focus:outline-none"
+                />
+              </div>
+
+              <div>
+                <label className="text-xs font-semibold text-slate-700">Request Scope & Notes</label>
+                <textarea
+                  rows={2}
+                  value={newNotes}
+                  onChange={(e) => setNewNotes(e.target.value)}
+                  placeholder="Specific accounts, transaction records, or telemetry to retrieve or purge..."
+                  className="mt-1 w-full rounded-lg border border-slate-300 bg-white p-2 text-xs text-slate-800 focus:border-teal-500 focus:outline-none"
+                />
+              </div>
+
+              <div className="flex items-center justify-end gap-2.5 pt-3 border-t border-slate-100">
+                <button
+                  type="button"
+                  onClick={() => setNewModalOpen(false)}
+                  className="rounded-lg border border-slate-300 bg-white px-4 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50 transition-colors cursor-pointer"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="rounded-lg bg-[#0FB5A5] hover:bg-[#0da294] px-4 py-2 text-xs font-bold text-white shadow-xs transition-colors cursor-pointer"
+                >
+                  Log DSAR & Start 30d Clock
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
