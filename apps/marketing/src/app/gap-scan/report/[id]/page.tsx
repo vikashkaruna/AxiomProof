@@ -17,12 +17,14 @@ import { GapScanReportSchema } from '@axiom/types';
 import { BRAND } from '@axiom/config';
 import { CONTROL_LIBRARY_COUNT } from '@axiom/control-library';
 
-export const dynamic = 'force-dynamic';
+export async function generateStaticParams() {
+  return [{ id: 'preview' }];
+}
 
 export default async function GapScanReportPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
 
-  if (process.env.NEXT_OUTPUT === 'export') {
+  if (id === 'preview' || process.env.NEXT_OUTPUT === 'export') {
     return (
       <div className="mx-auto flex min-h-screen max-w-4xl flex-col gap-8 px-4 py-12 sm:px-6">
         <Link href="/" className="text-sm text-slate-500 hover:text-indigo-500">
