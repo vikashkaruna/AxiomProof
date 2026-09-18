@@ -13,9 +13,9 @@ The Terraform plan has already been applied. The following resources exist live 
 
 | Resource                                    | Live value                                                                  | Status                     |
 | ------------------------------------------- | --------------------------------------------------------------------------- | -------------------------- |
-| `axiom-bff-preprod`                         | `https://axiom-bff-preprod-188516662106.asia-south1.run.app`               | ✅ 200 OK on `/health`     |
-| `axiom-web-preprod`                         | `https://axiom-web-preprod-188516662106.asia-south1.run.app`               | ✅ 200 OK on `/api/health` |
-| `axiom-marketing-preprod`                   | `https://axiom-marketing-preprod-188516662106.asia-south1.run.app`         | ✅ 200 OK on `/api/health` |
+| `axiom-bff-preprod`                         | `https://axiom-bff-preprod-188516662106.asia-south1.run.app`                | ✅ 200 OK on `/health`     |
+| `axiom-web-preprod`                         | `https://axiom-web-preprod-188516662106.asia-south1.run.app`                | ✅ 200 OK on `/api/health` |
+| `axiom-marketing-preprod`                   | `https://axiom-marketing-preprod-188516662106.asia-south1.run.app`          | ✅ 200 OK on `/api/health` |
 | Marketing Firebase site                     | `https://axiom-proof.web.app`                                               | ✅ 200 OK                  |
 | `axiom-agent-runtime-preprod`               | (Cloud Run internal — ingress `INGRESS_TRAFFIC_ALL` but requires token)     | ⚠️ 403 (expected)          |
 | `axiom-model-gateway-preprod`               | (Cloud Run internal — ingress `INGRESS_TRAFFIC_ALL` but requires token)     | ⚠️ 403 (expected)          |
@@ -310,6 +310,15 @@ variable "supabase_anon_key"    { type = string; sensitive = true; default = "" 
 variable "supabase_service_key" { type = string; sensitive = true; default = "" }
 variable "resend_api_key"       { type = string; sensitive = true; default = "" }
 ```
+
+> [!NOTE]
+> **Pre-existing Secret Resolution (Avoiding 409 Conflict)**:
+> If a secret (e.g. `axiom-preprod-resend-api-key`) already exists in GCP Secret Manager, Terraform will attempt to re-create it and fail with `409 Conflict: Secret already exists`.
+> The automated deployment script (`./scripts/deploy-preprod-gcp.sh`) features built-in self-healing (`heal_secret_manager_state_if_needed`) that auto-imports any pre-existing secrets. If applying Terraform manually, import the secret into state first:
+>
+> ```bash
+> terraform import 'google_secret_manager_secret.secret["resend_api_key"]' projects/axiom-proof/secrets/axiom-preprod-resend-api-key
+> ```
 
 #### 2.7.c — Web (Next.js): add the missing public URLs
 

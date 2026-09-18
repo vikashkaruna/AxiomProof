@@ -175,6 +175,15 @@ terraform plan -out=preprod.tfplan
 terraform apply preprod.tfplan
 ```
 
+> [!TIP]
+> **Self-Healing State & Existing Secret Resolution (Avoiding 409 Conflict)**:
+> If any Secret Manager secret (e.g., `axiom-preprod-resend-api-key`) was previously created outside Terraform (e.g. via `gcloud` or `./scripts/sync-env.sh secrets`), running `terraform apply` directly would attempt to re-create it and fail with HTTP 409 Conflict.
+> The automated pipeline (`./scripts/deploy-preprod-gcp.sh`) includes a self-healing resolver (`heal_secret_manager_state_if_needed`) that detects existing secrets in GCP and automatically imports them into state before applying. If running Terraform manually, import the pre-existing secret:
+>
+> ```bash
+> terraform import 'google_secret_manager_secret.secret["resend_api_key"]' projects/<PROJECT_ID>/secrets/axiom-preprod-resend-api-key
+> ```
+
 ### Step 3.3: Capture Terraform Outputs
 
 ```bash
