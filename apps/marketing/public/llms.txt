@@ -31,7 +31,7 @@
 - [Pricing](https://axiomminds.ai/pricing)
 - [About](https://axiomminds.ai/about)
 - [Contact](https://axiomminds.ai/contact)
-- [Product app](https://app.axiomminds.ai)
+- [Product app](https://app.axiomproof.ai)
 
 ## Company
 Axiom Minds Private Limited · https://axiomminds.ai

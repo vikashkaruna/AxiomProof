@@ -51,25 +51,25 @@ output "artifact_registry_repo" {
 # Cloud Run URLs
 output "bff_url" {
   description = "Cloud Run BFF API Service URL"
-  value       = google_cloud_run_v2_service.bff.uri
+  value       = "https://axiom-bff-${var.environment}-${data.google_project.project.number}.${var.region}.run.app"
 }
 
 output "web_url" {
   description = "Cloud Run Web Application URL"
-  value       = google_cloud_run_v2_service.web.uri
+  value       = "https://axiom-web-${var.environment}-${data.google_project.project.number}.${var.region}.run.app"
 }
 
 output "agent_runtime_url" {
   description = "Cloud Run Agent Runtime Service URL"
-  value       = google_cloud_run_v2_service.agent_runtime.uri
+  value       = "https://axiom-agent-runtime-${var.environment}-${data.google_project.project.number}.${var.region}.run.app"
 }
 
 output "model_gateway_url" {
   description = "Cloud Run Model Gateway Service URL"
-  value       = google_cloud_run_v2_service.model_gateway.uri
+  value       = "https://axiom-model-gateway-${var.environment}-${data.google_project.project.number}.${var.region}.run.app"
 }
 
 output "marketing_url" {
   description = "Cloud Run Marketing Container URL"
-  value       = google_cloud_run_v2_service.marketing.uri
+  value       = "https://axiom-marketing-${var.environment}-${data.google_project.project.number}.${var.region}.run.app"
 }

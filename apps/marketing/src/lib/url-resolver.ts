@@ -24,12 +24,17 @@ export function resolveAppUrl(): string {
       return origin.replace('marketing-', 'web-');
     }
 
-    // Production domain mapping
-    if (host === 'axiomminds.ai' || host === 'www.axiomminds.ai') {
-      return 'https://app.axiomminds.ai';
+    // Production domain mapping (axiomproof.ai for app, axiomminds.ai for company)
+    if (
+      host === 'axiomproof.ai' ||
+      host === 'www.axiomproof.ai' ||
+      host === 'axiomminds.ai' ||
+      host === 'www.axiomminds.ai'
+    ) {
+      return 'https://app.axiomproof.ai';
     }
-    if (host === 'staging.axiomminds.ai') {
-      return 'https://app-staging.axiomminds.ai';
+    if (host === 'staging.axiomproof.ai' || host === 'staging.axiomminds.ai') {
+      return 'https://app-staging.axiomproof.ai';
     }
 
     // Explicit env variable if valid and not localhost when running in a remote browser

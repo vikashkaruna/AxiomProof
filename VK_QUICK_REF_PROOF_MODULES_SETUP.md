@@ -350,7 +350,7 @@ Production is designed for AWS `ap-south-1` and requires:
 - ElastiCache Valkey
 - Temporal Cloud namespace
 - ECR or GHCR container registry
-- DNS for `axiomminds.ai`, `app.axiomminds.ai`, and `api.axiomminds.ai`
+- DNS for `axiomproof.ai`, `app.axiomproof.ai`, and `api.axiomproof.ai` (company site: `axiomminds.ai`)
 - TLS certificates, ingress controller, and cert-manager
 - Centralized logs, metrics, alerting, and paging
 - Backup and disaster-recovery plan
@@ -470,9 +470,10 @@ kubectl -n axiom-proof rollout status deployment/axiom-proof-model-gateway
 ## 12. Production verification checklist
 
 ```bash
-curl -fsS https://api.axiomminds.ai/health
-curl -fsS https://api.axiomminds.ai/ready
-curl -fsS https://app.axiomminds.ai/
+curl -fsS https://api.axiomproof.ai/health
+curl -fsS https://api.axiomproof.ai/ready
+curl -fsS https://app.axiomproof.ai/
+curl -fsS https://axiomproof.ai/
 curl -fsS https://axiomminds.ai/
 ```
 
@@ -552,9 +553,9 @@ This section provides the complete operational reference for validating Axiom Pr
 | **`ENVIRONMENT`**   | `local`                            | `local` or `development`          | `staging` / `preprod`               | `production`                       |
 | **`NODE_ENV`**      | `development`                      | `production` (Next.js standalone) | `production`                        | `production`                       |
 | **Topology**        | Host processes (`pnpm dev`, `uv`)  | Docker network (`axiom-network`)  | AWS Private VPC (`ap-south-1`)      | AWS EKS Cluster (`ap-south-1`)     |
-| **Marketing Site**  | `http://localhost:3000`            | `http://localhost:3000`           | `https://staging.axiomminds.ai`     | `https://axiomminds.ai`            |
-| **Web Workbench**   | `http://localhost:3001`            | `http://localhost:3001`           | `https://app-staging.axiomminds.ai` | `https://app.axiomminds.ai`        |
-| **BFF API Gateway** | `http://localhost:4000`            | `http://localhost:4000`           | `https://api-staging.axiomminds.ai` | `https://api.axiomminds.ai`        |
+| **Marketing Site**  | `http://localhost:3000`            | `http://localhost:3000`           | `https://staging.axiomproof.ai`     | `https://axiomproof.ai` (co: `axiomminds.ai`) |
+| **Web Workbench**   | `http://localhost:3001`            | `http://localhost:3001`           | `https://app-staging.axiomproof.ai` | `https://app.axiomproof.ai`        |
+| **BFF API Gateway** | `http://localhost:4000`            | `http://localhost:4000`           | `https://api-staging.axiomproof.ai` | `https://api.axiomproof.ai`        |
 | **Agent Runtime**   | `http://localhost:8000`            | `http://localhost:8000`           | Internal VPC / Cluster IP           | Internal VPC / Cluster IP          |
 | **Model Gateway**   | `http://localhost:8001`            | `http://localhost:8001`           | Internal VPC (Self-hosted/Bedrock)  | Internal VPC (Self-hosted/Bedrock) |
 | **Temporal UI**     | `http://localhost:8233`            | `http://localhost:8233`           | Temporal Cloud / Internal UI        | Temporal Cloud / Internal UI       |

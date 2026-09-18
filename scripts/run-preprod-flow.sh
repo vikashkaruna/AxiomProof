@@ -43,7 +43,7 @@ CORRELATION_ID="corr-preprod-${TIMESTAMP}"
 RANDOM_SUFFIX="$(head -c 4 /dev/urandom | xxd -p 2>/dev/null || date +%N | cut -c1-4)"
 
 ORG_NAME="${3:-"Bharat FinTech Sovereign ${TIMESTAMP: -4}"}"
-USER_EMAIL="officer_${TIMESTAMP: -6}_${RANDOM_SUFFIX}@preprod.axiomminds.ai"
+USER_EMAIL="officer_${TIMESTAMP: -6}_${RANDOM_SUFFIX}@preprod.axiomproof.ai"
 USER_PASS="AxiomPreprodLive2026!#${TIMESTAMP: -4}"
 USER_NAME="Chief Compliance Officer (${TIMESTAMP: -4})"
 

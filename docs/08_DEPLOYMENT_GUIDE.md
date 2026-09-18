@@ -51,7 +51,7 @@ Axiom Proof strictly segregates deployment artifacts, credentials, data boundari
 - **kubectl** ≥ 1.29.0
 - **Helm** ≥ 3.13.0
 - **Supabase CLI** ≥ 1.200.0
-- Registered domain with DNSSEC (e.g., `axiomminds.ai`, `app.axiomminds.ai`)
+- Registered domain with DNSSEC (e.g., `axiomproof.ai`, `app.axiomproof.ai`, `axiomminds.ai`)
 
 ---
 
@@ -153,8 +153,8 @@ Environment templates live in `infra/docker/environments/`:
 | `ENVIRONMENT`                     | All                 | All          | Deployment tier: `local`, `development`, `staging`, `preprod`, `production`.                     |
 | `NODE_ENV`                        | Web, Marketing, BFF | All          | Node runtime mode: `development` or `production`.                                                |
 | `PORT`                            | All                 | All          | Service bind port (`3000`, `3001`, `4000`, `8000`, `8001`).                                      |
-| `NEXT_PUBLIC_APP_URL`             | Web                 | All          | Public Web Workbench URL (`http://localhost:3001` or `https://app.axiomminds.ai`).               |
-| `NEXT_PUBLIC_MARKETING_URL`       | Web, Marketing      | All          | Public marketing website URL (`http://localhost:3000` or `https://axiomminds.ai`).               |
+| `NEXT_PUBLIC_APP_URL`             | Web                 | All          | Public Web Workbench URL (`http://localhost:3001` or `https://app.axiomproof.ai`).               |
+| `NEXT_PUBLIC_MARKETING_URL`       | Web, Marketing      | All          | Public marketing website URL (`http://localhost:3000` or `https://axiomproof.ai`).               |
 | `NEXT_PUBLIC_SUPABASE_URL`        | Web, Marketing      | All          | Supabase HTTP gateway (`http://localhost:55321` or Supabase project URL).                        |
 | `NEXT_PUBLIC_SUPABASE_ANON_KEY`   | Web, Marketing      | All          | Supabase public anon token.                                                                      |
 | `SUPABASE_SERVICE_KEY`            | BFF, Worker         | All          | Supabase service-role key (SECURITY DEFINER operations).                                         |
@@ -447,7 +447,7 @@ To halt all in-flight agent remediation executions immediately:
 
 2. **Via BFF Direct API Call**:
    ```bash
-   curl -X POST https://app.axiomminds.ai/api/bff/v1/kill-switch/engage \
+   curl -X POST https://app.axiomproof.ai/api/bff/v1/kill-switch/engage \
      -H "Authorization: Bearer $ADMIN_TOKEN" \
      -H "X-Tenant-Id: $TENANT_ID" \
      -H "Content-Type: application/json" \

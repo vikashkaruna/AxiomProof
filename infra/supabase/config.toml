@@ -48,6 +48,10 @@ backend = "postgres"
 enabled = true
 site_url = "http://localhost:3000"
 additional_redirect_urls = [
+  "https://axiomproof.ai",
+  "https://app.axiomproof.ai",
+  "https://preprod.axiomproof.ai",
+  "https://preprod-app.axiomproof.ai",
   "https://axiomminds.ai",
   "https://app.axiomminds.ai",
   "http://localhost:3000",

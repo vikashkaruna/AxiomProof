@@ -150,11 +150,11 @@ export default async function LoginPage({
 
       <p className="mt-6 max-w-md text-center text-xs text-slate-500">
         By signing in you agree to our{' '}
-        <Link href="https://axiomminds.ai/terms" className="underline">
+        <Link href={`https://${BRAND.primaryDomain}/terms`} className="underline">
           Terms
         </Link>{' '}
         and{' '}
-        <Link href="https://axiomminds.ai/privacy" className="underline">
+        <Link href={`https://${BRAND.primaryDomain}/privacy`} className="underline">
           Privacy Policy
         </Link>
         . Data residency: {BRAND.dataResidencyRegion}.

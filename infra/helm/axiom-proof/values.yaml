@@ -48,7 +48,7 @@ web:
   ingress:
     enabled: true
     className: nginx
-    host: app.axiomminds.ai
+    host: app.axiomproof.ai
     tls:
       enabled: true
       secretName: axiom-app-tls
@@ -74,7 +74,7 @@ marketing:
   ingress:
     enabled: true
     className: nginx
-    host: axiomminds.ai
+    host: axiomproof.ai
     tls:
       enabled: true
       secretName: axiom-marketing-tls

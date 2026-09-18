@@ -71,7 +71,7 @@ The deployment tooling provides a progressive, dependency-aware pipeline with au
 | `infra/terraform/envs/preprod/terraform.tfvars`                             | Identical to `.example`. All 8 sensitive fields are `sk-ant-api03-…`, `your-temporal-api-key`, etc.                                       |
 | `infra/docker/environments/.env.preprod`                                    | Central preprod configuration. Contains verified values; automatically read by deployment scripts.                                        |
 | `infra/docker/environments/.env.preprod.example`                            | Template with all placeholders marked and cross-references to the checklist steps.                                                        |
-| `infra/terraform/envs/preprod/cloudrun.tf` (lines 76–85, 217–230)           | `SUPABASE_URL=https://preprod-supabase.axiomminds.ai` and `*_KEY=preprod-…-placeholder…` are **hardcoded** into the Cloud Run env blocks. |
+| `infra/terraform/envs/preprod/cloudrun.tf` (lines 76–85, 217–230)           | `SUPABASE_URL=https://preprod-supabase.axiomproof.ai` and `*_KEY=preprod-…-placeholder…` are **hardcoded** into the Cloud Run env blocks. |
 | `infra/terraform/envs/preprod/cloudrun.tf` (BFF, lines 38–161)              | Missing `BFF_CORS_ORIGINS`, `BFF_PUBLIC_URL`, `MODEL_GATEWAY_API_KEY`, `RESEND_API_KEY`, `CONTACT_RECIPIENT_EMAIL`.                       |
 | `infra/terraform/envs/preprod/cloudrun.tf` (Web, lines 167–245)             | Missing `NEXT_PUBLIC_APP_URL`, `NEXT_PUBLIC_MARKETING_URL`.                                                                               |
 | `infra/terraform/envs/preprod/cloudrun.tf` (temporal-worker, lines 469–537) | Missing `MODEL_GATEWAY_URL`, `MODEL_GATEWAY_API_KEY`, `TEMPORAL_CLIENT_CERT/KEY`.                                                         |
@@ -157,7 +157,7 @@ export TF_VAR_model_gateway_api_key=$(openssl rand -hex 24)
 ### Step 2.5 — Provision a real Supabase project (or run Supabase self-hosted)
 
 This is the **biggest gap**. `cloudrun.tf` hardcodes
-`SUPABASE_URL=https://preprod-supabase.axiomminds.ai` and two placeholder JWTs
+`SUPABASE_URL=https://preprod-supabase.axiomproof.ai` and two placeholder JWTs
 (`preprod-anon-key-placeholder-length-over-forty-chars`,
 `preprod-service-key-placeholder-length-over-forty-chars`). That domain doesn't
 resolve, so every authenticated request 401s.

@@ -3,7 +3,13 @@
 # ==============================================================================
 
 locals {
-  image_prefix = "${var.region}-docker.pkg.dev/${var.project_id}/${google_artifact_registry_repository.docker_repo.name}"
+  image_prefix         = "${var.region}-docker.pkg.dev/${var.project_id}/${google_artifact_registry_repository.docker_repo.name}"
+  bff_service_url      = "https://axiom-bff-${var.environment}-${data.google_project.project.number}.${var.region}.run.app"
+  web_service_url      = "https://axiom-web-${var.environment}-${data.google_project.project.number}.${var.region}.run.app"
+  agent_runtime_url    = "https://axiom-agent-runtime-${var.environment}-${data.google_project.project.number}.${var.region}.run.app"
+  model_gateway_url    = "https://axiom-model-gateway-${var.environment}-${data.google_project.project.number}.${var.region}.run.app"
+  marketing_url        = "https://axiom-marketing-${var.environment}-${data.google_project.project.number}.${var.region}.run.app"
+  supabase_preprod_url = "https://preprod-supabase.axiomproof.ai"
 }
 
 # ─── 1. BFF (API Gateway & Execution Gate) ───────────────────────────────────
@@ -61,15 +67,15 @@ resource "google_cloud_run_v2_service" "bff" {
       }
       env {
         name  = "AGENT_RUNTIME_URL"
-        value = "https://axiom-agent-runtime-${var.environment}-${data.google_project.project.number}.${var.region}.run.app"
+        value = local.agent_runtime_url
       }
       env {
         name  = "MODEL_GATEWAY_URL"
-        value = "https://axiom-model-gateway-${var.environment}-${data.google_project.project.number}.${var.region}.run.app"
+        value = local.model_gateway_url
       }
       env {
         name  = "BFF_CORS_ORIGINS"
-        value = "https://axiom-marketing-${var.environment}-${data.google_project.project.number}.${var.region}.run.app,https://axiom-web-${var.environment}-${data.google_project.project.number}.${var.region}.run.app,http://localhost:3000,http://localhost:3001"
+        value = "${local.marketing_url},${local.web_service_url},https://axiomproof.ai,https://app.axiomproof.ai,https://preprod.axiomproof.ai,https://preprod-app.axiomproof.ai,http://localhost:3000,http://localhost:3001"
       }
       env {
         name  = "AXIOM_EVIDENCE_BUCKET"
@@ -89,7 +95,7 @@ resource "google_cloud_run_v2_service" "bff" {
       }
       env {
         name  = "SUPABASE_URL"
-        value = "https://preprod-supabase.axiomminds.ai"
+        value = local.supabase_preprod_url
       }
       env {
         name  = "SUPABASE_ANON_KEY"
@@ -249,15 +255,15 @@ resource "google_cloud_run_v2_service" "web" {
       }
       env {
         name  = "BFF_PUBLIC_URL"
-        value = google_cloud_run_v2_service.bff.uri
+        value = local.bff_service_url
       }
       env {
         name  = "NEXT_PUBLIC_BFF_URL"
-        value = google_cloud_run_v2_service.bff.uri
+        value = local.bff_service_url
       }
       env {
         name  = "NEXT_PUBLIC_SUPABASE_URL"
-        value = "https://preprod-supabase.axiomminds.ai"
+        value = local.supabase_preprod_url
       }
       env {
         name  = "NEXT_PUBLIC_SUPABASE_ANON_KEY"
@@ -265,7 +271,7 @@ resource "google_cloud_run_v2_service" "web" {
       }
       env {
         name  = "SUPABASE_URL"
-        value = "https://preprod-supabase.axiomminds.ai"
+        value = local.supabase_preprod_url
       }
       env {
         name  = "SUPABASE_SERVICE_KEY"
@@ -333,7 +339,7 @@ resource "google_cloud_run_v2_service" "agent_runtime" {
       }
       env {
         name  = "MODEL_GATEWAY_URL"
-        value = google_cloud_run_v2_service.model_gateway.uri
+        value = local.model_gateway_url
       }
       env {
         name  = "AXIOM_EVIDENCE_BUCKET"
@@ -585,7 +591,7 @@ resource "google_cloud_run_v2_service" "temporal_worker" {
       }
       env {
         name  = "AGENT_RUNTIME_URL"
-        value = google_cloud_run_v2_service.agent_runtime.uri
+        value = local.agent_runtime_url
       }
 
       env {
@@ -655,23 +661,23 @@ resource "google_cloud_run_v2_service" "marketing" {
       }
       env {
         name  = "BFF_PUBLIC_URL"
-        value = google_cloud_run_v2_service.bff.uri
+        value = local.bff_service_url
       }
       env {
         name  = "NEXT_PUBLIC_BFF_URL"
-        value = google_cloud_run_v2_service.bff.uri
+        value = local.bff_service_url
       }
       env {
         name  = "NEXT_PUBLIC_APP_URL"
-        value = google_cloud_run_v2_service.web.uri
+        value = local.web_service_url
       }
       env {
         name  = "APP_URL"
-        value = google_cloud_run_v2_service.web.uri
+        value = local.web_service_url
       }
       env {
         name  = "NEXT_PUBLIC_SUPABASE_URL"
-        value = "https://preprod-supabase.axiomminds.ai"
+        value = local.supabase_preprod_url
       }
       env {
         name  = "NEXT_PUBLIC_SUPABASE_ANON_KEY"
@@ -679,7 +685,7 @@ resource "google_cloud_run_v2_service" "marketing" {
       }
       env {
         name  = "SUPABASE_URL"
-        value = "https://preprod-supabase.axiomminds.ai"
+        value = local.supabase_preprod_url
       }
       env {
         name  = "SUPABASE_SERVICE_KEY"

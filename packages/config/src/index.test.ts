@@ -109,4 +109,9 @@ describe('BRAND', () => {
   it('has a stable company', () => {
     expect(BRAND.company).toBe('Axiom Minds Private Limited');
   });
+  it('has correct product and company domains', () => {
+    expect(BRAND.primaryDomain).toBe('axiomproof.ai');
+    expect(BRAND.productDomain).toBe('app.axiomproof.ai');
+    expect(BRAND.companyDomain).toBe('axiomminds.ai');
+  });
 });

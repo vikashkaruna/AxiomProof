@@ -19,5 +19,5 @@ variable "kubernetes_version" {
 variable "domain_name" {
   description = "Primary domain for the deployment"
   type        = string
-  default     = "axiomminds.ai"
+  default     = "axiomproof.ai"
 }

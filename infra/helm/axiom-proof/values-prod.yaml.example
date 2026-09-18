@@ -14,7 +14,7 @@ image:
 config:
   supabaseUrl: "https://YOUR-PROJECT.supabase.co"
   s3EvidenceBucket: "axiom-proof-evidence-ap-south-1"
-  bffPublicUrl: "https://app.axiomminds.ai"
+  bffPublicUrl: "https://app.axiomproof.ai"
   internalToken: "REPLACE_FROM_SECRETS_MANAGER"
 
 web:
